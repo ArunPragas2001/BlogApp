@@ -6,28 +6,248 @@
     <meta name="viewport" content="width=device-width" , initial-scale="1.0">
     <title>BlogSphere</title>
 
+
+    <!-- google font link -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&display=swap">
+
+    <!-- font awesome link -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+
+
     <Link rel="stylesheet" href="css/styles.css">
 </head>
 
-<header>
-    <nav>
-        <a href="index.html">Home</a>
-        <a href="register.html">Register</a>
-        <a href="login.html">login</a>
-    </nav>
-</header>
+<body>
 
-<main>
-    <h1>Welcome to BlogSphere</h1>
-    <p>Discover a world of insightful articles, engaging stories, and thought-provoking discussions. Join our community
-        of passionate writers and readers today!</p>
-    <button class="cta-button">Get Started</button>
-</main>
+    <!-- header section -->
 
-<footer>
-    <p>&copy; 2026 BlogSphere. All rights reserved.</p>
-</footer>
-<script src="js/script.js"></script>
+
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <h1>BlogSphere</h1>
+            </div>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#">Blogs</a></li>
+                <li><a href="#">Catogories</a></li>
+                <li><a href="#">About</a></li>
+            </ul>
+
+            <div class="buttons">
+                <a href="login.html" class="btn-login">login</a>
+                <a href="register.html" class="btn-register">Register</a>
+
+            </div>
+
+        </nav>
+    </header>
+
+
+
+
+
+
+
+
+
+    <!-- hero section -->
+
+    <section class="hero">
+        <div class="hero-content">
+
+            <h1> Share Your Stories With the world </h1>
+
+            <p>
+                Discover inspiring blogs, publish your own ideas,
+                and connect with readers from around the globe.
+            </p>
+
+            <div class="hero-button">
+
+                <a href="createBlog.html" class="button-primary">Get Started</a>
+                <a href="#featured" class="button-secondary">Explore Blogs</a>
+
+
+            </div>
+
+        </div>
+    </section>
+
+
+
+    <!-- section featured blogs -->
+
+
+    <section id="featured">
+        <div class="blog-container">
+            <div class="blog-card">
+                <img src="image.jpg" alt="">
+                <h3>javascript essentials</h3>
+                <p>Learn the fundamentals of javascript </p>
+                <button>Read More</button>
+
+            </div>
+
+
+
+
+
+            <div class="blog-card">
+                <img src="image.jpg" alt="">
+                <h3>Getting Started with HTML</h3>
+                <p> Learn the fundamentals of HTML and build your
+                    first website. </p>
+                <button>Read More</button>
+            </div>
+
+
+            <div class="blog-card">
+                <img src="image.jpg" alt="">
+                <h3>Modern CSS Tricks</h3>
+                <p> Improve your website using Flexbox,
+                    Grid and animations.</p>
+                <button>Read More</button>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- Catogories section -->
+
+
+    <section class="Catogories">
+
+        <div class="Catogories-list">
+            <span>Technology</span>
+            <span>Programming</span>
+            <span>Education</span>
+            <span>Travel</span>
+            <span>Business</span>
+            <span>Lifestyle</span>
+
+        </div>
+
+    </section>
+
+    <section class="features">
+        <h2>Why Choose BlogSphere?</h2>
+        <div class="feature-cards">
+            <div>
+                <i class="fa-solid fa-pen"></i>
+                <h3>Easy Publishing</h3>
+                <p>Create blogs within minutes.</p>
+            </div>
+
+            <div>
+                <i class="fa-solid fa-mobile-screen"></i>
+                <h3>Responsive Design</h3>
+                <p>Works perfectly on every device.</p>
+            </div>
+
+            <div>
+                <i class="fa-solid fa-lock"></i>
+                <h3>Secure Platform</h3>
+                <p>Your data is protected securely.</p>
+            </div>
+
+            <div>
+                <i class="fa-solid fa-bolt"></i>
+                <h3>Fast Performance</h3>
+                <p>Optimized for speed and reliability.</p>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- statistics section -->
+
+    <section class="statistics">
+
+        <div class="stat">
+            <h2>1000+</h2>
+            <p>Articles</p>
+        </div>
+
+        <div class="stat">
+            <h2>500+</h2>
+            <p>Authors</p>
+        </div>
+
+        <div class="stat">
+            <h2>25K+</h2>
+            <p>Readers</p>
+        </div>
+
+    </section>
+
+    <!-- testimonial section -->
+
+    <section class="testimonial">
+
+        <h2>What Our Readers Say</h2>
+
+        <blockquote>
+
+            "BlogSphere is a fantastic place to discover
+            new ideas and share knowledge."
+
+            <br><br>
+
+            <strong>- Alex Johnson</strong>
+
+        </blockquote>
+
+    </section>
+
+
+    <!-- newsletter section -->
+
+    <section class="newsletter"></section>
+
+
+    <h2>Stay Updated</h2>
+    <p>Get the latest blogs delivered to your inbox</p>
+
+    <form>
+
+        <input type="email" placeholder="Enter your email">
+
+        <button type="submit">subscribe</button>
+
+
+    </form>
+
+    </section>
+
+    <!-- footer section -->
+
+    <footer>
+
+        <div class="footer-links">
+
+            <a href="#">about</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy policy</a>
+
+        </div>
+
+        <div class="social-icons">
+            <i class="fab fa-facebook"></i>
+            <i class="fab fa-linkedin"></i>
+            <i class="fab fa-github"></i>
+            <i class="fab fa-instagram"></i>
+
+        </div>
+
+        <p>&copy; 2026 BlogSphere. All rights reserved.</p>
+    </footer>
+    <script src="js/script.js"></script>
 </body>
 
 </html>
