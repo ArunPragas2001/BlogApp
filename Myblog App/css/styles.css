@@ -20,3 +20,34 @@ header {
     text-align: center;
 
 }
+
+nav a {
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+
+
+
+}
+
+main {
+    text-align: center;
+    padding: 20px;
+}
+
+button {
+    margin-top: 20px;
+    padding: 12px 25px;
+    background: #007bff;
+    color: white;
+    text-decoration: none;
+    margin-left: 20px;
+
+}
+
+footer {
+    text-align: center;
+    margin-top: 20px;
+    color: #777;
+
+}
