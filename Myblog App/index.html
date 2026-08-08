@@ -23,25 +23,25 @@
     <!-- header section -->
 
 
-    <header>
+    <!-- Header Section -->
+    <header class="header">
         <nav class="navbar">
-            <div class="logo">
-                <h1>BlogSphere</h1>
-            </div>
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-layer-group logo-icon"></i>
+                <span>BlogSphere</span>
+            </a>
 
             <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="#">Blogs</a></li>
-                <li><a href="#">Catogories</a></li>
-                <li><a href="#">About</a></li>
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="#featured">Blogs</a></li>
+                <li><a href="#categories">Categories</a></li>
+                <li><a href="createBlog.html">Create Blog</a></li>
             </ul>
 
-            <div class="buttons">
-                <a href="login.html" class="btn-login">login</a>
+            <div class="nav-buttons">
+                <a href="login.html" class="btn-login">Login</a>
                 <a href="register.html" class="btn-register">Register</a>
-
             </div>
-
         </nav>
     </header>
 
@@ -84,34 +84,31 @@
     <section id="featured">
         <div class="blog-container">
             <div class="blog-card">
-                <img src="Assets\images\blog1.avif" alt="programming">
-                <h3>javascript essentials</h3>
-                <p>Learn the fundamentals of javascript </p>
-                <button>Read More</button>
-
+                <img src="Assets/images/blog1.avif" alt="JavaScript Essentials">
+                <div class="blog-card-content">
+                    <h3>JavaScript Essentials</h3>
+                    <p>Learn the fundamentals of JavaScript and modern web scripting.</p>
+                    <button>Read More</button>
+                </div>
             </div>
-
-
-
-
 
             <div class="blog-card">
-                <img src="image.jpg" alt="">
-                <h3>Getting Started with HTML</h3>
-                <p> Learn the fundamentals of HTML and build your
-                    first website. </p>
-                <button>Read More</button>
+                <img src="Assets/images/blog2.avif" alt="Getting Started with HTML">
+                <div class="blog-card-content">
+                    <h3>Getting Started with HTML</h3>
+                    <p>Learn the fundamentals of HTML and build your first website structure.</p>
+                    <button>Read More</button>
+                </div>
             </div>
-
 
             <div class="blog-card">
-                <img src="image.jpg" alt="">
-                <h3>Modern CSS Tricks</h3>
-                <p> Improve your website using Flexbox,
-                    Grid and animations.</p>
-                <button>Read More</button>
+                <img src="Assets/images/blog3.avif" alt="Modern CSS Tricks">
+                <div class="blog-card-content">
+                    <h3>Modern CSS Tricks</h3>
+                    <p>Improve your website designs using Flexbox, CSS Grid, and responsive animations.</p>
+                    <button>Read More</button>
+                </div>
             </div>
-
         </div>
     </section>
 
@@ -119,133 +116,199 @@
     <!-- Catogories section -->
 
 
-    <section class="Catogories">
-
-        <div class="Catogories-list">
-            <span>Technology</span>
-            <span>Programming</span>
-            <span>Education</span>
-            <span>Travel</span>
-            <span>Business</span>
-            <span>Lifestyle</span>
-
+    <!-- Categories Section -->
+    <section id="categories" class="categories-section">
+        <div class="categories-header">
+            <h2>Explore Categories</h2>
+            <p>Browse top topics and find articles curated for your interests.</p>
         </div>
+        <div class="categories-grid">
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-laptop-code"></i></div>
+                <h3>Technology</h3>
+                <p>Latest tech trends & innovations</p>
+            </a>
 
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-code"></i></div>
+                <h3>Programming</h3>
+                <p>Web dev, software & algorithms</p>
+            </a>
+
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <h3>Education</h3>
+                <p>Learning guides & tutorials</p>
+            </a>
+
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-plane-departure"></i></div>
+                <h3>Travel</h3>
+                <p>Global adventures & guides</p>
+            </a>
+
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-briefcase"></i></div>
+                <h3>Business</h3>
+                <p>Startup insights & growth</p>
+            </a>
+
+            <a href="#" class="category-card">
+                <div class="category-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                <h3>Lifestyle</h3>
+                <p>Health, wellness & habits</p>
+            </a>
+        </div>
     </section>
 
+    <!-- Features Section -->
     <section class="features">
-        <h2>Why Choose BlogSphere?</h2>
+        <div class="features-header">
+            <h2>Why Choose BlogSphere?</h2>
+            <p>Empowering writers and readers with modern tools for effortless blogging.</p>
+        </div>
         <div class="feature-cards">
-            <div>
-                <i class="fa-solid fa-pen"></i>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-pen-nib"></i>
+                </div>
                 <h3>Easy Publishing</h3>
-                <p>Create blogs within minutes.</p>
+                <p>Create and format your articles within minutes using our intuitive editor.</p>
             </div>
 
-            <div>
-                <i class="fa-solid fa-mobile-screen"></i>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                </div>
                 <h3>Responsive Design</h3>
-                <p>Works perfectly on every device.</p>
+                <p>Your stories render flawlessly on desktops, tablets, and mobile devices.</p>
             </div>
 
-            <div>
-                <i class="fa-solid fa-lock"></i>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
                 <h3>Secure Platform</h3>
-                <p>Your data is protected securely.</p>
+                <p>Your content, personal data, and account security are fully protected.</p>
             </div>
 
-            <div>
-                <i class="fa-solid fa-bolt"></i>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fa-solid fa-bolt-lightning"></i>
+                </div>
                 <h3>Fast Performance</h3>
-                <p>Optimized for speed and reliability.</p>
+                <p>Lightning-fast page loads optimized for high reader engagement and SEO.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="statistics">
+        <div class="stat-container">
+            <div class="stat-box">
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <h2>1,000+</h2>
+                <p>Published Articles</p>
             </div>
 
-        </div>
+            <div class="stat-box">
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <h2>500+</h2>
+                <p>Active Authors</p>
+            </div>
 
+            <div class="stat-box">
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-eye"></i>
+                </div>
+                <h2>25K+</h2>
+                <p>Monthly Readers</p>
+            </div>
+
+            <div class="stat-box">
+                <div class="stat-icon-wrapper">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <h2>40+</h2>
+                <p>Countries Reached</p>
+            </div>
+        </div>
     </section>
 
-
-    <!-- statistics section -->
-
-    <section class="statistics">
-
-        <div class="stat">
-            <h2>1000+</h2>
-            <p>Articles</p>
-        </div>
-
-        <div class="stat">
-            <h2>500+</h2>
-            <p>Authors</p>
-        </div>
-
-        <div class="stat">
-            <h2>25K+</h2>
-            <p>Readers</p>
-        </div>
-
-    </section>
-
-    <!-- testimonial section -->
-
+    <!-- Testimonial Section -->
     <section class="testimonial">
-
         <h2>What Our Readers Say</h2>
-
         <blockquote>
-
-            "BlogSphere is a fantastic place to discover
-            new ideas and share knowledge."
-
+            "BlogSphere is a fantastic place to discover new ideas, connect with passionate authors, and share knowledge with a vibrant global community."
             <br><br>
-
             <strong>- Alex Johnson</strong>
-
         </blockquote>
-
     </section>
 
-
-    <!-- newsletter section -->
-
-    <section class="newsletter"></section>
-
-
-    <h2>Stay Updated</h2>
-    <p>Get the latest blogs delivered to your inbox</p>
-
-    <form>
-
-        <input type="email" placeholder="Enter your email">
-
-        <button type="submit">subscribe</button>
-
-
-    </form>
-
+    <!-- Newsletter Section -->
+    <section class="newsletter-section">
+        <div class="newsletter-card">
+            <h2>Stay Updated</h2>
+            <p>Get the latest blogs, expert insights, and community stories delivered straight to your inbox.</p>
+            <form class="newsletter-form" onsubmit="event.preventDefault();">
+                <input type="email" placeholder="Enter your email address" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
     </section>
 
-    <!-- footer section -->
-
+    <!-- Footer Section -->
     <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <h2>BlogSphere</h2>
+                <p>A modern platform dedicated to empowering authors and bringing inspiring stories to readers worldwide.</p>
+                <div class="social-icons">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="GitHub"><i class="fab fa-github"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
 
-        <div class="footer-links">
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="#featured">Featured Blogs</a></li>
+                    <li><a href="createBlog.html">Create Blog</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                </ul>
+            </div>
 
-            <a href="#">about</a>
-            <a href="#">Contact</a>
-            <a href="#">Privacy policy</a>
+            <div class="footer-col">
+                <h4>Categories</h4>
+                <ul>
+                    <li><a href="#">Technology</a></li>
+                    <li><a href="#">Programming</a></li>
+                    <li><a href="#">Education</a></li>
+                    <li><a href="#">Lifestyle</a></li>
+                </ul>
+            </div>
 
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
         </div>
 
-        <div class="social-icons">
-            <i class="fab fa-facebook"></i>
-            <i class="fab fa-linkedin"></i>
-            <i class="fab fa-github"></i>
-            <i class="fab fa-instagram"></i>
-
+        <div class="footer-bottom">
+            <p>&copy; 2026 BlogSphere. All rights reserved.</p>
         </div>
-
-        <p>&copy; 2026 BlogSphere. All rights reserved.</p>
     </footer>
     <script src="js/script.js"></script>
 </body>
