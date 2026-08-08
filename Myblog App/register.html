@@ -6,7 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | BlogSphere</title>
     <!-- Google Fonts -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <!-- Font Awesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Stylesheet -->
@@ -25,30 +26,31 @@
             <h2>Create Your Account</h2>
             <p class="subtitle">Join BlogSphere and start sharing your ideas</p>
 
-            <form>
+            <form id="registerForm">
                 <div class="input-group">
                     <i class="fa-regular fa-user input-icon"></i>
-                    <input type="text" placeholder="Full Name" required>
+                    <input type="text" placeholder="Full Name" id="registerName" required>
                 </div>
 
                 <div class="input-group">
                     <i class="fa-regular fa-envelope input-icon"></i>
-                    <input type="email" placeholder="Email Address" required>
+                    <input type="email" placeholder="Email Address" id="registerEmail" required>
                 </div>
 
                 <div class="input-group">
                     <i class="fa-solid fa-lock input-icon"></i>
-                    <input type="password" placeholder="Create Password" required>
+                    <input type="password" placeholder="Create Password" id="registerPassword" required>
                 </div>
 
                 <div class="input-group">
                     <i class="fa-solid fa-shield-halved input-icon"></i>
-                    <input type="password" placeholder="Confirm Password" required>
+                    <input type="password" placeholder="Confirm Password" id="confirmPassword" required>
                 </div>
 
                 <div class="form-options">
                     <label class="remember-me">
-                        <input type="checkbox" required> I agree to the <a href="#" class="terms-link">Terms & Privacy</a>
+                        <input type="checkbox" required> I agree to the <a href="#" class="terms-link">Terms &
+                            Privacy</a>
                     </label>
                 </div>
 
