@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Blog | BlogSphere</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/createBlog.css">
+</head>
+
+<body>
+    <!-- Header / Navbar -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-layer-group logo-icon"></i>
+                <span>BlogSphere</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dashboard.html">Dashboard</a></li>
+                <li><a href="createBlog.html" class="active">Create Blog</a></li>
+            </ul>
+
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Create Blog Form Main Section -->
+    <main class="create-blog-page">
+        <div class="create-blog-container">
+            <div class="create-blog-header">
+                <h1>Create a New Blog</h1>
+                <p>Share your ideas, knowledge and stories with the world.</p>
+            </div>
+
+            <!-- Blog Form -->
+            <form class="blog-form">
+                <!-- Title -->
+                <div class="form-group">
+                    <label for="blog-title">Blog Title</label>
+                    <input type="text" id="blog-title" name="blog-title" placeholder="Enter an engaging blog title"
+                        required>
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label for="blog-category">Category</label>
+                    <select id="blog-category" name="blog-category" required>
+                        <option value="">Select a category</option>
+                        <option value="technology">Technology</option>
+                        <option value="programming">Programming</option>
+                        <option value="education">Education</option>
+                        <option value="travel">Travel</option>
+                        <option value="business">Business</option>
+                        <option value="lifestyle">Lifestyle</option>
+                    </select>
+                </div>
+
+                <!-- Featured Image -->
+                <div class="form-group">
+                    <label for="blog-image">Featured Image URL</label>
+                    <input type="url" id="blog-image" name="blog-image" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <!-- Content -->
+                <div class="form-group">
+                    <label for="blog-content">Blog Content</label>
+                    <textarea id="blog-content" name="blog-content" rows="10" placeholder="Write your story here..."
+                        required></textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="form-actions">
+                    <a href="dashboard.html" class="cancel-btn">Cancel</a>
+                    <button type="submit" class="publish-btn">
+                        <i class="fa-solid fa-paper-plane"></i> Publish Blog
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 BlogSphere. All Rights Reserved.</p>
+    </footer>
+    <script src="js/createBlog.js"></script>
+</body>
+
+</html>

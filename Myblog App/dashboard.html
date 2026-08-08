@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | BlogSphere</title>
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+
+<body>
+    <!-- Header / Navbar -->
+    <header class="header">
+        <nav class="navbar">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-layer-group logo-icon"></i>
+                <span>BlogSphere</span>
+            </a>
+
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="dashboard.html" class="active">Dashboard</a></li>
+                <li><a href="createBlog.html">Create Blog</a></li>
+            </ul>
+
+            <div class="nav-buttons">
+                <a href="index.html" class="btn-logout">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Dashboard Container -->
+    <main class="dashboard-container">
+        <!-- Welcome Banner -->
+        <section class="dashboard-welcome">
+            <div class="welcome-text">
+                <h1>Welcome back! 👋</h1>
+                <p>Manage your stories and keep sharing your ideas with the world.</p>
+            </div>
+            <a href="createBlog.html" class="create-btn">
+                <i class="fa-solid fa-plus"></i> Create Blog
+            </a>
+        </section>
+
+        <!-- Statistics Grid -->
+        <section class="dashboard-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fa-solid fa-newspaper"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>12</h3>
+                    <p>Total Blogs</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon published-icon">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>8</h3>
+                    <p>Published</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon draft-icon">
+                    <i class="fa-solid fa-file-pen"></i>
+                </div>
+                <div class="stat-info">
+                    <h3>4</h3>
+                    <p>Drafts</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- My Blogs List -->
+        <section class="my-blogs">
+            <div class="section-heading">
+                <div>
+                    <h2>My Blogs</h2>
+                    <p>Manage your published and draft posts.</p>
+                </div>
+                <a href="createBlog.html" class="create-btn-sm">
+                    <i class="fa-solid fa-plus"></i> New Blog
+                </a>
+            </div>
+
+            <div class="blogs-list">
+                <!-- Blog Item 1 -->
+                <div class="dashboard-blog">
+                    <div class="blog-info">
+                        <h3>Getting Started with HTML</h3>
+                        <p>Learn the fundamentals of HTML and build your first website.</p>
+                        <span class="badge published">Published</span>
+                    </div>
+
+                    <div class="blog-actions">
+                        <button class="edit-btn">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button class="delete-btn">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Blog Item 2 -->
+                <div class="dashboard-blog">
+                    <div class="blog-info">
+                        <h3>Modern CSS Tricks</h3>
+                        <p>Discover useful CSS techniques for modern web design.</p>
+                        <span class="badge draft">Draft</span>
+                    </div>
+
+                    <div class="blog-actions">
+                        <button class="edit-btn">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button class="delete-btn">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>© 2026 BlogSphere. All Rights Reserved.</p>
+    </footer>
+    <script src="js/dashboard.js"></script>
+</body>
+
+</html>
