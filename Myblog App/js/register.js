@@ -1,4 +1,4 @@
-const registerForm = document.getElementById("register-form");
+const registerForm = document.getElementById("registerForm");
 
 if (registerForm) {
     registerForm.addEventListener("submit", function (e) {
@@ -86,8 +86,42 @@ if (registerForm) {
         }
     }
 
-    alert("Registration successful");
-    window.location.href = "index.html";
+    const isNameValid = validateName(name);
+    const isEmailValid = validateEmail(email);
+    const isPasswordValid = validatepassword(password);
+    const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
+    const isTermsValid = validateTerms(terms);
+
+    if (
+        isNameValid &&
+        isEmailValid &&
+        isPasswordValid &&
+        isConfirmPasswordValid &&
+        isTermsValid
+    ) {
+        alert("Registration successful");
+        window.location.href = "index.html";
+
+    }
+    else {
+        return false;
+    }
+
+
+    function showError(elementId, message) {
+        const element = document.getElementById(elementId);
+        element.textContent = message;
+    }
+    function clearError(elementId) {
+        const element = document.getElementById(elementId);
+        element.textContent = "";
+    }
+
+
+
+
+
+
 
 
 

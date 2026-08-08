@@ -1,11 +1,11 @@
-const loginForm=document.getElemenmtById("loginForm");
+const loginForm = document.getElementById("loginForm");
 
-if (loginForm) {
+if (loginForm) {    
 
-loginForm.addEventListener("submit",function(event){
+loginForm.addEventListener("submit", function (event) {
     event.preventDefault();
 
-   
+
     // get form values
     const email=document.getElementById("loginEmail").value;
     const password=document.getElementById("loginPassword").value;
