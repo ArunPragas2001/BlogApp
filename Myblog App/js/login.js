@@ -29,7 +29,12 @@ loginForm.addEventListener("submit",function(event){
         }
     }
 
+
+    alert("Login successful!"); 
     
+    window.location.href = "dashboard.html";
+
+
 
 
 
