@@ -1,57 +1,29 @@
-// ==========================================
-// LOGIN.JS - Login Form Controller
-// ==========================================
+const loginForm=document.getElemenmtById("loginForm");
 
-document.addEventListener("DOMContentLoaded", function () {
-    const loginForm = document.getElementById("loginForm");
-    const emailInput = document.getElementById("loginEmail");
-    const passwordInput = document.getElementById("loginPassword");
+if (loginForm) {
 
-    if (!loginForm) return;
+loginForm.addEventListener("submit",function(event){
+    event.preventDefault();
 
-    // Helper functions for UI feedback
-    function showError(errorId, message) {
-        const errorElement = document.getElementById(errorId);
-        if (errorElement) {
-            errorElement.textContent = message;
-            errorElement.style.display = "block";
+   
+    // get form values
+    const email=document.getElementById("loginEmail").value;
+    const password=document.getElementById("loginPassword").value;
+
+    console.log(email);
+    console.log(password);
+
+    function validatepassword(password) {
+        passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}$/
+
+        if (password === "") {
+            showError("passwordError", "Enter your password");
         }
-    }
 
-    function clearError(errorId) {
-        const errorElement = document.getElementById(errorId);
-        if (errorElement) {
-            errorElement.textContent = "";
-            errorElement.style.display = "none";
+        else if (!password.match(passwordRegex)) {
+            showError("passwordError", "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
         }
-    }
-
-    function clearAllErrors() {
-        clearError("emailError");
-        clearError("passwordError");
-        clearError("generalError");
-    }
-
-    // Validation functions
-    function validateEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email || email.trim() === "") {
-            showError("emailError", "Please enter your email address.");
-            return false;
-        } else if (!emailRegex.test(email.trim())) {
-            showError("emailError", "Please enter a valid email address.");
-            return false;
-        } else {
-            clearError("emailError");
-            return true;
-        }
-    }
-
-    function validatePassword(password) {
-        if (!password || password.trim() === "") {
-            showError("passwordError", "Please enter your password.");
-            return false;
-        } else {
+        else {
             clearError("passwordError");
             return true;
         }
