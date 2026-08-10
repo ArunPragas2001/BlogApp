@@ -88,4 +88,5 @@ loginForm.addEventListener("submit",function(event){
             showError("generalError", "Invalid email address or password. Try demo: user@example.com / Password123!");
         }
     });
-});
+})
+};
