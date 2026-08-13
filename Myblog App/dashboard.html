@@ -29,7 +29,7 @@
             </ul>
 
             <div class="nav-buttons">
-                <a href="index.html" class="btn-logout">
+                <a href="#" id="logoutBtn" class="btn-logout">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a>
             </div>
@@ -41,7 +41,7 @@
         <!-- Welcome Banner -->
         <section class="dashboard-welcome">
             <div class="welcome-text">
-                <h1>Welcome back! 👋</h1>
+                <h1 id="welcomeHeading">Welcome back! 👋</h1>
                 <p>Manage your stories and keep sharing your ideas with the world.</p>
             </div>
             <a href="createBlog.html" class=
@@ -57,7 +57,7 @@
                     <i class="fa-solid fa-newspaper"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>12</h3>
+                    <h3 id="totalBlogs">0</h3>
                     <p>Total Blogs</p>
                 </div>
             </div>
@@ -67,7 +67,7 @@
                     <i class="fa-solid fa-circle-check"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>8</h3>
+                    <h3 id="publishedBlogs">0</h3>
                     <p>Published</p>
                 </div>
             </div>
@@ -77,7 +77,7 @@
                     <i class="fa-solid fa-file-pen"></i>
                 </div>
                 <div class="stat-info">
-                    <h3>4</h3>
+                    <h3 id="draftBlogs">0</h3>
                     <p>Drafts</p>
                 </div>
             </div>
@@ -95,42 +95,8 @@
                 </a>
             </div>
 
-            <div class="blogs-list">
-                <!-- Blog Item 1 -->
-                <div class="dashboard-blog">
-                    <div class="blog-info">
-                        <h3>Getting Started with HTML</h3>
-                        <p>Learn the fundamentals of HTML and build your first website.</p>
-                        <span class="badge published">Published</span>
-                    </div>
-
-                    <div class="blog-actions">
-                        <button class="edit-btn">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </button>
-                        <button class="delete-btn">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Blog Item 2 -->
-                <div class="dashboard-blog">
-                    <div class="blog-info">
-                        <h3>Modern CSS Tricks</h3>
-                        <p>Discover useful CSS techniques for modern web design.</p>
-                        <span class="badge draft">Draft</span>
-                    </div>
-
-                    <div class="blog-actions">
-                        <button class="edit-btn">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </button>
-                        <button class="delete-btn">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
+            <div class="blogs-list" id="blogContainer">
+                <!-- Blogs will be dynamically rendered here -->
             </div>
         </section>
     </main>

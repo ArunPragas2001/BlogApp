@@ -26,14 +26,23 @@
             <h2>Welcome back</h2>
             <p class="subtitle">Login to continue your journey</p>
 
-            <form>
-                <div class="input-group">
-                    <i class="fa-regular fa-envelope input-icon"></i>
-                    <input type="email" placeholder="Email Address" required>
+            <form id="loginForm" novalidate>
+                <div id="generalError" class="error-text general-error"></div>
+
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" id="loginEmail" placeholder="Email Address">
+                    </div>
+                    <small class="error-text" id="emailError"></small>
                 </div>
-                <div class="input-group">
-                    <i class="fa-solid fa-lock input-icon"></i>
-                    <input type="password" placeholder="Password" required>
+
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="loginPassword" placeholder="Password">
+                    </div>
+                    <small class="error-text" id="passwordError"></small>
                 </div>
 
                 <div class="form-options">
