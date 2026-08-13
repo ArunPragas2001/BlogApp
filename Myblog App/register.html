@@ -26,32 +26,48 @@
             <h2>Create Your Account</h2>
             <p class="subtitle">Join BlogSphere and start sharing your ideas</p>
 
-            <form id="registerForm">
-                <div class="input-group">
-                    <i class="fa-regular fa-user input-icon"></i>
-                    <input type="text" placeholder="Full Name" id="registerName" required>
+            <form id="registerForm" novalidate>
+                <div id="generalError" class="error-text general-error"></div>
+
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-regular fa-user input-icon"></i>
+                        <input type="text" placeholder="Full Name" id="registerName">
+                    </div>
+                    <small class="error-text" id="nameError"></small>
                 </div>
 
-                <div class="input-group">
-                    <i class="fa-regular fa-envelope input-icon"></i>
-                    <input type="email" placeholder="Email Address" id="registerEmail" required>
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" placeholder="Email Address" id="registerEmail">
+                    </div>
+                    <small class="error-text" id="emailError"></small>
                 </div>
 
-                <div class="input-group">
-                    <i class="fa-solid fa-lock input-icon"></i>
-                    <input type="password" placeholder="Create Password" id="registerPassword" required>
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" placeholder="Create Password" id="registerPassword">
+                    </div>
+                    <small class="error-text" id="passwordError"></small>
                 </div>
 
-                <div class="input-group">
-                    <i class="fa-solid fa-shield-halved input-icon"></i>
-                    <input type="password" placeholder="Confirm Password" id="confirmPassword" required>
+                <div class="input-field-wrapper">
+                    <div class="input-group">
+                        <i class="fa-solid fa-shield-halved input-icon"></i>
+                        <input type="password" placeholder="Confirm Password" id="confirmPassword">
+                    </div>
+                    <small class="error-text" id="confirmPasswordError"></small>
                 </div>
 
-                <div class="form-options">
-                    <label class="remember-me">
-                        <input type="checkbox" required> I agree to the <a href="#" class="terms-link">Terms &
-                            Privacy</a>
-                    </label>
+                <div class="form-options-wrapper">
+                    <div class="form-options">
+                        <label class="remember-me">
+                            <input type="checkbox" id="terms"> I agree to the <a href="#" class="terms-link">Terms & Privacy</a>
+                        </label>
+                    </div>
+                    <small class="error-text" id="termsError"></small>
                 </div>
 
                 <button type="submit" class="btn-submit">Create Account</button>

@@ -72,6 +72,7 @@
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .input-group .input-icon {
@@ -202,4 +203,34 @@
     .auth-card h2 {
         font-size: 24px;
     }
+}
+
+/* Error Styling */
+.input-field-wrapper,
+.form-options-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.error-text {
+    color: #EF4444;
+    font-size: 0.82rem;
+    font-weight: 500;
+    margin-top: 4px;
+    margin-left: 4px;
+    display: none;
+    text-align: left;
+}
+
+.general-error {
+    background: #FEE2E2;
+    color: #DC2626;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    width: 100%;
+    margin-bottom: 12px;
+    border: 1px solid #FCA5A5;
 }

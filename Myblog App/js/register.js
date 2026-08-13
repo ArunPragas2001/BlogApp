@@ -1,4 +1,4 @@
-const registerForm = document.getElementById("registerForm");
+const registerForm = document.getElementById("register-form");
 
 if (registerForm) {
     registerForm.addEventListener("submit", function (e) {
@@ -22,106 +22,71 @@ if (registerForm) {
 
 
     function validateName(name) {
-        if (name === "") {
-            showError("nameError", "Name is required");
-        }
-        else if (name.length < 3) {
-            showError("nameError", "Name must be at least 3 characters long");
-        }
-        else {
+        if (!name || name.trim() === "") {
+            showError("nameError", "Name is required.");
+            return false;
+        } else if (name.trim().length < 3) {
+            showError("nameError", "Name must be at least 3 characters long.");
+            return false;
+        } else {
             clearError("nameError");
             return true;
         }
     }
 
     function validateEmail(email) {
-        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        if (email === "") {
-            showError("emailError", "Email is required");
-        }
-        else if (!email.match(emailRegex)) {
-            showError("emailError", "Invalid email address");
-        }
-        else {
+        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        if (!email || email.trim() === "") {
+            showError("emailError", "Email is required.");
+            return false;
+        } else if (!emailRegex.test(email.trim())) {
+            showError("emailError", "Please enter a valid email address.");
+            return false;
+        } else {
             clearError("emailError");
             return true;
         }
     }
-    function validatepassword(password) {
-        passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}$/
 
-        if (password === "") {
-            showError("passwordError", "Enter your password");
-        }
-
-        else if (!password.match(passwordRegex)) {
-            showError("passwordError", "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character");
-        }
-        else {
+    function validatePassword(password) {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}$/;
+        if (!password) {
+            showError("passwordError", "Password is required.");
+            return false;
+        } else if (!passwordRegex.test(password)) {
+            showError("passwordError", "Password must be at least 8 characters long and include an uppercase, lowercase, number, and special character.");
+            return false;
+        } else {
             clearError("passwordError");
             return true;
         }
     }
 
     function validateConfirmPassword(password, confirmPassword) {
-        if (confirmPassword === "") {
-            showError("confirmPasswordError", "Confirm password is required");
-        }
-        else if (password !== confirmPassword) {
-            showError("confirmPasswordError", "Passwords do not match");
-        }
-        else {
+        if (!confirmPassword) {
+            showError("confirmPasswordError", "Please confirm your password.");
+            return false;
+        } else if (password !== confirmPassword) {
+            showError("confirmPasswordError", "Passwords do not match.");
+            return false;
+        } else {
             clearError("confirmPasswordError");
             return true;
         }
     }
 
-    function validateTerms(terms) {
-        if (!terms) {
-            showError("termsError", "You must agree to the terms and conditions");
-        }
-        else {
+    function validateTerms(termsChecked) {
+        if (!termsChecked) {
+            showError("termsError", "You must agree to the terms and privacy policy.");
+            return false;
+        } else {
             clearError("termsError");
             return true;
         }
     }
 
-    const isNameValid = validateName(name);
-    const isEmailValid = validateEmail(email);
-    const isPasswordValid = validatepassword(password);
-    const isConfirmPasswordValid = validateConfirmPassword(password, confirmPassword);
-    const isTermsValid = validateTerms(terms);
-
-    if (
-        isNameValid &&
-        isEmailValid &&
-        isPasswordValid &&
-        isConfirmPasswordValid &&
-        isTermsValid
-    ) {
-        alert("Registration successful");
-        window.location.href = "index.html";
-
-    }
-    else {
-        return false;
-    }
-
-
-    function showError(elementId, message) {
-        const element = document.getElementById(elementId);
-        element.textContent = message;
-    }
-    function clearError(elementId) {
-        const element = document.getElementById(elementId);
-        element.textContent = "";
-    }
-
-
-
-
-
-
+    alert("Registration successful");
+    window.location.href = "index.html";
 
 
 
