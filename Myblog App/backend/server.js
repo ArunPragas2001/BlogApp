@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
+import configRoutes from "./routes/configRoute.js";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/blogs", blogRoutes);
+app.use("/api/settings", configRoutes);
 
 app.get("/", (req, res) => {
   res.json({
@@ -35,6 +37,10 @@ app.get("/", (req, res) => {
         update: "PUT /api/blogs/:id",
         approve: "PUT /api/blogs/:id/approve",
         delete: "DELETE /api/blogs/:id"
+      },
+      settings: {
+        get: "GET /api/settings",
+        update: "PUT /api/settings"
       }
     }
   });
