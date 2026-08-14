@@ -6,6 +6,8 @@ import authRoutes from "./routes/authRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
 import configRoutes from "./routes/configRoute.js";
 import uploadRoutes from "./routes/uploadRoute.js";
+import userRoutes from "./routes/userRoute.js";
+import { checkMaintenanceMode } from "./middleware/maintenanceMiddleware.js";
 
 dotenv.config();
 
@@ -17,10 +19,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(checkMaintenanceMode);
+
 app.use("/api/auth", authRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/settings", configRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/users", userRoutes);
 
 app.use("/uploads", express.static("uploads"));
 
