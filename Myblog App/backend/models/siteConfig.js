@@ -29,6 +29,14 @@ const siteConfigSchema = new mongoose.Schema(
     termsOfService: {
       type: String,
       default: "Welcome to BlogSphere. By using our platform, you agree to post respectful content and adhere to our terms."
+    },
+    maintenanceMode: {
+      type: Boolean,
+      default: false
+    },
+    blogExpiryDays: {
+      type: Number,
+      default: 30
     }
   },
   {

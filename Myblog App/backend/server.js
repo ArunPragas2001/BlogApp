@@ -5,6 +5,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
 import configRoutes from "./routes/configRoute.js";
+import uploadRoutes from "./routes/uploadRoute.js";
 
 dotenv.config();
 
@@ -19,6 +20,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth", authRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/settings", configRoutes);
+app.use("/api/upload", uploadRoutes);
+
+app.use("/uploads", express.static("uploads"));
 
 app.get("/", (req, res) => {
   res.json({
