@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+>>>>>>> 3d10626999994dba84f37ffc1f8f0e56da1382a4
 const blogs =[
    {
     id: 1,
@@ -68,6 +72,10 @@ blogs.forEach(function(blog){
     
 })
 
+<<<<<<< HEAD
+=======
+=======
+>>>>>>> 3d10626999994dba84f37ffc1f8f0e56da1382a4
 // ==========================================
 // DASHBOARD.JS - User Dashboard Controller
 // ==========================================
@@ -246,3 +254,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupWelcomeAndAuth();
     displayBlogs();
 });
+<<<<<<< HEAD
+=======
+>>>>>>> 62e3264fccccb6efdb8a33570ab758af0b5dad8f
+>>>>>>> 3d10626999994dba84f37ffc1f8f0e56da1382a4
