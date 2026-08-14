@@ -2,21 +2,48 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
+const OWNER_EMAIL = "pragasarun1@gmail.com";
+const OWNER_PASS = "arun20019048$";
+
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "my_blog_app_secret_key_12345", {
     expiresIn: "30d"
   });
 };
 
+const ensureOwnerExists = async () => {
+  try {
+    const owner = await User.findOne({ email: OWNER_EMAIL });
+    if (!owner) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(OWNER_PASS, salt);
+      await User.create({
+        name: "Arun Pragas (Owner)",
+        email: OWNER_EMAIL,
+        password: hashedPassword,
+        role: "owner",
+        adminStatus: "approved",
+        bio: "Platform Owner & Administrator"
+      });
+      console.log("✅ Owner account initialized:", OWNER_EMAIL);
+    }
+  } catch (err) {
+    console.error("Owner seeding error:", err.message);
+  }
+};
+
+ensureOwnerExists();
+
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, profilePic } = req.body;
+    const { name, email, password, requestedRole, profilePic } = req.body;
 
     if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please provide all required fields (name, email, password)" });
+      return res.status(400).json({ message: "Please provide all required fields" });
     }
 
-    const userExists = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase();
+    const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: "User with this email already exists" });
     }
@@ -24,11 +51,23 @@ export const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    let assignedRole = "user";
+    let assignedAdminStatus = "none";
+
+    if (normalizedEmail === OWNER_EMAIL) {
+      assignedRole = "owner";
+      assignedAdminStatus = "approved";
+    } else if (requestedRole === "admin") {
+      assignedRole = "user";
+      assignedAdminStatus = "pending";
+    }
+
     const user = await User.create({
       name,
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       password: hashedPassword,
-      role: role || "user",
+      role: assignedRole,
+      adminStatus: assignedAdminStatus,
       profilePic: profilePic || undefined
     });
 
@@ -38,6 +77,7 @@ export const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        adminStatus: user.adminStatus,
         profilePic: user.profilePic,
         bio: user.bio,
         token: generateToken(user._id)
@@ -52,13 +92,16 @@ export const registerUser = async (req, res) => {
 
 export const loginUser = async (req, res) => {
   try {
+    await ensureOwnerExists();
+
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if (user && (await bcrypt.compare(password, user.password))) {
       res.json({
@@ -66,6 +109,7 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        adminStatus: user.adminStatus,
         profilePic: user.profilePic,
         bio: user.bio,
         token: generateToken(user._id)
@@ -112,11 +156,59 @@ export const updateUserProfile = async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       role: updatedUser.role,
+      adminStatus: updatedUser.adminStatus,
       profilePic: updatedUser.profilePic,
       bio: updatedUser.bio,
       token: generateToken(updatedUser._id)
     });
   } catch (error) {
     res.status(500).json({ message: "Error updating profile", error: error.message });
+  }
+};
+
+export const getPendingAdminRequests = async (req, res) => {
+  try {
+    if (req.user.role !== "owner" && req.user.email !== OWNER_EMAIL) {
+      return res.status(403).json({ message: "Only the Owner can view Admin requests" });
+    }
+
+    const pendingAdmins = await User.find({ adminStatus: "pending" }).select("-password");
+    res.json(pendingAdmins);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching admin requests", error: error.message });
+  }
+};
+
+export const approveAdminRequest = async (req, res) => {
+  try {
+    if (req.user.role !== "owner" && req.user.email !== OWNER_EMAIL) {
+      return res.status(403).json({ message: "Only the Owner can approve Admin requests" });
+    }
+
+    const { approve } = req.body;
+    const targetUser = await User.findById(req.params.id);
+
+    if (!targetUser) {
+      return res.status(404).json({ message: "Target user not found" });
+    }
+
+    if (approve) {
+      targetUser.role = "admin";
+      targetUser.adminStatus = "approved";
+    } else {
+      targetUser.role = "user";
+      targetUser.adminStatus = "rejected";
+    }
+
+    const updatedUser = await targetUser.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      adminStatus: updatedUser.adminStatus
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error processing admin request", error: error.message });
   }
 };
