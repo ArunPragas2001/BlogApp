@@ -6,10 +6,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | BlogSphere</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .navbar { display:flex; align-items:center; gap:0; }
+        .navbar .logo { flex-shrink:0; margin-right:10px; }
+        .theme-toggle-btn { flex-shrink:0; margin-right:24px; }
+        .nav-links { flex:1; justify-content:center; gap:24px; }
+        .nav-buttons { flex-shrink:0; margin-left:16px; }
+
+        .nav-user-pill {
+            display:flex; align-items:center; gap:8px;
+            background:rgba(255,255,255,0.1); border:1.5px solid rgba(255,255,255,0.2);
+            border-radius:40px; padding:5px 14px 5px 5px; text-decoration:none; transition:all 0.2s;
+        }
+        .nav-user-pill img { width:30px; height:30px; border-radius:50%; object-fit:cover; border:2px solid #6366F1; }
+        .nav-user-pill span { font-size:0.88rem; font-weight:600; color:#F1F5F9; }
+        .nav-user-pill:hover { background:rgba(255,255,255,0.18); }
+
+        .dashboard-welcome {
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 50%, #312E81 100%);
+            border-radius: 24px; padding: 36px 44px; color: #FFF;
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 24px; flex-wrap: wrap;
+            box-shadow: 0 20px 50px rgba(79,70,229,0.2);
+            border: 1px solid rgba(99,102,241,0.2);
+        }
+        .welcome-left { display:flex; align-items:center; gap:22px; }
+        .welcome-avatar {
+            width:70px; height:70px; border-radius:50%; object-fit:cover;
+            border:3px solid rgba(99,102,241,0.6);
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+            flex-shrink:0;
+        }
+        .welcome-text h1 { font-size:1.9rem; font-weight:700; color:#FFF; margin-bottom:6px; }
+        .welcome-text p { font-size:0.95rem; color:#94A3B8; }
+        .welcome-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+    </style>
 </head>
 
 <body>
@@ -19,17 +54,18 @@
                 <i class="fa-solid fa-layer-group logo-icon"></i>
                 <span>BlogSphere</span>
             </a>
-
             <ul class="nav-links">
                 <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
                 <li><a href="dashboard.html" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="createBlog.html"><i class="fa-solid fa-plus"></i> Write Blog</a></li>
-                <li id="adminSettingsNavLink" style="display: none;"><a href="adminSettings.html"><i class="fa-solid fa-sliders"></i> Site Settings</a></li>
-                <li><a href="profile.html"><i class="fa-regular fa-user"></i> Profile</a></li>
+                <li><a href="createBlog.html"><i class="fa-solid fa-plus"></i> Write</a></li>
+                <li id="adminSettingsNavLink" style="display:none;"><a href="adminSettings.html"><i class="fa-solid fa-sliders"></i> Settings</a></li>
             </ul>
-
             <div class="nav-buttons">
-                <a href="#" id="logoutBtn" class="btn-logout">
+                <a href="profile.html" class="nav-user-pill">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" id="dashboardNavAvatar" alt="avatar">
+                    <span>Profile</span>
+                </a>
+                <a href="#" id="logoutBtn" class="btn-logout" style="margin-left:8px;">
                     <i class="fa-solid fa-right-from-bracket"></i> Logout
                 </a>
             </div>
@@ -38,74 +74,58 @@
 
     <main class="dashboard-container">
         <section class="dashboard-welcome">
-            <div class="welcome-text">
-                <h1 id="welcomeHeading">Hey, Blogger! 👋</h1>
-                <p id="userRoleBadgeText">Manage your stories and keep sharing your ideas with the world.</p>
+            <div class="welcome-left">
+                <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" id="dashboardAvatar" class="welcome-avatar" alt="Profile" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'">
+                <div class="welcome-text">
+                    <h1 id="welcomeHeading">Hey, Blogger! 👋</h1>
+                    <p id="userRoleBadgeText">Manage your stories and keep sharing ideas.</p>
+                </div>
             </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <a href="adminSettings.html" id="adminSettingsBtn" class="create-btn" style="background: #475569; display: none;">
+            <div class="welcome-actions">
+                <a href="adminSettings.html" id="adminSettingsBtn" class="create-btn" style="background:#475569;display:none;">
                     <i class="fa-solid fa-sliders"></i> Site Settings
                 </a>
                 <a href="createBlog.html" class="create-btn">
-                    <i class="fa-solid fa-plus"></i> Create Blog
+                    <i class="fa-solid fa-plus"></i> Write Blog
                 </a>
             </div>
         </section>
 
         <section class="dashboard-stats">
             <div class="stat-card">
-                <div class="stat-icon">
-                    <i class="fa-solid fa-newspaper"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="totalBlogs">0</h3>
-                    <p>Total Blogs</p>
-                </div>
+                <div class="stat-icon"><i class="fa-solid fa-newspaper"></i></div>
+                <div class="stat-info"><h3 id="totalBlogs">0</h3><p>Total Blogs</p></div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon published-icon">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="publishedBlogs">0</h3>
-                    <p>Published & Approved</p>
-                </div>
+                <div class="stat-icon published-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-info"><h3 id="publishedBlogs">0</h3><p>Published & Approved</p></div>
             </div>
-
             <div class="stat-card">
-                <div class="stat-icon draft-icon">
-                    <i class="fa-solid fa-clock"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="draftBlogs">0</h3>
-                    <p>Pending Approval</p>
-                </div>
+                <div class="stat-icon draft-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-info"><h3 id="draftBlogs">0</h3><p>Pending Approval</p></div>
             </div>
         </section>
 
-        <section id="ownerAdminRequestSection" style="display: none; margin-bottom: 30px; background: #EEF2FF; border: 1px solid #6366F1; border-radius: 16px; padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <section id="ownerAdminRequestSection" style="display:none; margin-bottom:0; background:#EEF2FF; border:1px solid #6366F1; border-radius:20px; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
                 <div>
-                    <h2 style="color: #3730A3; margin: 0 0 4px 0;"><i class="fa-solid fa-user-shield"></i> Owner Controls — Pending Admin Privilege Requests</h2>
-                    <p style="color: #4338CA; margin: 0;">Review and approve users requesting Administrator privileges.</p>
+                    <h2 style="color:#3730A3;margin:0 0 4px 0; font-size:1.2rem;"><i class="fa-solid fa-user-shield"></i> Owner Controls — Pending Admin Requests</h2>
+                    <p style="color:#4338CA;margin:0;font-size:0.9rem;">Review users requesting Administrator privileges.</p>
                 </div>
-                <span class="badge" style="background: #4F46E5; color: #FFF; font-weight: 600; padding: 6px 14px; border-radius: 20px;" id="pendingAdminReqCount">0 Requests</span>
+                <span class="badge" style="background:#4F46E5;color:#FFF;font-weight:700;padding:6px 16px;border-radius:20px;font-size:0.85rem;" id="pendingAdminReqCount">0 Requests</span>
             </div>
-            <div id="ownerAdminReqContainer" class="blogs-list">
-            </div>
+            <div id="ownerAdminReqContainer" class="blogs-list"></div>
         </section>
 
-        <section id="adminApprovalSection" style="display: none; margin-bottom: 30px; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 16px; padding: 24px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <section id="adminApprovalSection" style="display:none; margin-bottom:0; background:#FFFBEB; border:1px solid #FCD34D; border-radius:20px; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
                 <div>
-                    <h2 style="color: #92400E; margin: 0 0 4px 0;"><i class="fa-solid fa-shield-halved"></i> Admin Review & Approval Queue</h2>
-                    <p style="color: #B45309; margin: 0;">Review pending blog submissions from community members.</p>
+                    <h2 style="color:#92400E;margin:0 0 4px 0; font-size:1.2rem;"><i class="fa-solid fa-shield-halved"></i> Admin Review Queue</h2>
+                    <p style="color:#B45309;margin:0;font-size:0.9rem;">Review pending blog submissions from the community.</p>
                 </div>
-                <span class="badge" style="background: #F59E0B; color: #FFF; font-weight: 600; padding: 6px 14px; border-radius: 20px;" id="pendingAdminCount">0 Pending</span>
+                <span class="badge" style="background:#F59E0B;color:#FFF;font-weight:700;padding:6px 16px;border-radius:20px;font-size:0.85rem;" id="pendingAdminCount">0 Pending</span>
             </div>
-            <div id="adminPendingContainer" class="blogs-list">
-            </div>
+            <div id="adminPendingContainer" class="blogs-list"></div>
         </section>
 
         <section class="my-blogs">
@@ -115,15 +135,14 @@
                     <p>Manage your posts and check approval status.</p>
                 </div>
             </div>
-
-            <div class="blogs-list" id="blogContainer">
-            </div>
+            <div class="blogs-list" id="blogContainer"></div>
         </section>
     </main>
 
     <footer>
-        <p>© 2026 BlogSphere. All Rights Reserved.</p>
+        <p>&copy; 2026 BlogSphere. All Rights Reserved.</p>
     </footer>
+
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/dashboard.js"></script>

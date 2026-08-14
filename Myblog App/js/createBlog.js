@@ -1,67 +1,72 @@
-const API_BLOGS_URL = "http://localhost:5000/api/blogs";
+var API_BLOGS_URL = "http://localhost:5000/api/blogs";
 
 document.addEventListener("DOMContentLoaded", async function () {
-    const form = document.getElementById("createBlogForm");
-    const titleInput = document.getElementById("blog-title");
-    const categorySelect = document.getElementById("blog-category");
-    const statusSelect = document.getElementById("blog-status");
-    const imageInput = document.getElementById("blog-image");
-    const imagePreviewContainer = document.getElementById("imagePreviewContainer");
-    const imagePreview = document.getElementById("imagePreview");
-    const contentInput = document.getElementById("blog-content");
-    const pageHeading = document.getElementById("pageHeading");
-    const pageSubtitle = document.getElementById("pageSubtitle");
-    const submitBtn = document.getElementById("submitBtn");
+    var form = document.getElementById("createBlogForm");
+    var titleInput = document.getElementById("blog-title");
+    var categorySelect = document.getElementById("blog-category");
+    var statusSelect = document.getElementById("blog-status");
+    var imageInput = document.getElementById("blog-image");
+    var imagePreviewContainer = document.getElementById("imagePreviewContainer");
+    var imagePreview = document.getElementById("imagePreview");
+    var contentInput = document.getElementById("blog-content");
+    var pageHeading = document.getElementById("pageHeading");
+    var pageSubtitle = document.getElementById("pageSubtitle");
+    var submitBtn = document.getElementById("submitBtn");
 
     if (!form) return;
 
     function updateImagePreview(url) {
-        if (url && url.trim() !== "") {
-            imagePreview.src = url.trim();
-            imagePreviewContainer.style.display = "block";
-            imagePreview.onerror = function () {
-                imagePreviewContainer.style.display = "none";
-            };
-        } else {
+        if (!imagePreview || !imagePreviewContainer) return;
+        var trimmed = (url || "").trim();
+        if (trimmed === "") {
             imagePreviewContainer.style.display = "none";
+            return;
         }
+        imagePreviewContainer.style.display = "block";
+        imagePreview.onerror = function () {
+            imagePreviewContainer.style.display = "none";
+            imagePreview.onerror = null;
+        };
+        imagePreview.onload = function () {
+            imagePreviewContainer.style.display = "block";
+        };
+        imagePreview.src = trimmed;
     }
 
-    if (imageInput && imagePreview && imagePreviewContainer) {
-        ["input", "keyup", "paste", "change"].forEach(evt => {
-            imageInput.addEventListener(evt, function () {
-                setTimeout(() => updateImagePreview(this.value), 10);
-            });
+    if (imageInput) {
+        imageInput.addEventListener("input", function () {
+            updateImagePreview(this.value);
+        });
+        imageInput.addEventListener("paste", function () {
+            setTimeout(function () { updateImagePreview(imageInput.value); }, 50);
         });
     }
 
-    const token = localStorage.getItem("token");
+    var token = localStorage.getItem("token");
     if (!token) {
         showToast("Please login first to create or edit blogs.", "error");
-        setTimeout(() => window.location.href = "login.html", 1200);
+        setTimeout(function () { window.location.href = "login.html"; }, 1200);
         return;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const editId = urlParams.get("id");
+    var urlParams = new URLSearchParams(window.location.search);
+    var editId = urlParams.get("id");
 
     if (editId) {
         try {
-            const res = await fetch(`${API_BLOGS_URL}/${editId}`);
+            var res = await fetch(API_BLOGS_URL + "/" + editId);
             if (res.ok) {
-                const blog = await res.json();
-                if (pageHeading) pageHeading.textContent = "Edit Blog";
+                var blog = await res.json();
+                if (pageHeading) pageHeading.textContent = "Edit Blog Post";
                 if (pageSubtitle) pageSubtitle.textContent = "Update your post details below.";
-                if (submitBtn) {
-                    submitBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Update Blog`;
-                }
+                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
 
                 if (titleInput) titleInput.value = blog.title || "";
                 if (categorySelect) categorySelect.value = blog.category || "";
                 if (statusSelect) statusSelect.value = blog.status || "Published";
-                if (imageInput) {
-                    imageInput.value = blog.image || "";
-                    updateImagePreview(blog.image);
+                if (imageInput && blog.image) {
+                    imageInput.value = blog.image;
+                    setTimeout(function () { updateImagePreview(blog.image); }, 100);
                 }
                 if (contentInput) contentInput.value = blog.content || "";
             }
@@ -72,19 +77,13 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     function showError(errorId, message) {
-        const el = document.getElementById(errorId);
-        if (el) {
-            el.textContent = message;
-            el.style.display = "block";
-        }
+        var el = document.getElementById(errorId);
+        if (el) { el.textContent = message; el.style.display = "block"; }
     }
 
     function clearError(errorId) {
-        const el = document.getElementById(errorId);
-        if (el) {
-            el.textContent = "";
-            el.style.display = "none";
-        }
+        var el = document.getElementById(errorId);
+        if (el) { el.textContent = ""; el.style.display = "none"; }
     }
 
     function clearAllErrors() {
@@ -94,105 +93,74 @@ document.addEventListener("DOMContentLoaded", async function () {
         clearError("generalError");
     }
 
-    function validateTitle(title) {
-        if (!title || title.trim() === "") {
-            showError("titleError", "Blog title is required.");
-            return false;
-        } else if (title.trim().length < 3) {
-            showError("titleError", "Title must be at least 3 characters long.");
-            return false;
-        }
-        clearError("titleError");
-        return true;
-    }
-
-    function validateCategory(category) {
-        if (!category || category === "") {
-            showError("categoryError", "Please select a category.");
-            return false;
-        }
-        clearError("categoryError");
-        return true;
-    }
-
-    function validateContent(content) {
-        if (!content || content.trim() === "") {
-            showError("contentError", "Blog content is required.");
-            return false;
-        } else if (content.trim().length < 10) {
-            showError("contentError", "Content must be at least 10 characters long.");
-            return false;
-        }
-        clearError("contentError");
-        return true;
-    }
-
-    if (titleInput) titleInput.addEventListener("input", () => clearError("titleError"));
-    if (categorySelect) categorySelect.addEventListener("change", () => clearError("categoryError"));
-    if (contentInput) contentInput.addEventListener("input", () => clearError("contentError"));
+    if (titleInput) titleInput.addEventListener("input", function () { clearError("titleError"); });
+    if (categorySelect) categorySelect.addEventListener("change", function () { clearError("categoryError"); });
+    if (contentInput) contentInput.addEventListener("input", function () { clearError("contentError"); });
 
     form.addEventListener("submit", async function (e) {
         e.preventDefault();
         clearAllErrors();
 
-        const title = titleInput ? titleInput.value.trim() : "";
-        const category = categorySelect ? categorySelect.value : "";
-        const status = statusSelect ? statusSelect.value : "Published";
-        const image = imageInput ? imageInput.value.trim() : "";
-        const content = contentInput ? contentInput.value.trim() : "";
+        var title = titleInput ? titleInput.value.trim() : "";
+        var category = categorySelect ? categorySelect.value : "";
+        var status = statusSelect ? statusSelect.value : "Published";
+        var image = imageInput ? imageInput.value.trim() : "";
+        var content = contentInput ? contentInput.value.trim() : "";
 
-        const isTitleValid = validateTitle(title);
-        const isCategoryValid = validateCategory(category);
-        const isContentValid = validateContent(content);
+        var valid = true;
 
-        if (!isTitleValid || !isCategoryValid || !isContentValid) {
-            return;
+        if (!title || title.length < 3) {
+            showError("titleError", title ? "Title must be at least 3 characters." : "Blog title is required.");
+            valid = false;
+        }
+        if (!category) {
+            showError("categoryError", "Please select a category.");
+            valid = false;
+        }
+        if (!content || content.length < 10) {
+            showError("contentError", content ? "Content must be at least 10 characters." : "Blog content is required.");
+            valid = false;
         }
 
-        if (submitBtn) submitBtn.disabled = true;
+        if (!valid) return;
+
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "Saving…"; }
 
         try {
-            const method = editId ? "PUT" : "POST";
-            const endpoint = editId ? `${API_BLOGS_URL}/${editId}` : API_BLOGS_URL;
+            var method = editId ? "PUT" : "POST";
+            var endpoint = editId ? API_BLOGS_URL + "/" + editId : API_BLOGS_URL;
 
-            const response = await fetch(endpoint, {
+            var response = await fetch(endpoint, {
                 method: method,
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
+                    "Authorization": "Bearer " + token
                 },
-                body: JSON.stringify({
-                    title,
-                    category,
-                    status: status.toLowerCase(),
-                    image,
-                    content
-                })
+                body: JSON.stringify({ title: title, category: category, status: status.toLowerCase(), image: image, content: content })
             });
 
-            const data = await response.json();
+            var data = await response.json();
 
             if (!response.ok) {
                 showError("generalError", data.message || "Failed to save blog post.");
                 showToast(data.message || "Failed to save blog post", "error");
-                if (submitBtn) submitBtn.disabled = false;
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = editId ? '<i class="fa-solid fa-floppy-disk"></i> Update Blog' : '<i class="fa-solid fa-paper-plane"></i> Publish Blog'; }
                 return;
             }
 
-            const isUserAdmin = JSON.parse(localStorage.getItem("currentUser") || "{}").role === "admin";
-            const successMsg = isUserAdmin 
-                ? (editId ? "✅ Blog post updated successfully!" : "🎉 Blog post published!")
-                : (editId ? "✅ Blog updated! Sent to Admin for approval." : "🎉 Blog created! Sent to Admin for approval.");
+            var currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+            var isAdminOrOwner = currentUser.role === "admin" || currentUser.role === "owner";
+            var successMsg = isAdminOrOwner
+                ? (editId ? "✅ Blog post updated!" : "🎉 Blog published!")
+                : (editId ? "✅ Blog updated! Pending Admin approval." : "🎉 Blog created! Pending Admin approval.");
 
             showToast(successMsg, "success");
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 1200);
+            setTimeout(function () { window.location.href = "dashboard.html"; }, 1200);
         } catch (err) {
             console.error("Save blog error:", err);
             showError("generalError", "Server error. Could not connect to backend.");
             showToast("Server error connecting to backend.", "error");
-            if (submitBtn) submitBtn.disabled = false;
+            if (submitBtn) { submitBtn.disabled = false; submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publish Blog'; }
         }
     });
 });

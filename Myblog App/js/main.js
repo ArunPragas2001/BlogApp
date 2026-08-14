@@ -1,56 +1,52 @@
-const API_BLOGS_URL = "http://localhost:5000/api/blogs";
-const API_SETTINGS_URL = "http://localhost:5000/api/settings";
+var API_BLOGS_URL = "http://localhost:5000/api/blogs";
+var API_SETTINGS_URL = "http://localhost:5000/api/settings";
 
-let cachedTerms = "Welcome to BlogSphere. By using our platform, you agree to post respectful content and adhere to our terms.";
+var cachedTerms = "Welcome to BlogSphere. By using our platform you agree to post respectful, original content and abide by our community guidelines.";
+var cachedBlogs = [];
 
 function getCurrentUser() {
-    try {
-        return JSON.parse(localStorage.getItem("currentUser"));
-    } catch (e) {
-        return null;
-    }
+    try { return JSON.parse(localStorage.getItem("currentUser")); } catch (e) { return null; }
+}
+
+function esc(str) {
+    if (!str) return "";
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 function updateNav() {
-    const navButtons = document.getElementById("navButtons");
-    const adminSettingsNav = document.getElementById("adminSettingsNav");
-    const footerAdminSettingsLink = document.getElementById("footerAdminSettingsLink");
-
-    const currentUser = getCurrentUser();
+    var navButtons = document.getElementById("navButtons");
+    var adminSettingsNavItem = document.getElementById("adminSettingsNavItem");
+    var footerAdminLi = document.getElementById("footerAdminLi");
+    var currentUser = getCurrentUser();
 
     if (currentUser && (currentUser.role === "admin" || currentUser.role === "owner")) {
-        if (adminSettingsNav) adminSettingsNav.style.display = "block";
-        if (footerAdminSettingsLink) footerAdminSettingsLink.style.display = "block";
+        if (adminSettingsNavItem) adminSettingsNavItem.style.display = "block";
+        if (footerAdminLi) footerAdminLi.style.display = "block";
     }
 
-    if (navButtons && currentUser && currentUser.name) {
-        const avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
-        navButtons.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <a href="profile.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1E293B; font-weight: 500;">
-                    <img src="${escapeHTML(avatarUrl)}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4F46E5;">
-                    <span style="font-size: 0.95rem; font-weight: 600; color: inherit;">Hey, <strong>${escapeHTML(currentUser.name)}</strong></span>
-                </a>
-                <a href="dashboard.html" class="btn-login" style="padding: 8px 16px;">Dashboard</a>
-                <a href="#" id="mainLogoutBtn" class="btn-register" style="background: #EF4444; border-color: #EF4444; padding: 8px 16px;">Logout</a>
-            </div>
-        `;
+    if (!navButtons) return;
 
-        const logoutBtn = document.getElementById("mainLogoutBtn");
+    if (currentUser && currentUser.name) {
+        var avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+
+        navButtons.innerHTML =
+            '<a href="profile.html" class="nav-user-badge" id="navUserBadge">' +
+            '<img src="' + esc(avatarUrl) + '" alt="avatar" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<span>Hey, ' + esc(currentUser.name.split(" ")[0]) + ' 👋</span>' +
+            '</a>' +
+            '<a href="dashboard.html" class="btn-login" style="padding:8px 16px; font-size:0.88rem;">Dashboard</a>' +
+            '<a href="#" id="mainLogoutBtn" class="btn-register" style="background:#EF4444; padding:8px 16px; font-size:0.88rem;">Logout</a>';
+
+        var logoutBtn = document.getElementById("mainLogoutBtn");
         if (logoutBtn) {
             logoutBtn.addEventListener("click", function (e) {
                 e.preventDefault();
-                showConfirmModal(
-                    "Confirm Logout",
-                    "Are you sure you want to log out?",
-                    () => {
-                        localStorage.removeItem("currentUser");
-                        localStorage.removeItem("token");
-                        showToast("Logged out successfully.", "info");
-                        setTimeout(() => window.location.reload(), 600);
-                    },
-                    false
-                );
+                showConfirmModal("Confirm Logout", "Are you sure you want to log out?", function () {
+                    localStorage.removeItem("currentUser");
+                    localStorage.removeItem("token");
+                    showToast("Logged out successfully.", "info", 2000);
+                    setTimeout(function () { window.location.reload(); }, 800);
+                }, false);
             });
         }
     }
@@ -58,156 +54,168 @@ function updateNav() {
 
 async function loadSiteSettings() {
     try {
-        const res = await fetch(API_SETTINGS_URL);
-        if (res.ok) {
-            const config = await res.json();
-            cachedTerms = config.termsOfService || cachedTerms;
+        var res = await fetch(API_SETTINGS_URL);
+        if (!res.ok) return;
+        var config = await res.json();
+        cachedTerms = config.termsOfService || cachedTerms;
 
-            const insta = document.getElementById("footerInsta");
-            const fb = document.getElementById("footerFb");
-            const wa = document.getElementById("footerWa");
-            const email = document.getElementById("footerEmail");
-            const phone = document.getElementById("footerPhone");
-            const address = document.getElementById("footerAddress");
+        var insta = document.getElementById("footerInsta");
+        var fb = document.getElementById("footerFb");
+        var wa = document.getElementById("footerWa");
+        var email = document.getElementById("footerEmail");
+        var phone = document.getElementById("footerPhone");
+        var address = document.getElementById("footerAddress");
 
-            if (insta && config.instagramUrl) insta.href = config.instagramUrl;
-            if (fb && config.facebookUrl) fb.href = config.facebookUrl;
-            if (wa && config.whatsappNumber) wa.href = `https://wa.me/${config.whatsappNumber.replace(/[^0-9]/g, '')}`;
-            if (email && config.companyEmail) email.textContent = config.companyEmail;
-            if (phone && config.companyPhone) phone.textContent = config.companyPhone;
-            if (address && config.companyAddress) address.textContent = config.companyAddress;
-        }
+        if (insta && config.instagramUrl) insta.href = config.instagramUrl;
+        if (fb && config.facebookUrl) fb.href = config.facebookUrl;
+        if (wa && config.whatsappNumber) wa.href = "https://wa.me/" + config.whatsappNumber.replace(/[^0-9]/g, "");
+        if (email && config.companyEmail) email.textContent = config.companyEmail;
+        if (phone && config.companyPhone) phone.textContent = config.companyPhone;
+        if (address && config.companyAddress) address.textContent = config.companyAddress;
     } catch (err) {
         console.error("Site settings error:", err);
     }
 }
 
 function showTermsModal() {
-    showConfirmModal("📄 Terms of Service & Privacy Policy", cachedTerms, () => {}, false);
+    showConfirmModal("Terms of Service & Privacy Policy", cachedTerms, function () {}, false);
 }
 
-function escapeHTML(str) {
-    if (!str) return "";
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+function openArticleReader(blogId) {
+    var blog = cachedBlogs.find(function (b) { return (b._id || b.id) === blogId; });
+    if (!blog) return;
+
+    var overlay = document.getElementById("articleReaderOverlay");
+    var img = document.getElementById("articleReaderImg");
+    var meta = document.getElementById("articleReaderMeta");
+    var titleEl = document.getElementById("articleReaderTitle");
+    var contentEl = document.getElementById("articleReaderContent");
+
+    if (!overlay) return;
+
+    if (img) {
+        if (blog.image) {
+            img.src = blog.image;
+            img.style.display = "block";
+        } else {
+            img.style.display = "none";
+        }
+    }
+
+    if (meta) {
+        var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
+        var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        meta.innerHTML =
+            '<span class="article-category-badge">' + esc(blog.category || "General") + '</span>' +
+            '<div class="article-author-chip">' +
+            '<img src="' + esc(authorAvatar) + '" alt="' + esc(authorName) + '" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<span>By ' + esc(authorName) + '</span></div>';
+    }
+
+    if (titleEl) titleEl.textContent = blog.title || "";
+    if (contentEl) contentEl.textContent = blog.content || "";
+
+    overlay.classList.add("active");
+    document.body.style.overflow = "hidden";
 }
 
-async function renderHomeBlogs(categoryFilter = null) {
-    const container = document.getElementById("featuredBlogsContainer");
+function closeArticleReader() {
+    var overlay = document.getElementById("articleReaderOverlay");
+    if (overlay) overlay.classList.remove("active");
+    document.body.style.overflow = "";
+}
+
+window.showTermsModal = showTermsModal;
+window.filterBlogs = filterBlogs;
+
+async function renderHomeBlogs(categoryFilter) {
+    var container = document.getElementById("featuredBlogsContainer");
     if (!container) return;
 
-    container.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
-            <p><i class="fa-solid fa-spinner fa-spin"></i> Loading stories from MongoDB...</p>
-        </div>
-    `;
+    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>';
 
     try {
-        const response = await fetch(API_BLOGS_URL);
-        let blogs = [];
-        if (response.ok) {
-            blogs = await response.json();
-        }
+        var response = await fetch(API_BLOGS_URL);
+        var blogs = [];
+        if (response.ok) blogs = await response.json();
+        cachedBlogs = blogs;
 
-        let displayList = blogs;
+        var displayList = blogs;
         if (categoryFilter && categoryFilter.toLowerCase() !== "all") {
-            displayList = blogs.filter(b => 
-                b.category && b.category.toLowerCase() === categoryFilter.toLowerCase()
-            );
+            displayList = blogs.filter(function (b) {
+                return b.category && b.category.toLowerCase() === categoryFilter.toLowerCase();
+            });
         }
 
         if (displayList.length === 0) {
-            container.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
-                    <h3>No published articles found in this category.</h3>
-                    <p>Be the first to <a href="createBlog.html" style="color: #4F46E5;">write one yourself</a>!</p>
-                </div>
-            `;
+            container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#64748B;"><h3>No published articles found.</h3><p>Be the first to <a href="createBlog.html" style="color:#4F46E5;">write one</a>!</p></div>';
             return;
         }
 
-        container.innerHTML = displayList.map(blog => {
-            const imageSrc = blog.image || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
-            const authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
-            const authorAvatar = blog.author && blog.author.profilePic ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        container.innerHTML = displayList.map(function (blog) {
+            var blogId = blog._id || blog.id;
+            var imageSrc = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
+            var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
+            var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+            var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
 
-            return `
-                <div class="blog-card">
-                    <img src="${escapeHTML(imageSrc)}" alt="${escapeHTML(blog.title)}" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80'">
-                    <div class="blog-card-content">
-                        <span style="font-size: 0.8rem; font-weight: 600; color: #4F46E5; text-transform: uppercase; margin-bottom: 4px; display: block;">
-                            ${escapeHTML(blog.category || "General")}
-                        </span>
-                        <h3>${escapeHTML(blog.title)}</h3>
-                        <p>${escapeHTML(blog.content)}</p>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
-                            <img src="${escapeHTML(authorAvatar)}" alt="Author Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
-                            <small style="color: #64748B; font-weight: 500;">By ${escapeHTML(authorName)}</small>
-                        </div>
-
-                        <button onclick="readBlogModal('${escapeHTML(blog.title).replace(/'/g, "\\'")}', '${escapeHTML(blog.content).replace(/'/g, "\\'")}', '${escapeHTML(authorName).replace(/'/g, "\\'")}')">Read More</button>
-                    </div>
-                </div>
-            `;
+            return '<div class="blog-card">' +
+                '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" style="width:100%;height:210px;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                '<div class="blog-card-content">' +
+                '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;">' + esc(blog.category || "General") + '</span>' +
+                '<h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:8px;line-height:1.3;">' + esc(blog.title) + '</h3>' +
+                '<p class="blog-card-preview">' + esc(preview) + '</p>' +
+                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">' +
+                '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+                '<small style="color:#64748B;font-weight:500;">By ' + esc(authorName) + '</small>' +
+                '</div>' +
+                '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
+                '<i class="fa-solid fa-book-open"></i> Read More' +
+                '</button>' +
+                '</div></div>';
         }).join("");
     } catch (err) {
         console.error("Home blogs fetch error:", err);
-        container.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #EF4444;">
-                <p>Could not load stories. Ensure backend server is running on http://localhost:5000</p>
-            </div>
-        `;
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Ensure backend is running on http://localhost:5000</p></div>';
     }
 }
 
-function readBlogModal(title, content, author) {
-    showConfirmModal(`📖 ${title}`, `By ${author || 'Anonymous'}\n\n${content}`, () => {}, false);
-}
-
-window.readBlogModal = readBlogModal;
-window.renderHomeBlogs = renderHomeBlogs;
-window.showTermsModal = showTermsModal;
-
-function setupCategoryFilters() {
-    const categoryCards = document.querySelectorAll(".category-card");
-    categoryCards.forEach(card => {
-        card.addEventListener("click", function (e) {
-            e.preventDefault();
-            const categoryName = this.querySelector("h3") ? this.querySelector("h3").innerText : "";
-            
-            const featuredSec = document.getElementById("featured");
-            if (featuredSec) {
-                featuredSec.scrollIntoView({ behavior: "smooth" });
-            }
-            
-            renderHomeBlogs(categoryName);
-        });
-    });
-}
-
-function setupNewsletterForm() {
-    const form = document.querySelector(".newsletter-form");
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            e.preventDefault();
-            const input = form.querySelector("input[type='email']");
-            if (input && input.value) {
-                showToast(`Thank you for subscribing with ${input.value}!`, "success");
-                input.value = "";
-            }
-        });
-    }
+function filterBlogs(cat) {
+    var featured = document.getElementById("featured");
+    if (featured) featured.scrollIntoView({ behavior: "smooth" });
+    setTimeout(function () { renderHomeBlogs(cat); }, 300);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     updateNav();
     loadSiteSettings();
     renderHomeBlogs();
-    setupCategoryFilters();
-    setupNewsletterForm();
+
+    var closeBtn = document.getElementById("articleReaderClose");
+    if (closeBtn) closeBtn.addEventListener("click", closeArticleReader);
+
+    var overlay = document.getElementById("articleReaderOverlay");
+    if (overlay) {
+        overlay.addEventListener("click", function (e) {
+            if (e.target === overlay) closeArticleReader();
+        });
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeArticleReader();
+    });
+
+    var newsletterForm = document.getElementById("newsletterForm");
+    if (newsletterForm) {
+        newsletterForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var input = newsletterForm.querySelector("input[type='email']");
+            if (input && input.value) {
+                showToast("✅ Subscribed with " + input.value + "!", "success", 4000);
+                input.value = "";
+            }
+        });
+    }
 });
+
+window.openArticleReader = openArticleReader;

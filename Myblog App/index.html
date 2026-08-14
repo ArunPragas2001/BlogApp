@@ -1,15 +1,214 @@
-<!Doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlogSphere | Share Your Voice</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Poppins:wght@300;400;500;600;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <meta name="description" content="BlogSphere - A modern blogging platform for curious minds and creative writers.">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/Home.css">
+    <style>
+        .navbar {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 14px 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .navbar .logo { flex-shrink: 0; margin-right: 10px; }
+        .theme-toggle-btn { flex-shrink: 0; margin-right: 24px; }
+        .nav-links { flex: 1; justify-content: center; gap: 28px; }
+        .nav-buttons { flex-shrink: 0; margin-left: 20px; }
+
+        .nav-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.12);
+            border: 1.5px solid rgba(255,255,255,0.25);
+            border-radius: 40px;
+            padding: 6px 14px 6px 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .nav-user-badge:hover { background: rgba(255,255,255,0.2); }
+        .nav-user-badge img {
+            width: 32px; height: 32px;
+            border-radius: 50%; object-fit: cover;
+            border: 2px solid #6366F1;
+        }
+        .nav-user-badge span {
+            font-size: 0.9rem; font-weight: 600;
+            color: #F1F5F9;
+            white-space: nowrap;
+        }
+
+        .article-reader-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.75);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0; visibility: hidden;
+            transition: all 0.35s ease;
+        }
+        .article-reader-overlay.active { opacity: 1; visibility: visible; }
+
+        .article-reader-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            width: 90%; max-width: 720px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.35);
+            transform: scale(0.93) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            scrollbar-width: thin;
+        }
+        .article-reader-overlay.active .article-reader-card {
+            transform: scale(1) translateY(0);
+        }
+        body.dark-mode .article-reader-card {
+            background: #1E293B;
+            color: #F1F5F9;
+        }
+
+        .article-reader-image {
+            width: 100%; height: 280px;
+            object-fit: cover;
+            border-radius: 24px 24px 0 0;
+        }
+
+        .article-reader-body { padding: 32px 36px 36px; }
+
+        .article-reader-meta {
+            display: flex; align-items: center; gap: 12px;
+            margin-bottom: 16px; flex-wrap: wrap;
+        }
+        .article-category-badge {
+            background: #EEF2FF; color: #4F46E5;
+            padding: 4px 12px; border-radius: 20px;
+            font-size: 0.8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        body.dark-mode .article-category-badge {
+            background: #312E81; color: #C7D2FE;
+        }
+        .article-author-chip {
+            display: flex; align-items: center; gap: 7px;
+        }
+        .article-author-chip img {
+            width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
+        }
+        .article-author-chip span { font-size: 0.85rem; color: #64748B; font-weight: 500; }
+        body.dark-mode .article-author-chip span { color: #94A3B8; }
+
+        .article-reader-title {
+            font-size: 1.75rem; font-weight: 700;
+            color: #0F172A; margin-bottom: 16px; line-height: 1.35;
+        }
+        body.dark-mode .article-reader-title { color: #F1F5F9; }
+
+        .article-reader-content {
+            font-size: 1.05rem; color: #334155;
+            line-height: 1.85; white-space: pre-line;
+        }
+        body.dark-mode .article-reader-content { color: #CBD5E1; }
+
+        .article-reader-close {
+            position: absolute; top: 18px; right: 22px;
+            background: rgba(255,255,255,0.15); border: none;
+            color: #fff; width: 38px; height: 38px;
+            border-radius: 50%; font-size: 1.2rem;
+            cursor: pointer; transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .article-reader-close:hover { background: rgba(239,68,68,0.7); }
+
+        .featured-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 28px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .blog-card-preview {
+            font-size: 0.92rem; color: #64748B;
+            line-height: 1.6; margin-bottom: 16px; flex-grow: 1;
+        }
+        body.dark-mode .blog-card-preview { color: #94A3B8; }
+
+        .section-header { text-align: center; margin-bottom: 48px; }
+        .section-header h2 { font-size: 2rem; font-weight: 700; color: #0F172A; margin-bottom: 8px; }
+        body.dark-mode .section-header h2 { color: #F1F5F9; }
+        .section-header p { color: #64748B; font-size: 1.05rem; }
+
+        .section-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        .featured-section { background: #EEF2FF; padding: 80px 8%; }
+        body.dark-mode .featured-section { background: #1A2540; }
+
+        .categories-section { background: #FFFFFF; padding: 80px 8%; }
+        body.dark-mode .categories-section { background: #1E293B; }
+
+        .read-more-btn {
+            align-self: flex-start;
+            padding: 10px 22px;
+            background: #4F46E5;
+            color: white; border-radius: 10px;
+            font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; transition: all 0.25s;
+            border: none; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .read-more-btn:hover { background: #4338CA; transform: translateY(-2px); }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .category-card {
+            background: #F8FAFC; border: 1.5px solid #E2E8F0;
+            border-radius: 16px; padding: 28px 16px;
+            text-align: center; text-decoration: none;
+            transition: all 0.3s; display: flex;
+            flex-direction: column; align-items: center; gap: 12px;
+        }
+        .category-card i { font-size: 1.8rem; color: #4F46E5; transition: all 0.3s; }
+        .category-card h3 { font-size: 1rem; font-weight: 600; color: #0F172A; }
+        body.dark-mode .category-card { background: #1A2540; border-color: #334155; }
+        body.dark-mode .category-card h3 { color: #F1F5F9; }
+        .category-card:hover { background: #4F46E5; border-color: #4F46E5; transform: translateY(-5px); box-shadow: 0 12px 28px rgba(79,70,229,0.3); }
+        .category-card:hover i, .category-card:hover h3 { color: #fff !important; }
+
+        .hero { min-height: 88vh; display: flex; justify-content: center; align-items: center; text-align: center; padding: 80px 20px; background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%); }
+        .hero-content { max-width: 800px; }
+        .hero-tag { display: inline-block; background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 6px 18px; border-radius: 20px; font-size: 0.9rem; font-weight: 600; margin-bottom: 20px; }
+        .hero-title { font-size: 3rem; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 20px; }
+        .hero-description { font-size: 1.15rem; color: rgba(255,255,255,0.9); margin-bottom: 36px; line-height: 1.6; }
+        .hero-actions { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary { background: #fff; color: #4F46E5; padding: 14px 32px; border-radius: 50px; font-weight: 700; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.2); }
+        .btn-secondary { border: 2px solid rgba(255,255,255,0.7); color: #fff; padding: 14px 32px; border-radius: 50px; font-weight: 600; text-decoration: none; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); transform: translateY(-3px); }
+
+        .newsletter-section { padding: 80px 8%; background: #F8FAFC; }
+        .newsletter-card { max-width: 860px; margin: 0 auto; background: linear-gradient(135deg, #4F46E5, #06B6D4); padding: 60px 40px; border-radius: 24px; text-align: center; color: #fff; }
+        .newsletter-card h2 { font-size: 2rem; margin-bottom: 12px; color: #fff; }
+        .newsletter-card p { font-size: 1rem; opacity: 0.92; margin-bottom: 28px; }
+        .newsletter-form { display: flex; justify-content: center; gap: 14px; max-width: 500px; margin: 0 auto; flex-wrap: wrap; }
+        .newsletter-form input { flex: 1; min-width: 240px; padding: 14px 22px; border-radius: 50px; border: none; font-size: 0.95rem; color: #1E293B; }
+        .newsletter-form button { padding: 14px 28px; border-radius: 50px; background: #0F172A; color: #fff; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
+        .newsletter-form button:hover { background: #1E293B; transform: translateY(-2px); }
+    </style>
 </head>
 
 <body>
@@ -20,14 +219,13 @@
                 <span>BlogSphere</span>
             </a>
 
-            <ul class="nav-links">
+            <ul class="nav-links" id="mainNavLinks">
                 <li><a href="index.html" class="active"><i class="fa-solid fa-house"></i> Home</a></li>
                 <li><a href="#featured">Blogs</a></li>
-                <li><a href="#categories">Categories</a></li>
-                <li><a href="createBlog.html">Write Blog</a></li>
+                <li><a href="#categories">Topics</a></li>
+                <li><a href="createBlog.html">Write</a></li>
                 <li><a href="dashboard.html">Dashboard</a></li>
-                <li id="adminSettingsNav" style="display: none;"><a href="adminSettings.html">Site Settings</a></li>
-                <li><a href="profile.html">Profile</a></li>
+                <li id="adminSettingsNavItem" style="display:none;"><a href="adminSettings.html">Settings</a></li>
             </ul>
 
             <div class="nav-buttons" id="navButtons">
@@ -38,20 +236,13 @@
     </header>
 
     <section class="hero">
-        <div class="hero-container">
-            <div class="hero-content">
-                <span class="hero-tag">Welcome to BlogSphere</span>
-                <h1 class="hero-title">Share Your Stories, Ideas & Insights With The World</h1>
-                <p class="hero-description">Discover inspiring articles, programming tutorials, design trends, and thoughts written by passionate bloggers around the globe.</p>
-
-                <div class="hero-actions">
-                    <a href="createBlog.html" class="btn-primary">
-                        <i class="fa-solid fa-pen-nib"></i> Start Writing Now
-                    </a>
-                    <a href="#featured" class="btn-secondary">
-                        <i class="fa-solid fa-compass"></i> Explore Articles
-                    </a>
-                </div>
+        <div class="hero-content">
+            <span class="hero-tag">✨ Welcome to BlogSphere</span>
+            <h1 class="hero-title">Share Your Stories, Ideas & Insights With The World</h1>
+            <p class="hero-description">Discover inspiring articles written by passionate bloggers around the globe.</p>
+            <div class="hero-actions">
+                <a href="createBlog.html" class="btn-primary"><i class="fa-solid fa-pen-nib"></i> Start Writing</a>
+                <a href="#featured" class="btn-secondary"><i class="fa-solid fa-compass"></i> Explore Articles</a>
             </div>
         </div>
     </section>
@@ -60,30 +251,14 @@
         <div class="section-container">
             <div class="section-header">
                 <h2>Explore Popular Topics</h2>
-                <p>Find articles across your favorite interests</p>
+                <p>Find articles across your favourite interests</p>
             </div>
-
             <div class="categories-grid">
-                <a href="#" class="category-card" onclick="renderHomeBlogs('Politics'); return false;">
-                    <i class="fa-solid fa-landmark"></i>
-                    <h3>Politics</h3>
-                </a>
-                <a href="#" class="category-card" onclick="renderHomeBlogs('Programming'); return false;">
-                    <i class="fa-solid fa-laptop-code"></i>
-                    <h3>Programming</h3>
-                </a>
-                <a href="#" class="category-card" onclick="renderHomeBlogs('Technology'); return false;">
-                    <i class="fa-solid fa-microchip"></i>
-                    <h3>Technology</h3>
-                </a>
-                <a href="#" class="category-card" onclick="renderHomeBlogs('Web Design'); return false;">
-                    <i class="fa-solid fa-palette"></i>
-                    <h3>Web Design</h3>
-                </a>
-                <a href="#" class="category-card" onclick="renderHomeBlogs('Education'); return false;">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <h3>Education</h3>
-                </a>
+                <a href="#" class="category-card" onclick="filterBlogs('Politics'); return false;"><i class="fa-solid fa-landmark"></i><h3>Politics</h3></a>
+                <a href="#" class="category-card" onclick="filterBlogs('Programming'); return false;"><i class="fa-solid fa-laptop-code"></i><h3>Programming</h3></a>
+                <a href="#" class="category-card" onclick="filterBlogs('Technology'); return false;"><i class="fa-solid fa-microchip"></i><h3>Technology</h3></a>
+                <a href="#" class="category-card" onclick="filterBlogs('Web Design'); return false;"><i class="fa-solid fa-palette"></i><h3>Web Design</h3></a>
+                <a href="#" class="category-card" onclick="filterBlogs('Education'); return false;"><i class="fa-solid fa-graduation-cap"></i><h3>Education</h3></a>
             </div>
         </div>
     </section>
@@ -94,8 +269,10 @@
                 <h2>Latest Articles</h2>
                 <p>Fresh stories published by our vibrant community</p>
             </div>
-
             <div class="featured-grid" id="featuredBlogsContainer">
+                <div style="grid-column:1/-1; text-align:center; padding:40px; color:#64748B;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading stories…
+                </div>
             </div>
         </div>
     </section>
@@ -104,8 +281,8 @@
         <div class="section-container">
             <div class="newsletter-card">
                 <h2>Never Miss a Great Story</h2>
-                <p>Subscribe to our newsletter to receive curated articles directly in your inbox.</p>
-                <form class="newsletter-form">
+                <p>Subscribe to receive curated articles directly in your inbox.</p>
+                <form class="newsletter-form" id="newsletterForm">
                     <input type="email" placeholder="Enter your email address" required>
                     <button type="submit">Subscribe</button>
                 </form>
@@ -113,59 +290,67 @@
         </div>
     </section>
 
-    <footer class="footer">
+    <footer class="footer" style="background:#0F172A; color:#94A3B8; padding:60px 8% 28px;">
         <div class="footer-container">
             <div class="footer-col">
-                <a href="index.html" class="logo">
+                <a href="index.html" class="logo" style="margin-bottom:14px; display:inline-flex;">
                     <i class="fa-solid fa-layer-group logo-icon"></i>
-                    <span>BlogSphere</span>
+                    <span style="color:#fff;">BlogSphere</span>
                 </a>
-                <p>A modern blogging platform for curious minds and creative writers.</p>
-
-                <div style="display: flex; gap: 14px; margin-top: 16px;" id="socialIconsContainer">
-                    <a href="https://instagram.com" id="footerInsta" target="_blank" style="color: #E1306C; font-size: 1.5rem;"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://facebook.com" id="footerFb" target="_blank" style="color: #1877F2; font-size: 1.5rem;"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="https://wa.me/15550192834" id="footerWa" target="_blank" style="color: #25D366; font-size: 1.5rem;"><i class="fa-brands fa-whatsapp"></i></a>
+                <p style="margin-top:10px; max-width:280px;">A modern blogging platform for curious minds and creative writers.</p>
+                <div style="display:flex; gap:14px; margin-top:18px;">
+                    <a href="#" id="footerInsta" target="_blank" style="color:#E1306C; font-size:1.6rem;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" id="footerFb" target="_blank" style="color:#1877F2; font-size:1.6rem;"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" id="footerWa" target="_blank" style="color:#25D366; font-size:1.6rem;"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </div>
-
             <div class="footer-col">
-                <h4>Explore</h4>
-                <ul>
-                    <li><a href="index.html">Home</a></li>
-                    <li><a href="#featured">Featured Blogs</a></li>
-                    <li><a href="#categories">Categories</a></li>
-                    <li><a href="createBlog.html">Write Blog</a></li>
+                <h4 style="color:#fff; margin-bottom:18px;">Explore</h4>
+                <ul style="list-style:none; padding:0;">
+                    <li style="margin-bottom:10px;"><a href="index.html" style="color:#94A3B8; text-decoration:none;">Home</a></li>
+                    <li style="margin-bottom:10px;"><a href="#featured" style="color:#94A3B8; text-decoration:none;">Featured Blogs</a></li>
+                    <li style="margin-bottom:10px;"><a href="createBlog.html" style="color:#94A3B8; text-decoration:none;">Write Blog</a></li>
+                    <li style="margin-bottom:10px;"><a href="dashboard.html" style="color:#94A3B8; text-decoration:none;">Dashboard</a></li>
                 </ul>
             </div>
-
             <div class="footer-col">
-                <h4>Company Contact</h4>
-                <ul>
-                    <li><i class="fa-solid fa-envelope" style="color: #4F46E5;"></i> <span id="footerEmail">contact@blogsphere.com</span></li>
-                    <li><i class="fa-solid fa-phone" style="color: #4F46E5;"></i> <span id="footerPhone">+1 (555) 019-2834</span></li>
-                    <li><i class="fa-solid fa-location-dot" style="color: #4F46E5;"></i> <span id="footerAddress">Silicon Valley, CA</span></li>
+                <h4 style="color:#fff; margin-bottom:18px;">Contact</h4>
+                <ul style="list-style:none; padding:0;">
+                    <li style="margin-bottom:10px;"><i class="fa-solid fa-envelope" style="color:#6366F1; margin-right:8px;"></i><span id="footerEmail">contact@blogsphere.com</span></li>
+                    <li style="margin-bottom:10px;"><i class="fa-solid fa-phone" style="color:#6366F1; margin-right:8px;"></i><span id="footerPhone">+1 (555) 019-2834</span></li>
+                    <li style="margin-bottom:10px;"><i class="fa-solid fa-location-dot" style="color:#6366F1; margin-right:8px;"></i><span id="footerAddress">Silicon Valley, CA</span></li>
                 </ul>
             </div>
-
             <div class="footer-col">
-                <h4>Legal & Terms</h4>
-                <ul>
-                    <li><a href="#" onclick="showTermsModal(); return false;">Terms of Service</a></li>
-                    <li><a href="#" onclick="showTermsModal(); return false;">Privacy Policy</a></li>
-                    <li><a href="adminSettings.html" id="footerAdminSettingsLink" style="display: none; color: #4F46E5; font-weight: 600;">Admin Site Settings</a></li>
+                <h4 style="color:#fff; margin-bottom:18px;">Legal</h4>
+                <ul style="list-style:none; padding:0;">
+                    <li style="margin-bottom:10px;"><a href="#" onclick="showTermsModal(); return false;" style="color:#94A3B8; text-decoration:none;">Terms of Service</a></li>
+                    <li style="margin-bottom:10px;"><a href="#" onclick="showTermsModal(); return false;" style="color:#94A3B8; text-decoration:none;">Privacy Policy</a></li>
+                    <li id="footerAdminLi" style="display:none; margin-bottom:10px;"><a href="adminSettings.html" style="color:#818CF8; text-decoration:none; font-weight:600;">⚙️ Site Settings</a></li>
                 </ul>
             </div>
         </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 BlogSphere. All rights reserved. Owner: <a href="mailto:pragasarun1@gmail.com" style="color: #4F46E5; text-decoration: none;">pragasarun1@gmail.com</a></p>
+        <div style="max-width:1200px; margin:30px auto 0; padding-top:24px; border-top:1px solid rgba(255,255,255,0.08); text-align:center; font-size:0.88rem; color:#64748B;">
+            &copy; 2026 BlogSphere. All rights reserved.
         </div>
     </footer>
+
+    <div class="article-reader-overlay" id="articleReaderOverlay" style="position:fixed;">
+        <div class="article-reader-card" id="articleReaderCard">
+            <div style="position:sticky; top:0; z-index:2; background:transparent; display:flex; justify-content:flex-end; padding:14px 18px 0;">
+                <button class="article-reader-close" id="articleReaderClose" aria-label="Close article">&times;</button>
+            </div>
+            <img class="article-reader-image" id="articleReaderImg" src="" alt="" onerror="this.style.display='none'">
+            <div class="article-reader-body">
+                <div class="article-reader-meta" id="articleReaderMeta"></div>
+                <h2 class="article-reader-title" id="articleReaderTitle"></h2>
+                <div class="article-reader-content" id="articleReaderContent"></div>
+            </div>
+        </div>
+    </div>
 
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/main.js"></script>
 </body>
-
 </html>
