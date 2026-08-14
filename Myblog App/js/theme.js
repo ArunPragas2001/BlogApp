@@ -41,19 +41,9 @@
         });
 
         if (navbar) {
-            var logo = navbar.querySelector(".logo");
-            if (logo && logo.parentNode === navbar) {
-                navbar.insertBefore(toggleBtn, logo.nextSibling);
-            } else {
-                navbar.prepend(toggleBtn);
-            }
+            navbar.prepend(toggleBtn);
         } else if (globalHeader) {
-            var glLogo = globalHeader.querySelector(".logo");
-            if (glLogo && glLogo.parentNode === globalHeader) {
-                globalHeader.insertBefore(toggleBtn, glLogo.nextSibling);
-            } else {
-                globalHeader.prepend(toggleBtn);
-            }
+            globalHeader.prepend(toggleBtn);
         }
     }
 })();

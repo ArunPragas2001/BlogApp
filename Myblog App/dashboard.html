@@ -77,8 +77,8 @@
             <div class="welcome-left">
                 <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" id="dashboardAvatar" class="welcome-avatar" alt="Profile" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'">
                 <div class="welcome-text">
-                    <h1 id="welcomeHeading">Hey, Blogger! 👋</h1>
-                    <p id="userRoleBadgeText">Manage your stories and keep sharing ideas.</p>
+                    <h1 id="welcomeHeading">Welcome back, <span id="dashNamePlaceholder">Author</span></h1>
+                    <p id="userRoleBadgeText">Your dashboard for managing articles and insights.</p>
                 </div>
             </div>
             <div class="welcome-actions">
@@ -115,6 +115,16 @@
                 <span class="badge" style="background:#4F46E5;color:#FFF;font-weight:700;padding:6px 16px;border-radius:20px;font-size:0.85rem;" id="pendingAdminReqCount">0 Requests</span>
             </div>
             <div id="ownerAdminReqContainer" class="blogs-list"></div>
+        </section>
+
+        <section id="ownerUserManagementSection" style="display:none; margin-bottom:0; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:20px; padding:28px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                <div>
+                    <h2 style="color:#0F172A;margin:0 0 4px 0; font-size:1.2rem;"><i class="fa-solid fa-users"></i> Platform User Management</h2>
+                    <p style="color:#475569;margin:0;font-size:0.9rem;">Block, unblock, or remove users from the system.</p>
+                </div>
+            </div>
+            <div id="ownerUserManagementContainer" class="blogs-list"></div>
         </section>
 
         <section id="adminApprovalSection" style="display:none; margin-bottom:0; background:#FFFBEB; border:1px solid #FCD34D; border-radius:20px; padding:28px;">

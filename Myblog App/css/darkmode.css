@@ -324,6 +324,39 @@ body.dark-mode .welcome-text h1 {
     color: #ffffff !important;
 }
 
+body.dark-mode .hero {
+    background: linear-gradient(135deg, #0B1120 0%, #1E1B4B 100%) !important;
+}
+
+body.dark-mode .hero-title {
+    color: #F1F5F9 !important;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+body.dark-mode .hero-description {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .hero .btn-primary {
+    background: #4F46E5 !important;
+    color: #FFFFFF !important;
+    border: none;
+}
+
+body.dark-mode .hero .btn-primary:hover {
+    background: #6366F1 !important;
+}
+
+body.dark-mode .hero .btn-secondary {
+    border-color: #64748B !important;
+    color: #E2E8F0 !important;
+}
+
+body.dark-mode .hero .btn-secondary:hover {
+    background: rgba(255,255,255,0.1) !important;
+    color: #FFFFFF !important;
+}
+
 .theme-toggle-btn {
     background: transparent;
     border: 1.5px solid rgba(255, 255, 255, 0.25);
