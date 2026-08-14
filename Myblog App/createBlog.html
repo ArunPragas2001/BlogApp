@@ -6,11 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Blog | BlogSphere</title>
     <!-- Google Fonts -->
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <!-- Stylesheet -->
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/createBlog.css">
 </head>
 
@@ -24,9 +24,10 @@
             </a>
 
             <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="dashboard.html">Dashboard</a></li>
-                <li><a href="createBlog.html" class="active">Create Blog</a></li>
+                <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
+                <li><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
+                <li><a href="createBlog.html" class="active"><i class="fa-solid fa-plus"></i> Create Blog</a></li>
+                <li><a href="profile.html"><i class="fa-regular fa-user"></i> Profile</a></li>
             </ul>
 
             <div class="nav-buttons">
@@ -83,8 +84,9 @@
 
                 <!-- Featured Image -->
                 <div class="form-group">
-                    <label for="blog-image">Featured Image URL (Optional)</label>
-                    <input type="url" id="blog-image" name="blog-image" placeholder="https://example.com/image.jpg">
+                    <label for="blog-image">Featured Image URL (Paste link to attach image)</label>
+                    <input type="url" id="blog-image" name="blog-image" placeholder="https://images.unsplash.com/... or image web link">
+                    <img id="imagePreview" alt="Image Preview" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; border: 1px solid #E2E8F0;">
                 </div>
 
                 <!-- Content -->
@@ -109,6 +111,7 @@
     <footer>
         <p>© 2026 BlogSphere. All Rights Reserved.</p>
     </footer>
+    <script src="js/toast.js"></script>
     <script src="js/createBlog.js"></script>
 </body>
 

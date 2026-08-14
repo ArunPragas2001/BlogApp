@@ -18,6 +18,14 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"]
+    },
+    profilePic: {
+      type: String,
+      default: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+    },
+    bio: {
+      type: String,
+      default: "Blogger & Content Creator"
     }
   },
   {

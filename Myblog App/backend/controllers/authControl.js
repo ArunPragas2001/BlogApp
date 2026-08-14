@@ -16,7 +16,7 @@ const generateToken = (id) => {
  */
 export const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, profilePic } = req.body;
 
     // 1. Validation
     if (!name || !email || !password) {
@@ -37,7 +37,8 @@ export const registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email: email.toLowerCase(),
-      password: hashedPassword
+      password: hashedPassword,
+      profilePic: profilePic || undefined
     });
 
     // 5. Send response with JWT token
@@ -46,6 +47,8 @@ export const registerUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        profilePic: user.profilePic,
+        bio: user.bio,
         token: generateToken(user._id)
       });
     } else {
@@ -79,6 +82,8 @@ export const loginUser = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        profilePic: user.profilePic,
+        bio: user.bio,
         token: generateToken(user._id)
       });
     } else {
@@ -96,13 +101,47 @@ export const loginUser = async (req, res) => {
  */
 export const getMe = async (req, res) => {
   try {
-    // req.user is populated by authMiddleware
-    res.json({
-      _id: req.user._id,
-      name: req.user.name,
-      email: req.user.email
-    });
+    const user = await User.findById(req.user._id).select("-password");
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error fetching user profile", error: error.message });
+  }
+};
+
+/**
+ * @desc    Update user profile details & picture
+ * @route   PUT /api/auth/profile
+ * @access  Private
+ */
+export const updateUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email ? req.body.email.toLowerCase() : user.email;
+    user.profilePic = req.body.profilePic !== undefined ? req.body.profilePic : user.profilePic;
+    user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
+
+    if (req.body.password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(req.body.password, salt);
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      bio: updatedUser.bio,
+      token: generateToken(updatedUser._id)
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating profile", error: error.message });
   }
 };

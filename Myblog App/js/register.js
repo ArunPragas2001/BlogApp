@@ -1,25 +1,43 @@
-const registerForm = document.getElementById("register-form");
+// ==========================================
+// REGISTER.JS - API Backend & Toast Integration
+// ==========================================
 
-if (registerForm) {
-    registerForm.addEventListener("submit", function (e) {
-        e.preventDefault();
+const API_URL = "http://localhost:5000/api/auth/register";
 
-        //===============GET FORM VALUES================//
-        const name = document.getElementById("registerName").value;
-        const email = document.getElementById("registerEmail").value;
-        const password = document.getElementById("registerPassword").value;
-        const conformPassword = document.getElementById("confirmPassword").value;
+document.addEventListener("DOMContentLoaded", function () {
+    const registerForm = document.getElementById("registerForm");
+    const nameInput = document.getElementById("registerName");
+    const emailInput = document.getElementById("registerEmail");
+    const passwordInput = document.getElementById("registerPassword");
+    const confirmPasswordInput = document.getElementById("confirmPassword");
+    const termsCheckbox = document.getElementById("terms");
 
+    if (!registerForm) return;
 
-        console.log(name);
-        console.log(email);
-        console.log(password);
-        console.log(conformPassword);
+    function showError(elementId, message) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = message;
+            el.style.display = "block";
+        }
+    }
 
-    });
+    function clearError(elementId) {
+        const el = document.getElementById(elementId);
+        if (el) {
+            el.textContent = "";
+            el.style.display = "none";
+        }
+    }
 
-    //===============validate NAME================//
-
+    function clearAllErrors() {
+        clearError("generalError");
+        clearError("nameError");
+        clearError("emailError");
+        clearError("passwordError");
+        clearError("confirmPasswordError");
+        clearError("termsError");
+    }
 
     function validateName(name) {
         if (!name || name.trim() === "") {
@@ -28,38 +46,34 @@ if (registerForm) {
         } else if (name.trim().length < 3) {
             showError("nameError", "Name must be at least 3 characters long.");
             return false;
-        } else {
-            clearError("nameError");
-            return true;
         }
+        clearError("nameError");
+        return true;
     }
 
     function validateEmail(email) {
-        const emailRegex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || email.trim() === "") {
             showError("emailError", "Email is required.");
             return false;
         } else if (!emailRegex.test(email.trim())) {
             showError("emailError", "Please enter a valid email address.");
             return false;
-        } else {
-            clearError("emailError");
-            return true;
         }
+        clearError("emailError");
+        return true;
     }
 
     function validatePassword(password) {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}$/;
         if (!password) {
             showError("passwordError", "Password is required.");
             return false;
-        } else if (!passwordRegex.test(password)) {
-            showError("passwordError", "Password must be at least 8 characters long and include an uppercase, lowercase, number, and special character.");
+        } else if (password.length < 6) {
+            showError("passwordError", "Password must be at least 6 characters long.");
             return false;
-        } else {
-            clearError("passwordError");
-            return true;
         }
+        clearError("passwordError");
+        return true;
     }
 
     function validateConfirmPassword(password, confirmPassword) {
@@ -69,57 +83,95 @@ if (registerForm) {
         } else if (password !== confirmPassword) {
             showError("confirmPasswordError", "Passwords do not match.");
             return false;
-        } else {
-            clearError("confirmPasswordError");
-            return true;
         }
+        clearError("confirmPasswordError");
+        return true;
     }
 
     function validateTerms(termsChecked) {
         if (!termsChecked) {
-            showError("termsError", "You must agree to the terms and privacy policy.");
+            showError("termsError", "You must agree to the terms.");
             return false;
-        } else {
-            clearError("termsError");
-            return true;
         }
+        clearError("termsError");
+        return true;
     }
 
-    alert("Registration successful");
-    window.location.href = "index.html";
+    if (nameInput) nameInput.addEventListener("input", () => clearError("nameError"));
+    if (emailInput) emailInput.addEventListener("input", () => clearError("emailError"));
+    if (passwordInput) passwordInput.addEventListener("input", () => clearError("passwordError"));
+    if (confirmPasswordInput) confirmPasswordInput.addEventListener("input", () => clearError("confirmPasswordError"));
+    if (termsCheckbox) termsCheckbox.addEventListener("change", () => clearError("termsError"));
 
+    registerForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        clearAllErrors();
 
+        const name = nameInput ? nameInput.value.trim() : "";
+        const email = emailInput ? emailInput.value.trim() : "";
+        const password = passwordInput ? passwordInput.value : "";
+        const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
+        const termsChecked = termsCheckbox ? termsCheckbox.checked : false;
 
+        const isNameValid = validateName(name);
+        const isEmailValid = validateEmail(email);
+        const isPasswordValid = validatePassword(password);
+        const isConfirmValid = validateConfirmPassword(password, confirmPassword);
+        const isTermsValid = validateTerms(termsChecked);
 
+        if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmValid || !isTermsValid) {
+            return;
+        }
 
+        const submitBtn = registerForm.querySelector("button[type='submit']");
+        const originalBtnText = submitBtn ? submitBtn.textContent : "Create Account";
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating Account...";
+        }
 
+        try {
+            const response = await fetch(API_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ name, email, password })
+            });
 
+            const data = await response.json();
 
+            if (!response.ok) {
+                showError("generalError", data.message || "Registration failed.");
+                showToast(data.message || "Registration failed", "error");
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                }
+                return;
+            }
 
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("currentUser", JSON.stringify({
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                profilePic: data.profilePic,
+                bio: data.bio
+            }));
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+            showToast("🎉 Registration successful! Account saved in MongoDB.", "success");
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (error) {
+            console.error("Registration error:", error);
+            showError("generalError", "Unable to connect to server.");
+            showToast("Unable to connect to backend on http://localhost:5000", "error");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        }
+    });
+});

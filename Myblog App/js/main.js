@@ -2,74 +2,8 @@
 // MAIN.JS - Global Helpers & Home Page Controller
 // ==========================================
 
-const defaultBlogs = [
-    {
-        id: 1,
-        title: "JavaScript Essentials",
-        category: "Programming",
-        content: "Learn the fundamentals of JavaScript and modern web scripting. Discover variables, functions, DOM manipulation, and asynchronous programming concepts.",
-        image: "Assets/images/blog1.avif",
-        status: "Published",
-        author: "Alex Johnson",
-        createdAt: "2026-08-01"
-    },
-    {
-        id: 2,
-        title: "Getting Started with HTML",
-        category: "Technology",
-        content: "Learn the fundamentals of HTML and build your first website structure. Understand semantic elements, forms, and accessibility best practices.",
-        image: "Assets/images/blog2.avif",
-        status: "Published",
-        author: "Sarah Connor",
-        createdAt: "2026-08-03"
-    },
-    {
-        id: 3,
-        title: "Modern CSS Tricks",
-        category: "Web Design",
-        content: "Improve your website designs using Flexbox, CSS Grid, custom properties, and responsive animations for state-of-the-art UI elements.",
-        image: "Assets/images/blog3.avif",
-        status: "Published",
-        author: "Michael Scott",
-        createdAt: "2026-08-05"
-    }
-];
+const API_BLOGS_URL = "http://localhost:5000/api/blogs";
 
-const defaultUsers = [
-    {
-        id: 1,
-        name: "Demo User",
-        email: "user@example.com",
-        password: "Password123!"
-    }
-];
-
-// Initialize LocalStorage Data
-function initStorage() {
-    if (!localStorage.getItem("blogs")) {
-        localStorage.setItem("blogs", JSON.stringify(defaultBlogs));
-    }
-    if (!localStorage.getItem("users")) {
-        localStorage.setItem("users", JSON.stringify(defaultUsers));
-    }
-}
-
-// Get Blogs from LocalStorage
-function getStoredBlogs() {
-    initStorage();
-    try {
-        return JSON.parse(localStorage.getItem("blogs")) || defaultBlogs;
-    } catch (e) {
-        return defaultBlogs;
-    }
-}
-
-// Save Blogs to LocalStorage
-function saveBlogs(blogs) {
-    localStorage.setItem("blogs", JSON.stringify(blogs));
-}
-
-// Get Current Logged-in User
 function getCurrentUser() {
     try {
         return JSON.parse(localStorage.getItem("currentUser"));
@@ -86,26 +20,38 @@ function updateNav() {
     const currentUser = getCurrentUser();
 
     if (currentUser) {
+        const avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
         navButtons.innerHTML = `
-            <span class="user-greeting" style="color: #64748B; font-weight: 500; font-size: 0.95rem; margin-right: 8px;">
-                Hi, <strong>${escapeHTML(currentUser.name)}</strong>
-            </span>
-            <a href="dashboard.html" class="btn-login">Dashboard</a>
-            <a href="#" id="mainLogoutBtn" class="btn-register" style="background: #EF4444; border-color: #EF4444;">Logout</a>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <a href="profile.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1E293B; font-weight: 500;">
+                    <img src="${escapeHTML(avatarUrl)}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4F46E5;">
+                    <span>Hi, <strong>${escapeHTML(currentUser.name)}</strong></span>
+                </a>
+                <a href="dashboard.html" class="btn-login" style="padding: 8px 16px;">Dashboard</a>
+                <a href="#" id="mainLogoutBtn" class="btn-register" style="background: #EF4444; border-color: #EF4444; padding: 8px 16px;">Logout</a>
+            </div>
         `;
 
         const logoutBtn = document.getElementById("mainLogoutBtn");
         if (logoutBtn) {
             logoutBtn.addEventListener("click", function (e) {
                 e.preventDefault();
-                localStorage.removeItem("currentUser");
-                window.location.reload();
+                showConfirmModal(
+                    "Confirm Logout",
+                    "Are you sure you want to log out?",
+                    () => {
+                        localStorage.removeItem("currentUser");
+                        localStorage.removeItem("token");
+                        showToast("Logged out successfully.", "info");
+                        setTimeout(() => window.location.reload(), 600);
+                    },
+                    false
+                );
             });
         }
     }
 }
 
-// Helper to escape HTML to prevent XSS
 function escapeHTML(str) {
     if (!str) return "";
     return String(str)
@@ -116,59 +62,85 @@ function escapeHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
-// Render Featured Blogs on Home Page
-function renderHomeBlogs(categoryFilter = null) {
+// Render Featured Blogs on Home Page from API
+async function renderHomeBlogs(categoryFilter = null) {
     const container = document.getElementById("featuredBlogsContainer");
     if (!container) return;
 
-    const blogs = getStoredBlogs();
-    const publishedBlogs = blogs.filter(b => b.status === "Published");
+    container.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
+            <p><i class="fa-solid fa-spinner fa-spin"></i> Loading stories from MongoDB...</p>
+        </div>
+    `;
 
-    let displayList = publishedBlogs;
-    if (categoryFilter && categoryFilter !== "all") {
-        displayList = publishedBlogs.filter(b => 
-            b.category && b.category.toLowerCase() === categoryFilter.toLowerCase()
-        );
-    }
+    try {
+        const response = await fetch(API_BLOGS_URL);
+        let blogs = [];
+        if (response.ok) {
+            blogs = await response.json();
+        }
 
-    if (displayList.length === 0) {
-        container.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
-                <h3>No articles found in this category.</h3>
-                <p>Check back later or <a href="createBlog.html" style="color: #4F46E5;">write one yourself</a>!</p>
-            </div>
-        `;
-        return;
-    }
+        const publishedBlogs = blogs.filter(b => (b.status || "").toLowerCase() === "published");
 
-    container.innerHTML = displayList.map(blog => {
-        const imageSrc = blog.image || "Assets/images/blog1.avif";
-        return `
-            <div class="blog-card">
-                <img src="${escapeHTML(imageSrc)}" alt="${escapeHTML(blog.title)}" onerror="this.src='Assets/images/blog1.avif'">
-                <div class="blog-card-content">
-                    <span style="font-size: 0.8rem; font-weight: 600; color: #4F46E5; text-transform: uppercase; margin-bottom: 4px; display: block;">
-                        ${escapeHTML(blog.category || "General")}
-                    </span>
-                    <h3>${escapeHTML(blog.title)}</h3>
-                    <p>${escapeHTML(blog.content)}</p>
-                    <button onclick="readBlogModal(${blog.id})">Read More</button>
+        let displayList = publishedBlogs;
+        if (categoryFilter && categoryFilter.toLowerCase() !== "all") {
+            displayList = publishedBlogs.filter(b => 
+                b.category && b.category.toLowerCase() === categoryFilter.toLowerCase()
+            );
+        }
+
+        if (displayList.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
+                    <h3>No published articles found.</h3>
+                    <p>Be the first to <a href="createBlog.html" style="color: #4F46E5;">write one yourself</a>!</p>
                 </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = displayList.map(blog => {
+            const imageSrc = blog.image || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
+            const authorName = blog.author ? (blog.author.name || "Author") : "Anonymous";
+            const authorAvatar = blog.author && blog.author.profilePic ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+
+            return `
+                <div class="blog-card">
+                    <img src="${escapeHTML(imageSrc)}" alt="${escapeHTML(blog.title)}" onerror="this.src='https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80'">
+                    <div class="blog-card-content">
+                        <span style="font-size: 0.8rem; font-weight: 600; color: #4F46E5; text-transform: uppercase; margin-bottom: 4px; display: block;">
+                            ${escapeHTML(blog.category || "General")}
+                        </span>
+                        <h3>${escapeHTML(blog.title)}</h3>
+                        <p>${escapeHTML(blog.content)}</p>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 14px;">
+                            <img src="${escapeHTML(authorAvatar)}" alt="Author Avatar" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                            <small style="color: #64748B; font-weight: 500;">By ${escapeHTML(authorName)}</small>
+                        </div>
+
+                        <button onclick="readBlogModal('${escapeHTML(blog.title).replace(/'/g, "\\'")}', '${escapeHTML(blog.content).replace(/'/g, "\\'")}', '${escapeHTML(authorName).replace(/'/g, "\\'")}')">Read More</button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Home blogs fetch error:", err);
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #EF4444;">
+                <p>Could not load stories. Ensure backend server is running on http://localhost:5000</p>
             </div>
         `;
-    }).join("");
+    }
 }
 
 // Modal view for blog content
-function readBlogModal(id) {
-    const blogs = getStoredBlogs();
-    const blog = blogs.find(b => b.id === id);
-    if (!blog) return;
-
-    alert(`📖 ${blog.title}\nCategory: ${blog.category}\nBy: ${blog.author || "Anonymous"}\n\n${blog.content}`);
+function readBlogModal(title, content, author) {
+    showConfirmModal(`📖 ${title}`, `By ${author || 'Anonymous'}\n\n${content}`, () => {}, false);
 }
 
-// Category filter interaction on index.html
+window.readBlogModal = readBlogModal;
+
 function setupCategoryFilters() {
     const categoryCards = document.querySelectorAll(".category-card");
     categoryCards.forEach(card => {
@@ -176,7 +148,6 @@ function setupCategoryFilters() {
             e.preventDefault();
             const categoryName = this.querySelector("h3") ? this.querySelector("h3").innerText : "";
             
-            // Scroll smoothly to featured section
             const featuredSec = document.getElementById("featured");
             if (featuredSec) {
                 featuredSec.scrollIntoView({ behavior: "smooth" });
@@ -187,7 +158,6 @@ function setupCategoryFilters() {
     });
 }
 
-// Newsletter Form Handler
 function setupNewsletterForm() {
     const form = document.querySelector(".newsletter-form");
     if (form) {
@@ -195,16 +165,14 @@ function setupNewsletterForm() {
             e.preventDefault();
             const input = form.querySelector("input[type='email']");
             if (input && input.value) {
-                alert(`Thank you for subscribing with ${input.value}! You'll receive our latest posts soon.`);
+                showToast(`Thank you for subscribing with ${input.value}!`, "success");
                 input.value = "";
             }
         });
     }
 }
 
-// Initialize on DOM load
 document.addEventListener("DOMContentLoaded", function () {
-    initStorage();
     updateNav();
     renderHomeBlogs();
     setupCategoryFilters();
