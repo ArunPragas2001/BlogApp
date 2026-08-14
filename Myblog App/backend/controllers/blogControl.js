@@ -9,7 +9,7 @@ export const createBlog = async (req, res) => {
       return res.status(400).json({ message: "Title and content are required fields" });
     }
 
-    const isAdmin = req.user.role === "admin";
+    const isAdminOrOwner = req.user.role === "admin" || req.user.role === "owner";
 
     const blog = await Blog.create({
       title,
@@ -18,12 +18,11 @@ export const createBlog = async (req, res) => {
       status: status || "published",
       image: image || "",
       author: req.user._id,
-      isApproved: isAdmin,
-      approvalStatus: isAdmin ? "approved" : "pending"
+      isApproved: isAdminOrOwner,
+      approvalStatus: isAdminOrOwner ? "approved" : "pending"
     });
 
     await blog.populate("author", "name email profilePic");
-
     sendNewBlogNotification(blog.title, req.user.name, req.user.email);
 
     res.status(201).json(blog);
@@ -79,9 +78,9 @@ export const updateBlog = async (req, res) => {
     }
 
     const isAuthor = blog.author.toString() === req.user._id.toString();
-    const isAdmin = req.user.role === "admin";
+    const isAdminOrOwner = req.user.role === "admin" || req.user.role === "owner";
 
-    if (!isAuthor && !isAdmin) {
+    if (!isAuthor && !isAdminOrOwner) {
       return res.status(403).json({ message: "Not authorized to update this blog" });
     }
 
@@ -93,7 +92,11 @@ export const updateBlog = async (req, res) => {
     blog.status = status || blog.status;
     blog.image = image !== undefined ? image : blog.image;
 
-    if (!isAdmin) {
+    if (isAdminOrOwner && !isAuthor) {
+      blog.isApproved = false;
+      blog.approvalStatus = "pending_author";
+      blog.lastEditedBy = req.user._id;
+    } else if (!isAdminOrOwner) {
       blog.isApproved = false;
       blog.approvalStatus = "pending";
     }
@@ -109,8 +112,9 @@ export const updateBlog = async (req, res) => {
 
 export const approveBlog = async (req, res) => {
   try {
-    if (req.user.role !== "admin") {
-      return res.status(403).json({ message: "Only admin can approve or reject blogs" });
+    const isAdminOrOwner = req.user.role === "admin" || req.user.role === "owner";
+    if (!isAdminOrOwner) {
+      return res.status(403).json({ message: "Only admin or owner can approve or reject blogs" });
     }
 
     const { isApproved, approvalStatus } = req.body;
@@ -141,9 +145,9 @@ export const deleteBlog = async (req, res) => {
     }
 
     const isAuthor = blog.author.toString() === req.user._id.toString();
-    const isAdmin = req.user.role === "admin";
+    const isAdminOrOwner = req.user.role === "admin" || req.user.role === "owner";
 
-    if (!isAuthor && !isAdmin) {
+    if (!isAuthor && !isAdminOrOwner) {
       return res.status(403).json({ message: "Not authorized to delete this blog" });
     }
 
