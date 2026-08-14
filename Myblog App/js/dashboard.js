@@ -1,5 +1,6 @@
 var API_BLOGS_URL = "http://localhost:5000/api/blogs";
 var API_ADMIN_REQ_URL = "http://localhost:5000/api/auth/admin-requests";
+var API_USERS_URL = "http://localhost:5000/api/users";
 
 function getCurrentUser() {
     try { return JSON.parse(localStorage.getItem("currentUser")); } catch (e) { return null; }
@@ -122,6 +123,86 @@ async function handleApproveAdminUser(userId, approve) {
         console.error("Approve admin error:", err);
         showToast("Error processing admin request", "error");
     }
+}
+
+async function displayOwnerUserManagement() {
+    var currentUser = getCurrentUser();
+    var section = document.getElementById("ownerUserManagementSection");
+    var container = document.getElementById("ownerUserManagementContainer");
+
+    if (!currentUser || (currentUser.role !== "owner" && currentUser.email !== "pragasarun1@gmail.com")) {
+        if (section) section.style.display = "none";
+        return;
+    }
+
+    try {
+        var token = localStorage.getItem("token");
+        var res = await fetch(API_USERS_URL, { headers: { "Authorization": "Bearer " + token } });
+        if (!res.ok) return;
+        var users = await res.json();
+
+        if (section) section.style.display = "block";
+        if (!container) return;
+
+        if (users.length === 0) {
+            container.innerHTML = '<p style="color:#475569;margin:0;">No users found.</p>';
+            return;
+        }
+
+        container.innerHTML = users.map(function (user) {
+            var badgeColor = user.role === "admin" ? "#10B981" : "#4F46E5";
+            var blockBtnText = user.isBlocked ? "Unblock" : "Block";
+            var blockBtnColor = user.isBlocked ? "#10B981" : "#F59E0B";
+            var blockBtnIcon = user.isBlocked ? "fa-unlock" : "fa-lock";
+
+            return '<div class="dashboard-blog" style="border-left:5px solid ' + badgeColor + ';">' +
+                '<img src="' + esc(user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') + '" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+                '<div class="blog-info" style="flex:1;"><h3>' + esc(user.name) + '</h3><p>Email: <strong>' + esc(user.email) + '</strong> — Role: <span style="font-weight:700;color:' + badgeColor + ';">' + esc(user.role.toUpperCase()) + '</span>' + (user.isBlocked ? ' <span style="color:#EF4444;font-weight:700;">(BLOCKED)</span>' : '') + '</p></div>' +
+                '<div class="blog-actions">' +
+                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
+                '<button class="delete-btn" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
+                '</div></div>';
+        }).join("");
+    } catch (err) {
+        console.error("Owner user management error:", err);
+    }
+}
+
+async function toggleBlockUserDashboard(userId) {
+    var token = localStorage.getItem("token");
+    if (!token) return;
+    try {
+        var response = await fetch(API_USERS_URL + "/" + userId + "/block", {
+            method: "PUT",
+            headers: { "Authorization": "Bearer " + token }
+        });
+        var data = await response.json();
+        if (!response.ok) { showToast(data.message || "Failed to toggle block status", "error"); return; }
+        showToast(data.message, "success");
+        displayOwnerUserManagement();
+    } catch (err) {
+        showToast("Error updating user block status", "error");
+    }
+}
+
+async function deleteUserDashboard(userId, name) {
+    var token = localStorage.getItem("token");
+    if (!token) return;
+    
+    showConfirmModal("Remove User", "Permanently delete user \"" + esc(name) + "\"? This action cannot be undone.", async function () {
+        try {
+            var response = await fetch(API_USERS_URL + "/" + userId, {
+                method: "DELETE",
+                headers: { "Authorization": "Bearer " + token }
+            });
+            var data = await response.json();
+            if (!response.ok) { showToast(data.message || "Could not delete user", "error"); return; }
+            showToast("User completely removed.", "success");
+            displayOwnerUserManagement();
+        } catch (err) {
+            showToast("Failed to delete user.", "error");
+        }
+    }, true);
 }
 
 async function displayBlogs() {
@@ -268,9 +349,12 @@ window.editBlog = editBlog;
 window.deleteBlog = deleteBlog;
 window.handleApproveBlog = handleApproveBlog;
 window.handleApproveAdminUser = handleApproveAdminUser;
+window.toggleBlockUserDashboard = toggleBlockUserDashboard;
+window.deleteUserDashboard = deleteUserDashboard;
 
 document.addEventListener("DOMContentLoaded", function () {
     setupWelcomeAndAuth();
     displayOwnerAdminRequests();
+    displayOwnerUserManagement();
     displayBlogs();
 });
