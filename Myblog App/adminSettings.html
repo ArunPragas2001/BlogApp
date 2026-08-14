@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Site Settings - BlogSphere</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/darkmode.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+
+<body>
+    <header class="global-header">
+        <a href="index.html" class="logo">
+            <i class="fa-solid fa-layer-group"></i>
+            <span>BlogSphere</span>
+        </a>
+
+        <nav class="global-nav-links">
+            <a href="index.html" class="nav-link-btn"><i class="fa-solid fa-house"></i> Home</a>
+            <a href="dashboard.html" class="nav-link-btn"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+            <a href="createBlog.html" class="nav-link-btn"><i class="fa-solid fa-plus"></i> Write Blog</a>
+            <a href="adminSettings.html" class="nav-link-btn" style="background: #EEF2FF; color: #4F46E5;"><i class="fa-solid fa-sliders"></i> Site Settings</a>
+            <a href="profile.html" class="nav-link-btn"><i class="fa-regular fa-user"></i> Profile</a>
+        </nav>
+    </header>
+
+    <div class="profile-container" style="grid-template-columns: 1fr;">
+        <main class="profile-form-card">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                <div>
+                    <h3 style="margin: 0 0 6px 0;"><i class="fa-solid fa-gear" style="color: #4F46E5;"></i> Site Contact & Social Settings</h3>
+                    <p class="subtitle" style="margin: 0;">Update company contact information, social media links, and terms of service.</p>
+                </div>
+                <a href="dashboard.html" class="nav-link-btn" style="border: 1px solid #E2E8F0;"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+            </div>
+
+            <form id="siteConfigForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="companyEmail"><i class="fa-regular fa-envelope"></i> Company Email</label>
+                        <input type="email" id="companyEmail" placeholder="contact@blogsphere.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyPhone"><i class="fa-solid fa-phone"></i> Company Phone</label>
+                        <input type="text" id="companyPhone" placeholder="+1 (555) 019-2834" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="companyAddress"><i class="fa-solid fa-location-dot"></i> Company Address</label>
+                    <input type="text" id="companyAddress" placeholder="123 Tech Avenue, Silicon Valley, CA">
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label for="instagramUrl"><i class="fa-brands fa-instagram" style="color: #E1306C;"></i> Instagram URL</label>
+                        <input type="url" id="instagramUrl" placeholder="https://instagram.com/yourhandle">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="facebookUrl"><i class="fa-brands fa-facebook" style="color: #1877F2;"></i> Facebook URL</label>
+                        <input type="url" id="facebookUrl" placeholder="https://facebook.com/yourpage">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="whatsappNumber"><i class="fa-brands fa-whatsapp" style="color: #25D366;"></i> WhatsApp Number</label>
+                        <input type="text" id="whatsappNumber" placeholder="+15550192834">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="termsOfService"><i class="fa-solid fa-file-contract"></i> Terms & Privacy Policy</label>
+                    <textarea id="termsOfService" rows="5" placeholder="Enter terms of service details..."></textarea>
+                </div>
+
+                <button type="submit" class="btn-save-profile" id="saveConfigBtn">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Site Settings
+                </button>
+            </form>
+        </main>
+    </div>
+
+    <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
+    <script src="js/adminSettings.js"></script>
+</body>
+
+</html>

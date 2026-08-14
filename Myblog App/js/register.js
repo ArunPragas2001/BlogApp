@@ -4,11 +4,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const registerForm = document.getElementById("registerForm");
     const nameInput = document.getElementById("registerName");
     const emailInput = document.getElementById("registerEmail");
+    const roleSelect = document.getElementById("registerRole");
+    const roleNotice = document.getElementById("roleNotice");
     const passwordInput = document.getElementById("registerPassword");
     const confirmPasswordInput = document.getElementById("confirmPassword");
     const termsCheckbox = document.getElementById("terms");
 
     if (!registerForm) return;
+
+    if (roleSelect && roleNotice) {
+        roleSelect.addEventListener("change", function () {
+            if (this.value === "admin") {
+                roleNotice.style.display = "block";
+            } else {
+                roleNotice.style.display = "none";
+            }
+        });
+    }
 
     function showError(elementId, message) {
         const el = document.getElementById(elementId);
@@ -105,6 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const name = nameInput ? nameInput.value.trim() : "";
         const email = emailInput ? emailInput.value.trim() : "";
+        const requestedRole = roleSelect ? roleSelect.value : "user";
         const password = passwordInput ? passwordInput.value : "";
         const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
         const termsChecked = termsCheckbox ? termsCheckbox.checked : false;
@@ -132,7 +145,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ name, email, password })
+                body: JSON.stringify({ name, email, password, requestedRole })
             });
 
             const data = await response.json();
@@ -153,14 +166,20 @@ document.addEventListener("DOMContentLoaded", function () {
                 name: data.name,
                 email: data.email,
                 role: data.role,
+                adminStatus: data.adminStatus,
                 profilePic: data.profilePic,
                 bio: data.bio
             }));
 
-            showToast("🎉 Registration successful! Account saved in MongoDB.", "success");
+            if (data.adminStatus === "pending") {
+                showToast("🎉 Account created! Your Admin request is pending Owner approval.", "info", 5000);
+            } else {
+                showToast("🎉 Registration successful! Saved in MongoDB.", "success");
+            }
+
             setTimeout(() => {
                 window.location.href = "dashboard.html";
-            }, 1000);
+            }, 1200);
         } catch (error) {
             console.error("Registration error:", error);
             showError("generalError", "Unable to connect to server.");

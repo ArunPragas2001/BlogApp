@@ -5,19 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | BlogSphere</title>
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <!-- Font Awesome Link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/register.css">
 </head>
 
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <!-- Home & Logo Links -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <a href="index.html" class="auth-logo" style="margin-bottom: 0;">
                     <i class="fa-solid fa-layer-group logo-icon"></i>
@@ -52,6 +49,19 @@
 
                 <div class="input-field-wrapper">
                     <div class="input-group">
+                        <i class="fa-solid fa-shield-halved input-icon"></i>
+                        <select id="registerRole" style="width: 100%; border: none; outline: none; background: transparent; font-family: inherit; font-size: 0.95rem; color: inherit; padding: 10px 0;">
+                            <option value="user">Normal User (Blogger)</option>
+                            <option value="admin">Administrator (Requires Owner Approval)</option>
+                        </select>
+                    </div>
+                    <small id="roleNotice" style="color: #64748B; font-size: 0.78rem; display: none; margin-top: 4px;">
+                        * Note: Admin accounts require verification and approval by the Owner.
+                    </small>
+                </div>
+
+                <div class="input-field-wrapper">
+                    <div class="input-group">
                         <i class="fa-solid fa-lock input-icon"></i>
                         <input type="password" placeholder="Create Password" id="registerPassword">
                     </div>
@@ -82,6 +92,7 @@
         </div>
     </div>
     <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/register.js"></script>
 </body>
 
