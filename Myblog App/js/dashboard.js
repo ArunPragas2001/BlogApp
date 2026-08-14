@@ -20,7 +20,7 @@ function setupWelcomeAndAuth() {
     var currentUser = getCurrentUser();
 
     if (welcomeHeading && currentUser && currentUser.name) {
-        welcomeHeading.textContent = "Hey, " + currentUser.name + "! 👋";
+        welcomeHeading.innerHTML = "Hey, " + esc(currentUser.name) + "! <span class='welcome-icon'>▪</span>";
     }
 
     if (dashboardAvatarEl && currentUser) {
@@ -130,7 +130,7 @@ async function displayOwnerUserManagement() {
     var section = document.getElementById("ownerUserManagementSection");
     var container = document.getElementById("ownerUserManagementContainer");
 
-    if (!currentUser || (currentUser.role !== "owner" && currentUser.email !== "pragasarun1@gmail.com")) {
+    if (!currentUser || (currentUser.role !== "owner" && currentUser.role !== "admin")) {
         if (section) section.style.display = "none";
         return;
     }
@@ -155,13 +155,19 @@ async function displayOwnerUserManagement() {
             var blockBtnColor = user.isBlocked ? "#10B981" : "#F59E0B";
             var blockBtnIcon = user.isBlocked ? "fa-unlock" : "fa-lock";
 
+            var actionsHtml = "";
+            if (currentUser.role === "owner") {
+                actionsHtml = '<div class="blog-actions">' +
+                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
+                '<button class="delete-btn" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
+                '</div>';
+            }
+
             return '<div class="dashboard-blog" style="border-left:5px solid ' + badgeColor + ';">' +
                 '<img src="' + esc(user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') + '" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
                 '<div class="blog-info" style="flex:1;"><h3>' + esc(user.name) + '</h3><p>Email: <strong>' + esc(user.email) + '</strong> — Role: <span style="font-weight:700;color:' + badgeColor + ';">' + esc(user.role.toUpperCase()) + '</span>' + (user.isBlocked ? ' <span style="color:#EF4444;font-weight:700;">(BLOCKED)</span>' : '') + '</p></div>' +
-                '<div class="blog-actions">' +
-                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
-                '<button class="delete-btn" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
-                '</div></div>';
+                actionsHtml +
+                '</div>';
         }).join("");
     } catch (err) {
         console.error("Owner user management error:", err);

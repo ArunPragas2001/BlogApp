@@ -2,8 +2,8 @@ import User from "../models/user.js";
 
 export const getAllUsers = async (req, res) => {
   try {
-    if (req.user.role !== "owner") {
-      return res.status(403).json({ message: "Only Owner can view all users" });
+    if (req.user.role !== "owner" && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Only Owner and Admin can view all users" });
     }
     const users = await User.find({ role: { $ne: "owner" } }).select("-password");
     res.json(users);

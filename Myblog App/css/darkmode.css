@@ -157,13 +157,20 @@ body.dark-mode .nav-user-badge {
 
 body.dark-mode .nav-user-pill:hover,
 body.dark-mode .nav-user-badge:hover {
-    background: rgba(255, 255, 255, 0.16) !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
+    background: #F1F5F9 !important;
+    border-color: #F1F5F9 !important;
 }
 
 body.dark-mode .nav-user-pill span,
 body.dark-mode .nav-user-badge span {
     color: #F1F5F9 !important;
+}
+
+body.dark-mode .nav-user-pill:hover span,
+body.dark-mode .nav-user-badge:hover span,
+body.dark-mode .nav-user-pill:hover i,
+body.dark-mode .nav-user-badge:hover i {
+    color: #0F172A !important;
 }
 
 body.dark-mode .custom-modal {
@@ -314,6 +321,15 @@ body.dark-mode .btn-logout:hover {
     color: #ffffff !important;
     background: rgba(239, 68, 68, 0.25) !important;
     border-color: #EF4444 !important;
+}
+
+body.dark-mode .btn-save-profile:hover,
+body.dark-mode .publish-btn:hover,
+body.dark-mode .login-btn:hover,
+body.dark-mode button[type="submit"]:hover {
+    background: #6366F1 !important;
+    color: #FFFFFF !important;
+    border-color: #6366F1 !important;
 }
 
 body.dark-mode .profile-form-card .form-group label {

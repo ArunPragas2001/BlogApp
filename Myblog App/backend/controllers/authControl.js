@@ -7,7 +7,7 @@ const OWNER_PASS = "arun20019048$";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "my_blog_app_secret_key_12345", {
-    expiresIn: "30d"
+    expiresIn: "1h"
   });
 };
 
