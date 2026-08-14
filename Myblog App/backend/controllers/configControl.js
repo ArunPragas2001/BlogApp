@@ -30,7 +30,9 @@ export const updateSiteConfig = async (req, res) => {
       instagramUrl,
       facebookUrl,
       whatsappNumber,
-      termsOfService
+      termsOfService,
+      maintenanceMode,
+      blogExpiryDays
     } = req.body;
 
     if (companyEmail !== undefined) config.companyEmail = companyEmail;
@@ -40,6 +42,8 @@ export const updateSiteConfig = async (req, res) => {
     if (facebookUrl !== undefined) config.facebookUrl = facebookUrl;
     if (whatsappNumber !== undefined) config.whatsappNumber = whatsappNumber;
     if (termsOfService !== undefined) config.termsOfService = termsOfService;
+    if (maintenanceMode !== undefined) config.maintenanceMode = maintenanceMode;
+    if (blogExpiryDays !== undefined) config.blogExpiryDays = blogExpiryDays;
 
     const updatedConfig = await config.save();
     res.json(updatedConfig);

@@ -1,4 +1,5 @@
 import Blog from "../models/blog.js";
+import SiteConfig from "../models/siteConfig.js";
 import { sendNewBlogNotification } from "../config/emailService.js";
 
 export const createBlog = async (req, res) => {
@@ -43,6 +44,13 @@ export const getAllBlogs = async (req, res) => {
       query.author = req.user._id;
     } else if (req.query.all !== "true") {
       query.isApproved = true;
+      
+      let config = await SiteConfig.findOne();
+      if (config && config.blogExpiryDays > 0) {
+        const expiryDate = new Date();
+        expiryDate.setDate(expiryDate.getDate() - config.blogExpiryDays);
+        query.createdAt = { $gte: expiryDate };
+      }
     }
 
     const blogs = await Blog.find(query)

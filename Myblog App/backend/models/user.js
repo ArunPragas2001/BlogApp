@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
       default: "Blogger & Content Creator"
+    },
+    isBlocked: {
+      type: Boolean,
+      default: false
     }
   },
   {
