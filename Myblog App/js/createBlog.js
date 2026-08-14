@@ -42,6 +42,37 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
+    var imageUploadInput = document.getElementById("blogImageUpload");
+    if (imageUploadInput) {
+        imageUploadInput.addEventListener("change", async function () {
+            var file = this.files[0];
+            if (!file) return;
+
+            var formData = new FormData();
+            formData.append("image", file);
+            var token = localStorage.getItem("token") || "";
+
+            try {
+                showToast("Uploading image...", "info");
+                var res = await fetch("http://localhost:5000/api/upload", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + token },
+                    body: formData
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    if (imageInput) imageInput.value = data.url;
+                    updateImagePreview(data.url);
+                    showToast("Image uploaded successfully!", "success");
+                } else {
+                    showToast(data.message || "Upload failed", "error");
+                }
+            } catch (err) {
+                showToast("Upload error.", "error");
+            }
+        });
+    }
+
     var token = localStorage.getItem("token");
     if (!token) {
         showToast("Please login first to create or edit blogs.", "error");

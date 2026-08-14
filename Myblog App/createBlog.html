@@ -70,8 +70,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="blog-image">Featured Image URL (Paste image link)</label>
-                    <input type="url" id="blog-image" name="blog-image" placeholder="https://images.unsplash.com/... or image web link">
+                    <label for="blog-image">Featured Image Upload</label>
+                    <input type="file" id="blogImageUpload" accept="image/*">
+                    <input type="hidden" id="blog-image">
                     <div id="imagePreviewContainer" style="margin-top: 12px; display: none;">
                         <span style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 6px;">Live Image Preview:</span>
                         <img id="imagePreview" alt="Image Preview" style="max-height: 220px; width: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #6366F1;">

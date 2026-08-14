@@ -50,6 +50,27 @@ body {
     box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
 }
 
+.camera-overlay {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    background: #4F46E5;
+    color: white;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    transition: background 0.2s;
+}
+
+.camera-overlay:hover {
+    background: #6366F1;
+}
+
 .profile-card-sidebar h2 {
     font-size: 1.35rem;
     color: #0F172A;

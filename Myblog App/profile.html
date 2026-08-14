@@ -40,6 +40,10 @@
         <aside class="profile-card-sidebar">
             <div class="avatar-wrapper">
                 <img id="sidebarAvatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile Picture" class="profile-avatar" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'">
+                <label for="profileImageUpload" class="camera-overlay">
+                    <i class="fa-solid fa-camera"></i>
+                </label>
+                <input type="file" id="profileImageUpload" style="display:none;" accept="image/*">
             </div>
             <h2 id="sidebarName">Loading...</h2>
             <p class="user-email" id="sidebarEmail">user@example.com</p>
@@ -64,12 +68,9 @@
                     <input type="email" id="profileEmail" placeholder="Your email address" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" style="display:none;">
                     <label for="profilePic"><i class="fa-regular fa-image"></i> Profile Picture URL</label>
                     <input type="url" id="profilePic" placeholder="https://example.com/avatar.jpg">
-                    <small style="color: #64748B; font-size: 0.8rem; margin-top: 4px; display: block;">
-                        Paste an image web URL link or choose a sample avatar below.
-                    </small>
                 </div>
 
                 <div style="margin-bottom: 20px;">

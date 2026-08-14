@@ -21,6 +21,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     const sidebarAvatarPreview = document.getElementById("sidebarAvatarPreview");
     const headerNavAvatar = document.getElementById("headerNavAvatar");
     const headerNavName = document.getElementById("headerNavName");
+    const profileImageUpload = document.getElementById("profileImageUpload");
+
+    if (profileImageUpload) {
+        profileImageUpload.addEventListener("change", async function () {
+            const file = this.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("image", file);
+
+            try {
+                showToast("Uploading image...", "info");
+                const res = await fetch("http://localhost:5000/api/upload", {
+                    method: "POST",
+                    headers: { "Authorization": `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    if (picInput) picInput.value = data.url;
+                    if (sidebarAvatarPreview) sidebarAvatarPreview.src = data.url;
+                    showToast("Image uploaded successfully!", "success");
+                } else {
+                    showToast(data.message || "Failed to upload image", "error");
+                }
+            } catch (err) {
+                showToast("Upload error.", "error");
+            }
+        });
+    }
 
     if (picInput) {
         ["input", "keyup", "paste", "change"].forEach(evt => {
