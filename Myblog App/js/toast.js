@@ -8,40 +8,39 @@ function getOrCreateToastContainer() {
     return container;
 }
 
-function showToast(message, type = "success", duration = 4000) {
+function showToast(message, type, duration) {
+    if (duration === undefined) duration = 5000;
+    if (!type) type = "success";
+
     const container = getOrCreateToastContainer();
 
     const toast = document.createElement("div");
-    toast.className = `toast toast-${type}`;
+    toast.className = "toast toast-" + type;
 
     let iconClass = "fa-solid fa-circle-check";
     if (type === "error") iconClass = "fa-solid fa-triangle-exclamation";
     if (type === "info") iconClass = "fa-solid fa-circle-info";
 
-    toast.innerHTML = `
-        <i class="${iconClass} toast-icon"></i>
-        <div class="toast-message">${escapeToastHTML(message)}</div>
-        <button class="toast-close">&times;</button>
-    `;
+    toast.innerHTML = '<i class="' + iconClass + ' toast-icon"></i><div class="toast-message">' + String(message) + '</div><button class="toast-close" aria-label="Close">&times;</button>';
 
     container.appendChild(toast);
 
-    setTimeout(() => toast.classList.add("toast-show"), 10);
+    setTimeout(function () { toast.classList.add("toast-show"); }, 10);
 
-    const removeToast = () => {
+    function removeToast() {
         toast.classList.remove("toast-show");
-        setTimeout(() => {
-            if (toast.parentNode) {
-                toast.parentNode.removeChild(toast);
-            }
-        }, 350);
-    };
+        setTimeout(function () {
+            if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 400);
+    }
 
     toast.querySelector(".toast-close").addEventListener("click", removeToast);
     setTimeout(removeToast, duration);
 }
 
-function showConfirmModal(title, message, onConfirm, isDanger = true) {
+function showConfirmModal(title, message, onConfirm, isDanger) {
+    if (isDanger === undefined) isDanger = true;
+
     let overlay = document.getElementById("customModalOverlay");
     if (!overlay) {
         overlay = document.createElement("div");
@@ -54,46 +53,32 @@ function showConfirmModal(title, message, onConfirm, isDanger = true) {
     const confirmBtnClass = isDanger ? "btn-modal-confirm danger" : "btn-modal-confirm";
     const iconClass = isDanger ? "fa-solid fa-trash-can" : "fa-solid fa-circle-question";
 
-    overlay.innerHTML = `
-        <div class="custom-modal">
-            <div class="${iconBadgeClass}">
-                <i class="${iconClass}"></i>
-            </div>
-            <h3>${escapeToastHTML(title)}</h3>
-            <p>${escapeToastHTML(message)}</p>
-            <div class="modal-actions">
-                <button class="btn-modal-cancel" id="btnModalCancel">Cancel</button>
-                <button class="${confirmBtnClass}" id="btnModalConfirm">Confirm</button>
-            </div>
-        </div>
-    `;
+    const safeMsg = String(message || "").replace(/\n/g, "<br>");
+
+    overlay.innerHTML = '<div class="custom-modal">' +
+        '<div class="' + iconBadgeClass + '"><i class="' + iconClass + '"></i></div>' +
+        '<h3>' + String(title || "") + '</h3>' +
+        '<p>' + safeMsg + '</p>' +
+        '<div class="modal-actions">' +
+        '<button class="btn-modal-cancel" id="btnModalCancel">Cancel</button>' +
+        '<button class="' + confirmBtnClass + '" id="btnModalConfirm">Confirm</button>' +
+        '</div></div>';
 
     overlay.classList.add("active");
 
-    const closeModal = () => {
+    function closeModal() {
         overlay.classList.remove("active");
-    };
+    }
 
-    document.getElementById("btnModalCancel").onclick = () => {
+    document.getElementById("btnModalCancel").onclick = closeModal;
+    document.getElementById("btnModalConfirm").onclick = function () {
         closeModal();
+        if (typeof onConfirm === "function") onConfirm();
     };
 
-    document.getElementById("btnModalConfirm").onclick = () => {
-        closeModal();
-        if (typeof onConfirm === "function") {
-            onConfirm();
-        }
-    };
-}
-
-function escapeToastHTML(str) {
-    if (!str) return "";
-    return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+    overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) closeModal();
+    });
 }
 
 window.showToast = showToast;

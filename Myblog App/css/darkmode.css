@@ -1,55 +1,98 @@
 :root {
     --bg-main: #F8FAFC;
     --bg-card: #FFFFFF;
+    --bg-section: #EEF2FF;
     --text-primary: #0F172A;
-    --text-secondary: #64748B;
+    --text-secondary: #475569;
+    --text-muted: #64748B;
     --border-color: #E2E8F0;
-    --nav-bg: #FFFFFF;
+    --nav-bg: #0F172A;
+    --nav-text: #CBD5E1;
+    --nav-text-active: #FFFFFF;
     --input-bg: #F8FAFC;
+    --input-border: #CBD5E1;
+    --accent: #4F46E5;
+    --accent-hover: #4338CA;
+    --card-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
 }
 
 body.dark-mode {
     --bg-main: #0F172A;
     --bg-card: #1E293B;
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
+    --bg-section: #1A2540;
+    --text-primary: #F1F5F9;
+    --text-secondary: #CBD5E1;
+    --text-muted: #94A3B8;
     --border-color: #334155;
-    --nav-bg: #1E293B;
-    --input-bg: #0F172A;
+    --nav-bg: #0B1120;
+    --nav-text: #94A3B8;
+    --nav-text-active: #F1F5F9;
+    --input-bg: #1E293B;
+    --input-border: #334155;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     background-color: var(--bg-main) !important;
     color: var(--text-primary) !important;
 }
 
 body.dark-mode .header,
-body.dark-mode .global-header,
-body.dark-mode .navbar,
+body.dark-mode .global-header {
+    background-color: var(--nav-bg) !important;
+    border-bottom-color: #1E293B !important;
+}
+
+body.dark-mode .navbar {
+    background-color: transparent !important;
+}
+
 body.dark-mode .auth-card,
 body.dark-mode .profile-card-sidebar,
 body.dark-mode .profile-form-card,
-body.dark-mode .blog-card,
 body.dark-mode .stat-card,
 body.dark-mode .dashboard-blog,
 body.dark-mode .create-blog-container,
-body.dark-mode .footer {
+body.dark-mode .my-blogs,
+body.dark-mode .blog-form,
+body.dark-mode .dashboard-welcome {
     background-color: var(--bg-card) !important;
-    color: var(--text-primary) !important;
     border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .blog-card {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-mode .footer,
+body.dark-mode footer {
+    background-color: #0B1120 !important;
 }
 
 body.dark-mode h1,
 body.dark-mode h2,
 body.dark-mode h3,
 body.dark-mode h4,
+body.dark-mode h5,
+body.dark-mode h6,
 body.dark-mode .logo span,
-body.dark-mode .custom-modal h3 {
+body.dark-mode .blog-info h3,
+body.dark-mode .blog-card h3 {
     color: var(--text-primary) !important;
 }
 
 body.dark-mode p,
 body.dark-mode small,
 body.dark-mode .subtitle,
-body.dark-mode .custom-modal p {
+body.dark-mode .blog-info p,
+body.dark-mode .blog-card p,
+body.dark-mode .section-heading p,
+body.dark-mode .stat-info p,
+body.dark-mode .welcome-text p {
     color: var(--text-secondary) !important;
+}
+
+body.dark-mode label {
+    color: var(--text-primary) !important;
 }
 
 body.dark-mode input,
@@ -57,13 +100,109 @@ body.dark-mode select,
 body.dark-mode textarea {
     background-color: var(--input-bg) !important;
     color: var(--text-primary) !important;
-    border-color: var(--border-color) !important;
+    border-color: var(--input-border) !important;
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+body.dark-mode .category-card {
+    background: #1A2540 !important;
+    border-color: #334155 !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .category-card h3 {
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .nav-links a,
+body.dark-mode .global-nav-links a {
+    color: var(--nav-text) !important;
+}
+
+body.dark-mode .nav-links a:hover,
+body.dark-mode .nav-links a.active,
+body.dark-mode .global-nav-links a:hover {
+    color: var(--nav-text-active) !important;
+}
+
+body.dark-mode .newsletter-section {
+    background-color: #1A2540 !important;
+}
+
+body.dark-mode .categories-section {
+    background-color: var(--bg-card) !important;
+}
+
+body.dark-mode #featured {
+    background-color: var(--bg-section) !important;
+}
+
+body.dark-mode .custom-modal {
+    background: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .custom-modal h3 {
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .custom-modal p {
+    color: var(--text-secondary) !important;
+}
+
+body.dark-mode .badge.published {
+    background: #065F46 !important;
+    color: #D1FAE5 !important;
+}
+
+body.dark-mode .badge.draft {
+    background: #92400E !important;
+    color: #FEF3C7 !important;
+}
+
+body.dark-mode .edit-btn {
+    background: #1E293B !important;
+    color: #818CF8 !important;
+    border-color: #3730A3 !important;
+}
+
+body.dark-mode .edit-btn:hover {
+    background: #4F46E5 !important;
+    color: #fff !important;
+}
+
+body.dark-mode .delete-btn {
+    background: #2D1515 !important;
+    color: #FCA5A5 !important;
+    border-color: #7F1D1D !important;
+}
+
+body.dark-mode .delete-btn:hover {
+    background: #EF4444 !important;
+    color: #fff !important;
+}
+
+body.dark-mode .profile-form-card .form-group label {
+    color: var(--text-primary) !important;
+}
+
+body.dark-mode .toast {
+    background: #1E293B !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .toast-message {
+    color: #F1F5F9 !important;
 }
 
 .theme-toggle-btn {
     background: transparent;
-    border: 1px solid var(--border-color);
-    color: #4F46E5;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    color: #F1F5F9;
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -71,11 +210,18 @@ body.dark-mode textarea {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.1rem;
-    transition: all 0.2s ease;
+    font-size: 1rem;
+    transition: all 0.25s ease;
+    flex-shrink: 0;
 }
 
 .theme-toggle-btn:hover {
-    background: #EEF2FF;
-    transform: scale(1.08);
+    background: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.4);
+    transform: scale(1.1);
+}
+
+body.dark-mode .theme-toggle-btn {
+    border-color: rgba(255,255,255,0.2);
+    color: #F1F5F9;
 }
