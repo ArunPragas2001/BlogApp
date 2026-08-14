@@ -4,9 +4,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     const token = localStorage.getItem("token");
     const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
 
-    if (!token || (currentUser.role !== "admin" && currentUser.role !== "owner")) {
-        showToast("Access Restricted. Only Admins and Owner can access Site Settings.", "error");
-        setTimeout(() => window.location.href = "dashboard.html", 1500);
+    if (!token || currentUser.role !== "owner") {
+        showToast("Access Restricted. Only the System Owner can edit Site Settings.", "error");
+        setTimeout(() => window.location.href = "dashboard.html", 1800);
         return;
     }
 

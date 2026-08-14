@@ -14,8 +14,8 @@ export const getSiteConfig = async (req, res) => {
 
 export const updateSiteConfig = async (req, res) => {
   try {
-    if (req.user.role !== "admin" && req.user.role !== "owner") {
-      return res.status(403).json({ message: "Only Admins and Owner can update site settings" });
+    if (req.user.role !== "owner") {
+      return res.status(403).json({ message: "Only the Owner can update site settings" });
     }
 
     let config = await SiteConfig.findOne();
