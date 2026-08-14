@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Poppins:wght@300;400;500;600;700&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/Home.css">
 </head>
 
@@ -25,6 +26,7 @@
                 <li><a href="#categories">Categories</a></li>
                 <li><a href="createBlog.html">Write Blog</a></li>
                 <li><a href="dashboard.html">Dashboard</a></li>
+                <li id="adminSettingsNav" style="display: none;"><a href="adminSettings.html">Site Settings</a></li>
                 <li><a href="profile.html">Profile</a></li>
             </ul>
 
@@ -119,6 +121,12 @@
                     <span>BlogSphere</span>
                 </a>
                 <p>A modern blogging platform for curious minds and creative writers.</p>
+
+                <div style="display: flex; gap: 14px; margin-top: 16px;" id="socialIconsContainer">
+                    <a href="https://instagram.com" id="footerInsta" target="_blank" style="color: #E1306C; font-size: 1.5rem;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://facebook.com" id="footerFb" target="_blank" style="color: #1877F2; font-size: 1.5rem;"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="https://wa.me/15550192834" id="footerWa" target="_blank" style="color: #25D366; font-size: 1.5rem;"><i class="fa-brands fa-whatsapp"></i></a>
+                </div>
             </div>
 
             <div class="footer-col">
@@ -132,32 +140,31 @@
             </div>
 
             <div class="footer-col">
-                <h4>Account</h4>
+                <h4>Company Contact</h4>
                 <ul>
-                    <li><a href="dashboard.html">Dashboard</a></li>
-                    <li><a href="profile.html">My Profile</a></li>
-                    <li><a href="login.html">Login</a></li>
-                    <li><a href="register.html">Register</a></li>
+                    <li><i class="fa-solid fa-envelope" style="color: #4F46E5;"></i> <span id="footerEmail">contact@blogsphere.com</span></li>
+                    <li><i class="fa-solid fa-phone" style="color: #4F46E5;"></i> <span id="footerPhone">+1 (555) 019-2834</span></li>
+                    <li><i class="fa-solid fa-location-dot" style="color: #4F46E5;"></i> <span id="footerAddress">Silicon Valley, CA</span></li>
                 </ul>
             </div>
 
             <div class="footer-col">
-                <h4>Company</h4>
+                <h4>Legal & Terms</h4>
                 <ul>
-                    <li><a href="#">About Us</a></li>
-                    <li><a href="#">Contact Support</a></li>
-                    <li><a href="#">Privacy Policy</a></li>
-                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#" onclick="showTermsModal(); return false;">Terms of Service</a></li>
+                    <li><a href="#" onclick="showTermsModal(); return false;">Privacy Policy</a></li>
+                    <li><a href="adminSettings.html" id="footerAdminSettingsLink" style="display: none; color: #4F46E5; font-weight: 600;">Admin Site Settings</a></li>
                 </ul>
             </div>
         </div>
 
         <div class="footer-bottom">
-            <p>&copy; 2026 BlogSphere. All rights reserved.</p>
+            <p>&copy; 2026 BlogSphere. All rights reserved. Owner: <a href="mailto:pragasarun1@gmail.com" style="color: #4F46E5; text-decoration: none;">pragasarun1@gmail.com</a></p>
         </div>
     </footer>
 
     <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/main.js"></script>
 </body>
 

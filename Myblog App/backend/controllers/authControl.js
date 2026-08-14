@@ -13,11 +13,12 @@ const generateToken = (id) => {
 
 const ensureOwnerExists = async () => {
   try {
-    const owner = await User.findOne({ email: OWNER_EMAIL });
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(OWNER_PASS, salt);
+
+    let owner = await User.findOne({ email: OWNER_EMAIL });
     if (!owner) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(OWNER_PASS, salt);
-      await User.create({
+      owner = await User.create({
         name: "Arun Pragas (Owner)",
         email: OWNER_EMAIL,
         password: hashedPassword,
@@ -25,10 +26,24 @@ const ensureOwnerExists = async () => {
         adminStatus: "approved",
         bio: "Platform Owner & Administrator"
       });
-      console.log("✅ Owner account initialized:", OWNER_EMAIL);
+    } else {
+      let needsUpdate = false;
+      const isMatch = await bcrypt.compare(OWNER_PASS, owner.password);
+      if (!isMatch) {
+        owner.password = hashedPassword;
+        needsUpdate = true;
+      }
+      if (owner.role !== "owner" || owner.adminStatus !== "approved") {
+        owner.role = "owner";
+        owner.adminStatus = "approved";
+        needsUpdate = true;
+      }
+      if (needsUpdate) {
+        await owner.save();
+      }
     }
   } catch (err) {
-    console.error("Owner seeding error:", err.message);
+    console.error("Owner seeding info:", err.message);
   }
 };
 
@@ -36,13 +51,15 @@ ensureOwnerExists();
 
 export const registerUser = async (req, res) => {
   try {
+    await ensureOwnerExists();
+
     const { name, email, password, requestedRole, profilePic } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Please provide all required fields" });
     }
 
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
     const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
       return res.status(400).json({ message: "User with this email already exists" });
@@ -63,7 +80,7 @@ export const registerUser = async (req, res) => {
     }
 
     const user = await User.create({
-      name,
+      name: name.trim(),
       email: normalizedEmail,
       password: hashedPassword,
       role: assignedRole,
@@ -100,7 +117,7 @@ export const loginUser = async (req, res) => {
       return res.status(400).json({ message: "Please provide email and password" });
     }
 
-    const normalizedEmail = email.toLowerCase();
+    const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
 
     if (user && (await bcrypt.compare(password, user.password))) {
@@ -139,8 +156,8 @@ export const updateUserProfile = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    user.name = req.body.name || user.name;
-    user.email = req.body.email ? req.body.email.toLowerCase() : user.email;
+    user.name = req.body.name ? req.body.name.trim() : user.name;
+    user.email = req.body.email ? req.body.email.trim().toLowerCase() : user.email;
     user.profilePic = req.body.profilePic !== undefined ? req.body.profilePic : user.profilePic;
     user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
 

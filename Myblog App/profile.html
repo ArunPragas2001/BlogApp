@@ -5,17 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - BlogSphere</title>
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Toast & Profile Styles -->
     <link rel="stylesheet" href="css/toast.css">
+    <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/profile.css">
 </head>
 
 <body>
-    <!-- Global Header Navigation -->
     <header class="global-header">
         <a href="index.html" class="logo">
             <i class="fa-solid fa-layer-group"></i>
@@ -39,9 +36,7 @@
         </nav>
     </header>
 
-    <!-- Profile Container -->
     <div class="profile-container">
-        <!-- Sidebar Profile Summary Card -->
         <aside class="profile-card-sidebar">
             <div class="avatar-wrapper">
                 <img id="sidebarAvatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile Picture" class="profile-avatar" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'">
@@ -54,7 +49,6 @@
             <small style="color: #94A3B8; display: block;">Member of BlogSphere Community</small>
         </aside>
 
-        <!-- Main Edit Profile Form -->
         <main class="profile-form-card">
             <h3>Account Settings</h3>
             <p class="subtitle">Update your personal information and profile picture</p>
@@ -78,7 +72,6 @@
                     </small>
                 </div>
 
-                <!-- Sample Preset Avatars -->
                 <div style="margin-bottom: 20px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 8px;">Or Pick a Sample Avatar:</label>
                     <div style="display: flex; gap: 10px;" id="sampleAvatars">
@@ -106,8 +99,8 @@
         </main>
     </div>
 
-    <!-- Scripts -->
     <script src="js/toast.js"></script>
+    <script src="js/theme.js"></script>
     <script src="js/profile.js"></script>
 </body>
 

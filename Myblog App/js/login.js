@@ -87,11 +87,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 name: data.name,
                 email: data.email,
                 role: data.role,
+                adminStatus: data.adminStatus,
                 profilePic: data.profilePic,
                 bio: data.bio
             }));
 
-            showToast("👋 Welcome back! Login successful.", "success");
+            showToast(`👋 Welcome back, ${data.name}! Login successful.`, "success");
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 800);

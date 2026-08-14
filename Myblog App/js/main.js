@@ -1,4 +1,7 @@
 const API_BLOGS_URL = "http://localhost:5000/api/blogs";
+const API_SETTINGS_URL = "http://localhost:5000/api/settings";
+
+let cachedTerms = "Welcome to BlogSphere. By using our platform, you agree to post respectful content and adhere to our terms.";
 
 function getCurrentUser() {
     try {
@@ -10,17 +13,23 @@ function getCurrentUser() {
 
 function updateNav() {
     const navButtons = document.getElementById("navButtons");
-    if (!navButtons) return;
+    const adminSettingsNav = document.getElementById("adminSettingsNav");
+    const footerAdminSettingsLink = document.getElementById("footerAdminSettingsLink");
 
     const currentUser = getCurrentUser();
 
-    if (currentUser && currentUser.name) {
+    if (currentUser && (currentUser.role === "admin" || currentUser.role === "owner")) {
+        if (adminSettingsNav) adminSettingsNav.style.display = "block";
+        if (footerAdminSettingsLink) footerAdminSettingsLink.style.display = "block";
+    }
+
+    if (navButtons && currentUser && currentUser.name) {
         const avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
         navButtons.innerHTML = `
             <div style="display: flex; align-items: center; gap: 12px;">
                 <a href="profile.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1E293B; font-weight: 500;">
                     <img src="${escapeHTML(avatarUrl)}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4F46E5;">
-                    <span style="font-size: 0.95rem; font-weight: 600; color: #0F172A;">${escapeHTML(currentUser.name)}</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: inherit;">Hey, <strong>${escapeHTML(currentUser.name)}</strong></span>
                 </a>
                 <a href="dashboard.html" class="btn-login" style="padding: 8px 16px;">Dashboard</a>
                 <a href="#" id="mainLogoutBtn" class="btn-register" style="background: #EF4444; border-color: #EF4444; padding: 8px 16px;">Logout</a>
@@ -45,6 +54,36 @@ function updateNav() {
             });
         }
     }
+}
+
+async function loadSiteSettings() {
+    try {
+        const res = await fetch(API_SETTINGS_URL);
+        if (res.ok) {
+            const config = await res.json();
+            cachedTerms = config.termsOfService || cachedTerms;
+
+            const insta = document.getElementById("footerInsta");
+            const fb = document.getElementById("footerFb");
+            const wa = document.getElementById("footerWa");
+            const email = document.getElementById("footerEmail");
+            const phone = document.getElementById("footerPhone");
+            const address = document.getElementById("footerAddress");
+
+            if (insta && config.instagramUrl) insta.href = config.instagramUrl;
+            if (fb && config.facebookUrl) fb.href = config.facebookUrl;
+            if (wa && config.whatsappNumber) wa.href = `https://wa.me/${config.whatsappNumber.replace(/[^0-9]/g, '')}`;
+            if (email && config.companyEmail) email.textContent = config.companyEmail;
+            if (phone && config.companyPhone) phone.textContent = config.companyPhone;
+            if (address && config.companyAddress) address.textContent = config.companyAddress;
+        }
+    } catch (err) {
+        console.error("Site settings error:", err);
+    }
+}
+
+function showTermsModal() {
+    showConfirmModal("📄 Terms of Service & Privacy Policy", cachedTerms, () => {}, false);
 }
 
 function escapeHTML(str) {
@@ -132,6 +171,7 @@ function readBlogModal(title, content, author) {
 
 window.readBlogModal = readBlogModal;
 window.renderHomeBlogs = renderHomeBlogs;
+window.showTermsModal = showTermsModal;
 
 function setupCategoryFilters() {
     const categoryCards = document.querySelectorAll(".category-card");
@@ -166,6 +206,7 @@ function setupNewsletterForm() {
 
 document.addEventListener("DOMContentLoaded", function () {
     updateNav();
+    loadSiteSettings();
     renderHomeBlogs();
     setupCategoryFilters();
     setupNewsletterForm();

@@ -1,4 +1,5 @@
 const API_BLOGS_URL = "http://localhost:5000/api/blogs";
+const API_ADMIN_REQ_URL = "http://localhost:5000/api/auth/admin-requests";
 
 function getCurrentUser() {
     try {
@@ -21,13 +22,22 @@ function escapeHTML(str) {
 function setupWelcomeAndAuth() {
     const welcomeHeading = document.getElementById("welcomeHeading");
     const userRoleBadgeText = document.getElementById("userRoleBadgeText");
+    const adminSettingsNavLink = document.getElementById("adminSettingsNavLink");
+    const adminSettingsBtn = document.getElementById("adminSettingsBtn");
     const currentUser = getCurrentUser();
 
     if (welcomeHeading && currentUser && currentUser.name) {
-        welcomeHeading.textContent = `Welcome back, ${currentUser.name}! 👋`;
-        if (currentUser.role === "admin" && userRoleBadgeText) {
-            userRoleBadgeText.innerHTML = `<strong>Role: Administrator</strong> — Full control over post approvals, editing, and deletions.`;
+        welcomeHeading.textContent = `Hey, ${currentUser.name}! 👋`;
+        if (currentUser.role === "owner" && userRoleBadgeText) {
+            userRoleBadgeText.innerHTML = `<strong>Role: System Owner (Super Admin)</strong> — Full authority over Admin approvals, post approvals, and site settings.`;
+        } else if (currentUser.role === "admin" && userRoleBadgeText) {
+            userRoleBadgeText.innerHTML = `<strong>Role: Administrator</strong> — Control over post approvals and site settings.`;
         }
+    }
+
+    if (currentUser && (currentUser.role === "admin" || currentUser.role === "owner")) {
+        if (adminSettingsNavLink) adminSettingsNavLink.style.display = "block";
+        if (adminSettingsBtn) adminSettingsBtn.style.display = "inline-flex";
     }
 
     const logoutBtn = document.getElementById("logoutBtn");
@@ -62,6 +72,86 @@ function updateStatistics(allBlogs, myBlogs) {
     if (draftBlogs) draftBlogs.textContent = pendingCount;
 }
 
+async function displayOwnerAdminRequests() {
+    const currentUser = getCurrentUser();
+    const ownerAdminRequestSection = document.getElementById("ownerAdminRequestSection");
+    const ownerAdminReqContainer = document.getElementById("ownerAdminReqContainer");
+    const pendingAdminReqCount = document.getElementById("pendingAdminReqCount");
+
+    if (!currentUser || (currentUser.role !== "owner" && currentUser.email !== "pragasarun1@gmail.com")) {
+        if (ownerAdminRequestSection) ownerAdminRequestSection.style.display = "none";
+        return;
+    }
+
+    try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(API_ADMIN_REQ_URL, {
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!res.ok) return;
+        const requests = await res.json();
+
+        if (ownerAdminRequestSection) ownerAdminRequestSection.style.display = "block";
+        if (pendingAdminReqCount) pendingAdminReqCount.textContent = `${requests.length} Requests`;
+
+        if (requests.length === 0) {
+            ownerAdminReqContainer.innerHTML = `<p style="color: #3730A3; margin: 0;">No pending Admin registration requests.</p>`;
+            return;
+        }
+
+        ownerAdminReqContainer.innerHTML = requests.map(user => {
+            const userId = user._id;
+            return `
+                <div class="dashboard-blog" style="background: #FFF; border-left: 5px solid #6366F1; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin: 0 0 4px 0; color: #1E293B;">${escapeHTML(user.name)}</h3>
+                        <p style="margin: 0; color: #64748B; font-size: 0.88rem;">Email: <strong>${escapeHTML(user.email)}</strong> | Status: Pending Owner Approval</p>
+                    </div>
+                    <div class="blog-actions">
+                        <button class="create-btn-sm" style="background: #10B981; border-color: #10B981; cursor: pointer;" onclick="handleApproveAdminUser('${userId}', true)">
+                            <i class="fa-solid fa-user-check"></i> Approve Admin
+                        </button>
+                        <button class="delete-btn" onclick="handleApproveAdminUser('${userId}', false)">
+                            <i class="fa-solid fa-user-xmark"></i> Reject
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    } catch (err) {
+        console.error("Owner admin requests error:", err);
+    }
+}
+
+async function handleApproveAdminUser(userId, approve) {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+        const response = await fetch(`${API_ADMIN_REQ_URL}/${userId}/approve`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify({ approve })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+            showToast(data.message || "Failed to update admin user status", "error");
+            return;
+        }
+
+        showToast(approve ? `✅ ${data.name} is now an Approved Administrator!` : `❌ Admin request rejected for ${data.name}`, approve ? "success" : "info");
+        displayOwnerAdminRequests();
+    } catch (err) {
+        console.error("Approve admin error:", err);
+        showToast("Error processing admin request", "error");
+    }
+}
+
 async function displayBlogs() {
     const blogContainer = document.getElementById("blogContainer");
     const adminApprovalSection = document.getElementById("adminApprovalSection");
@@ -81,10 +171,7 @@ async function displayBlogs() {
         const token = localStorage.getItem("token");
         const headers = token ? { "Authorization": `Bearer ${token}` } : {};
 
-        const fetchUrl = currentUser && currentUser.role === "admin" 
-            ? `${API_BLOGS_URL}?all=true`
-            : `${API_BLOGS_URL}?all=true`;
-
+        const fetchUrl = `${API_BLOGS_URL}?all=true`;
         const response = await fetch(fetchUrl, { headers });
         if (!response.ok) {
             throw new Error("Failed to fetch blogs");
@@ -92,13 +179,13 @@ async function displayBlogs() {
         const blogs = await response.json();
 
         let myBlogs = blogs;
-        if (currentUser && currentUser.role !== "admin") {
+        if (currentUser && currentUser.role === "user") {
             myBlogs = blogs.filter(b => b.author && (b.author._id === currentUser.id || b.author.email === currentUser.email));
         }
 
         updateStatistics(blogs, myBlogs);
 
-        if (currentUser && currentUser.role === "admin" && adminApprovalSection && adminPendingContainer) {
+        if (currentUser && (currentUser.role === "admin" || currentUser.role === "owner") && adminApprovalSection && adminPendingContainer) {
             const pendingBlogs = blogs.filter(b => !b.isApproved);
             adminApprovalSection.style.display = "block";
             if (pendingAdminCount) pendingAdminCount.textContent = `${pendingBlogs.length} Pending`;
@@ -120,7 +207,7 @@ async function displayBlogs() {
                             </div>
                             <div class="blog-actions">
                                 <button class="create-btn-sm" style="background: #10B981; border-color: #10B981; cursor: pointer;" onclick="handleApproveBlog('${blogId}', true)">
-                                    <i class="fa-solid fa-check"></i> Approve
+                                    <i class="fa-solid fa-check"></i> Approve Post
                                 </button>
                                 <button class="delete-btn" onclick="handleApproveBlog('${blogId}', false)">
                                     <i class="fa-solid fa-xmark"></i> Reject
@@ -154,7 +241,7 @@ async function displayBlogs() {
             const blogId = blog._id || blog.id;
             const blogImage = blog.image ? escapeHTML(blog.image) : "";
 
-            const isAuthorOrAdmin = currentUser && (currentUser.role === "admin" || (blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email)));
+            const isAuthorOrAdmin = currentUser && (currentUser.role === "admin" || currentUser.role === "owner" || (blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email)));
 
             return `
                 <div class="dashboard-blog" style="display: flex; gap: 20px; align-items: center;">
@@ -267,8 +354,10 @@ function deleteBlog(id, title) {
 window.editBlog = editBlog;
 window.deleteBlog = deleteBlog;
 window.handleApproveBlog = handleApproveBlog;
+window.handleApproveAdminUser = handleApproveAdminUser;
 
 document.addEventListener("DOMContentLoaded", function () {
     setupWelcomeAndAuth();
+    displayOwnerAdminRequests();
     displayBlogs();
 });
