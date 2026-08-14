@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// Blog Schema definition
 const blogSchema = new mongoose.Schema(
   {
     title: {
@@ -22,6 +21,15 @@ const blogSchema = new mongoose.Schema(
       enum: ["draft", "published"],
       default: "published"
     },
+    isApproved: {
+      type: Boolean,
+      default: false
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending"
+    },
     image: {
       type: String,
       default: ""
@@ -33,7 +41,7 @@ const blogSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true // Automatically adds createdAt and updatedAt fields
+    timestamps: true
   }
 );
 

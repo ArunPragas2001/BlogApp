@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 
-// User Schema definition
 const userSchema = new mongoose.Schema(
   {
     name: {
@@ -19,6 +18,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Password is required"]
     },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user"
+    },
     profilePic: {
       type: String,
       default: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
@@ -29,7 +33,7 @@ const userSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true // Automatically adds createdAt and updatedAt fields
+    timestamps: true
   }
 );
 
