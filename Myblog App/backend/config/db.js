@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 
-/**
- * Connect to MongoDB database
- */
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(
@@ -11,7 +8,6 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.log("⚠️ Running server without MongoDB connection (DB operations will fail until MongoDB is connected).");
   }
 };
 

@@ -5,17 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | BlogSphere</title>
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
 
 <body>
-    <!-- Header / Navbar -->
     <header class="header">
         <nav class="navbar">
             <a href="index.html" class="logo">
@@ -26,7 +22,7 @@
             <ul class="nav-links">
                 <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
                 <li><a href="dashboard.html" class="active"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="createBlog.html"><i class="fa-solid fa-plus"></i> Create Blog</a></li>
+                <li><a href="createBlog.html"><i class="fa-solid fa-plus"></i> Write Blog</a></li>
                 <li><a href="profile.html"><i class="fa-regular fa-user"></i> Profile</a></li>
             </ul>
 
@@ -38,20 +34,17 @@
         </nav>
     </header>
 
-    <!-- Dashboard Container -->
     <main class="dashboard-container">
-        <!-- Welcome Banner -->
         <section class="dashboard-welcome">
             <div class="welcome-text">
                 <h1 id="welcomeHeading">Welcome back! 👋</h1>
-                <p>Manage your stories and keep sharing your ideas with the world.</p>
+                <p id="userRoleBadgeText">Manage your stories and keep sharing your ideas with the world.</p>
             </div>
             <a href="createBlog.html" class="create-btn">
                 <i class="fa-solid fa-plus"></i> Create Blog
             </a>
         </section>
 
-        <!-- Statistics Grid -->
         <section class="dashboard-stats">
             <div class="stat-card">
                 <div class="stat-icon">
@@ -69,40 +62,48 @@
                 </div>
                 <div class="stat-info">
                     <h3 id="publishedBlogs">0</h3>
-                    <p>Published</p>
+                    <p>Published & Approved</p>
                 </div>
             </div>
 
             <div class="stat-card">
                 <div class="stat-icon draft-icon">
-                    <i class="fa-solid fa-file-pen"></i>
+                    <i class="fa-solid fa-clock"></i>
                 </div>
                 <div class="stat-info">
                     <h3 id="draftBlogs">0</h3>
-                    <p>Drafts</p>
+                    <p>Pending Approval</p>
                 </div>
             </div>
         </section>
 
-        <!-- My Blogs List -->
+        <!-- Admin Approval Section (Rendered dynamically if Admin) -->
+        <section id="adminApprovalSection" style="display: none; margin-bottom: 40px; background: #FFFBEB; border: 1px solid #FCD34D; border-radius: 16px; padding: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <div>
+                    <h2 style="color: #92400E; margin: 0 0 4px 0;"><i class="fa-solid fa-shield-halved"></i> Admin Review & Approval Queue</h2>
+                    <p style="color: #B45309; margin: 0;">Review pending blog submissions from community members.</p>
+                </div>
+                <span class="badge" style="background: #F59E0B; color: #FFF; font-weight: 600; padding: 6px 14px; border-radius: 20px;" id="pendingAdminCount">0 Pending</span>
+            </div>
+            <div id="adminPendingContainer" class="blogs-list">
+                <!-- Pending admin blogs rendered here -->
+            </div>
+        </section>
+
         <section class="my-blogs">
             <div class="section-heading">
                 <div>
-                    <h2>My Blogs</h2>
-                    <p>Manage your published and draft posts.</p>
+                    <h2 id="myBlogsTitle">My Blogs</h2>
+                    <p>Manage your posts and check approval status.</p>
                 </div>
-                <a href="createBlog.html" class="create-btn-sm">
-                    <i class="fa-solid fa-plus"></i> New Blog
-                </a>
             </div>
 
             <div class="blogs-list" id="blogContainer">
-                <!-- Blogs will be dynamically rendered here -->
             </div>
         </section>
     </main>
 
-    <!-- Footer -->
     <footer>
         <p>© 2026 BlogSphere. All Rights Reserved.</p>
     </footer>

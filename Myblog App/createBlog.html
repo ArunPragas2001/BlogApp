@@ -5,17 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Blog | BlogSphere</title>
-    <!-- Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/createBlog.css">
 </head>
 
 <body>
-    <!-- Header / Navbar -->
     <header class="header">
         <nav class="navbar">
             <a href="index.html" class="logo">
@@ -26,19 +22,12 @@
             <ul class="nav-links">
                 <li><a href="index.html"><i class="fa-solid fa-house"></i> Home</a></li>
                 <li><a href="dashboard.html"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
-                <li><a href="createBlog.html" class="active"><i class="fa-solid fa-plus"></i> Create Blog</a></li>
+                <li><a href="createBlog.html" class="active"><i class="fa-solid fa-plus"></i> Write Blog</a></li>
                 <li><a href="profile.html"><i class="fa-regular fa-user"></i> Profile</a></li>
             </ul>
-
-            <div class="nav-buttons">
-                <a href="dashboard.html" class="btn-back">
-                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
-                </a>
-            </div>
         </nav>
     </header>
 
-    <!-- Create Blog Form Main Section -->
     <main class="create-blog-page">
         <div class="create-blog-container">
             <div class="create-blog-header">
@@ -46,22 +35,20 @@
                 <p id="pageSubtitle">Share your ideas, knowledge and stories with the world.</p>
             </div>
 
-            <!-- Blog Form -->
             <form class="blog-form" id="createBlogForm" novalidate>
                 <div id="generalError" class="error-text general-error"></div>
 
-                <!-- Title -->
                 <div class="form-group">
                     <label for="blog-title">Blog Title</label>
                     <input type="text" id="blog-title" name="blog-title" placeholder="Enter an engaging blog title">
                     <small class="error-text" id="titleError"></small>
                 </div>
 
-                <!-- Category -->
                 <div class="form-group">
                     <label for="blog-category">Category</label>
                     <select id="blog-category" name="blog-category">
                         <option value="">Select a category</option>
+                        <option value="Politics">Politics</option>
                         <option value="Technology">Technology</option>
                         <option value="Programming">Programming</option>
                         <option value="Education">Education</option>
@@ -73,7 +60,6 @@
                     <small class="error-text" id="categoryError"></small>
                 </div>
 
-                <!-- Publication Status -->
                 <div class="form-group">
                     <label for="blog-status">Publication Status</label>
                     <select id="blog-status" name="blog-status">
@@ -82,21 +68,21 @@
                     </select>
                 </div>
 
-                <!-- Featured Image -->
                 <div class="form-group">
-                    <label for="blog-image">Featured Image URL (Paste link to attach image)</label>
+                    <label for="blog-image">Featured Image URL (Paste image link)</label>
                     <input type="url" id="blog-image" name="blog-image" placeholder="https://images.unsplash.com/... or image web link">
-                    <img id="imagePreview" alt="Image Preview" style="max-height: 200px; width: 100%; object-fit: cover; border-radius: 12px; margin-top: 10px; display: none; border: 1px solid #E2E8F0;">
+                    <div id="imagePreviewContainer" style="margin-top: 12px; display: none;">
+                        <span style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 6px;">Live Image Preview:</span>
+                        <img id="imagePreview" alt="Image Preview" style="max-height: 220px; width: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #6366F1;">
+                    </div>
                 </div>
 
-                <!-- Content -->
                 <div class="form-group">
                     <label for="blog-content">Blog Content</label>
                     <textarea id="blog-content" name="blog-content" rows="10" placeholder="Write your story here..."></textarea>
                     <small class="error-text" id="contentError"></small>
                 </div>
 
-                <!-- Buttons -->
                 <div class="form-actions">
                     <a href="dashboard.html" class="cancel-btn">Cancel</a>
                     <button type="submit" id="submitBtn" class="publish-btn">
@@ -107,7 +93,6 @@
         </div>
     </main>
 
-    <!-- Footer -->
     <footer>
         <p>© 2026 BlogSphere. All Rights Reserved.</p>
     </footer>

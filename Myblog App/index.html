@@ -5,21 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BlogSphere | Share Your Voice</title>
-
-    <!-- google font link -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Poppins:wght@300;400;500;600;700&display=swap">
-
-    <!-- font awesome link -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/Home.css">
 </head>
 
 <body>
-
-    <!-- Header Section -->
     <header class="header">
         <nav class="navbar">
             <a href="index.html" class="logo">
@@ -43,7 +35,6 @@
         </nav>
     </header>
 
-    <!-- hero section -->
     <section class="hero">
         <div class="hero-container">
             <div class="hero-content">
@@ -63,7 +54,6 @@
         </div>
     </section>
 
-    <!-- Categories Section -->
     <section class="categories-section" id="categories">
         <div class="section-container">
             <div class="section-header">
@@ -72,19 +62,23 @@
             </div>
 
             <div class="categories-grid">
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" onclick="renderHomeBlogs('Politics'); return false;">
+                    <i class="fa-solid fa-landmark"></i>
+                    <h3>Politics</h3>
+                </a>
+                <a href="#" class="category-card" onclick="renderHomeBlogs('Programming'); return false;">
                     <i class="fa-solid fa-laptop-code"></i>
                     <h3>Programming</h3>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" onclick="renderHomeBlogs('Technology'); return false;">
                     <i class="fa-solid fa-microchip"></i>
                     <h3>Technology</h3>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" onclick="renderHomeBlogs('Web Design'); return false;">
                     <i class="fa-solid fa-palette"></i>
                     <h3>Web Design</h3>
                 </a>
-                <a href="#" class="category-card">
+                <a href="#" class="category-card" onclick="renderHomeBlogs('Education'); return false;">
                     <i class="fa-solid fa-graduation-cap"></i>
                     <h3>Education</h3>
                 </a>
@@ -92,7 +86,6 @@
         </div>
     </section>
 
-    <!-- Featured Section -->
     <section class="featured-section" id="featured">
         <div class="section-container">
             <div class="section-header">
@@ -101,12 +94,10 @@
             </div>
 
             <div class="featured-grid" id="featuredBlogsContainer">
-                <!-- Blogs dynamically rendered by main.js -->
             </div>
         </div>
     </section>
 
-    <!-- Newsletter Section -->
     <section class="newsletter-section">
         <div class="section-container">
             <div class="newsletter-card">
@@ -120,7 +111,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-col">
@@ -130,16 +120,38 @@
                 </a>
                 <p>A modern blogging platform for curious minds and creative writers.</p>
             </div>
+
             <div class="footer-col">
-                <h4>Quick Links</h4>
+                <h4>Explore</h4>
                 <ul>
                     <li><a href="index.html">Home</a></li>
-                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="#featured">Featured Blogs</a></li>
+                    <li><a href="#categories">Categories</a></li>
                     <li><a href="createBlog.html">Write Blog</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Account</h4>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
                     <li><a href="profile.html">My Profile</a></li>
+                    <li><a href="login.html">Login</a></li>
+                    <li><a href="register.html">Register</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact Support</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
                 </ul>
             </div>
         </div>
+
         <div class="footer-bottom">
             <p>&copy; 2026 BlogSphere. All rights reserved.</p>
         </div>

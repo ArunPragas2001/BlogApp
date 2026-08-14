@@ -1,7 +1,3 @@
-// ==========================================
-// REGISTER.JS - API Backend & Toast Integration
-// ==========================================
-
 const API_URL = "http://localhost:5000/api/auth/register";
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -156,6 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 id: data._id,
                 name: data.name,
                 email: data.email,
+                role: data.role,
                 profilePic: data.profilePic,
                 bio: data.bio
             }));

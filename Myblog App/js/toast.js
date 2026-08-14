@@ -1,7 +1,3 @@
-// ==========================================
-// TOAST & MODAL NOTIFICATION SYSTEM
-// ==========================================
-
 function getOrCreateToastContainer() {
     let container = document.getElementById("toastContainer");
     if (!container) {
@@ -12,12 +8,6 @@ function getOrCreateToastContainer() {
     return container;
 }
 
-/**
- * Display a modern Toast notification
- * @param {string} message - Notification text
- * @param {'success' | 'error' | 'info'} type - Type of toast
- * @param {number} duration - Display time in ms (default 4000ms)
- */
 function showToast(message, type = "success", duration = 4000) {
     const container = getOrCreateToastContainer();
 
@@ -36,7 +26,6 @@ function showToast(message, type = "success", duration = 4000) {
 
     container.appendChild(toast);
 
-    // Trigger enter animation
     setTimeout(() => toast.classList.add("toast-show"), 10);
 
     const removeToast = () => {
@@ -52,9 +41,6 @@ function showToast(message, type = "success", duration = 4000) {
     setTimeout(removeToast, duration);
 }
 
-/**
- * Show a modern custom confirmation modal
- */
 function showConfirmModal(title, message, onConfirm, isDanger = true) {
     let overlay = document.getElementById("customModalOverlay");
     if (!overlay) {
@@ -110,6 +96,5 @@ function escapeToastHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
-// Expose functions globally
 window.showToast = showToast;
 window.showConfirmModal = showConfirmModal;

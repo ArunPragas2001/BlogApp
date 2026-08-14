@@ -1,7 +1,3 @@
-// ==========================================
-// PROFILE.JS - Profile Management Controller
-// ==========================================
-
 const API_PROFILE_URL = "http://localhost:5000/api/auth/profile";
 const API_ME_URL = "http://localhost:5000/api/auth/me";
 
@@ -26,17 +22,19 @@ document.addEventListener("DOMContentLoaded", async function () {
     const headerNavAvatar = document.getElementById("headerNavAvatar");
     const headerNavName = document.getElementById("headerNavName");
 
-    // Live avatar preview when typing URL link in input
     if (picInput) {
-        picInput.addEventListener("input", function () {
-            const url = this.value.trim();
-            if (url && sidebarAvatarPreview) {
-                sidebarAvatarPreview.src = url;
-            }
+        ["input", "keyup", "paste", "change"].forEach(evt => {
+            picInput.addEventListener(evt, function () {
+                setTimeout(() => {
+                    const url = this.value.trim();
+                    if (url && sidebarAvatarPreview) {
+                        sidebarAvatarPreview.src = url;
+                    }
+                }, 10);
+            });
         });
     }
 
-    // Load User Profile Data from Backend API
     try {
         const response = await fetch(API_ME_URL, {
             headers: {
@@ -50,13 +48,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const user = await response.json();
 
-        // Populate Form
         if (nameInput) nameInput.value = user.name || "";
         if (emailInput) emailInput.value = user.email || "";
         if (picInput) picInput.value = user.profilePic || "";
         if (bioInput) bioInput.value = user.bio || "";
 
-        // Update Sidebar Card
         if (sidebarName) sidebarName.textContent = user.name || "Blogger";
         if (sidebarEmail) sidebarEmail.textContent = user.email || "";
         if (sidebarBio) sidebarBio.textContent = user.bio || "Blogger & Content Creator";
@@ -69,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         showToast("Error loading profile data from server.", "error");
     }
 
-    // Submit Profile Update Handler
     if (form) {
         form.addEventListener("submit", async function (e) {
             e.preventDefault();
@@ -111,17 +106,16 @@ document.addEventListener("DOMContentLoaded", async function () {
                     return;
                 }
 
-                // Update token & stored currentUser
                 localStorage.setItem("token", data.token);
                 localStorage.setItem("currentUser", JSON.stringify({
                     id: data._id,
                     name: data.name,
                     email: data.email,
+                    role: data.role,
                     profilePic: data.profilePic,
                     bio: data.bio
                 }));
 
-                // Update Sidebar Card UI
                 if (sidebarName) sidebarName.textContent = data.name;
                 if (sidebarEmail) sidebarEmail.textContent = data.email;
                 if (sidebarBio) sidebarBio.textContent = data.bio || "Blogger & Content Creator";
@@ -141,7 +135,6 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-// Preset Avatar selection helper
 function selectSampleAvatar(url) {
     const picInput = document.getElementById("profilePic");
     const sidebarAvatarPreview = document.getElementById("sidebarAvatarPreview");

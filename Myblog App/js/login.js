@@ -1,7 +1,3 @@
-// ==========================================
-// LOGIN.JS - API Backend & Toast Integration
-// ==========================================
-
 const API_URL = "http://localhost:5000/api/auth/login";
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -11,7 +7,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!loginForm) return;
 
-    // Helper functions for UI error feedback
     function showError(elementId, message) {
         const el = document.getElementById(elementId);
         if (el) {
@@ -86,12 +81,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            // Save session to localStorage
             localStorage.setItem("token", data.token);
             localStorage.setItem("currentUser", JSON.stringify({
                 id: data._id,
                 name: data.name,
                 email: data.email,
+                role: data.role,
                 profilePic: data.profilePic,
                 bio: data.bio
             }));

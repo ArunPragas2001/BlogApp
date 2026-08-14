@@ -1,7 +1,3 @@
-// ==========================================
-// CREATEBLOG.JS - Image Preview & Toast Integration
-// ==========================================
-
 const API_BLOGS_URL = "http://localhost:5000/api/blogs";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -10,6 +6,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const categorySelect = document.getElementById("blog-category");
     const statusSelect = document.getElementById("blog-status");
     const imageInput = document.getElementById("blog-image");
+    const imagePreviewContainer = document.getElementById("imagePreviewContainer");
     const imagePreview = document.getElementById("imagePreview");
     const contentInput = document.getElementById("blog-content");
     const pageHeading = document.getElementById("pageHeading");
@@ -18,20 +15,24 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!form) return;
 
-    // Live Image Preview handler
-    if (imageInput && imagePreview) {
-        const updatePreview = () => {
-            const url = imageInput.value.trim();
-            if (url) {
-                imagePreview.src = url;
-                imagePreview.style.display = "block";
-            } else {
-                imagePreview.style.display = "none";
-            }
-        };
+    function updateImagePreview(url) {
+        if (url && url.trim() !== "") {
+            imagePreview.src = url.trim();
+            imagePreviewContainer.style.display = "block";
+            imagePreview.onerror = function () {
+                imagePreviewContainer.style.display = "none";
+            };
+        } else {
+            imagePreviewContainer.style.display = "none";
+        }
+    }
 
-        imageInput.addEventListener("input", updatePreview);
-        imageInput.addEventListener("change", updatePreview);
+    if (imageInput && imagePreview && imagePreviewContainer) {
+        ["input", "keyup", "paste", "change"].forEach(evt => {
+            imageInput.addEventListener(evt, function () {
+                setTimeout(() => updateImagePreview(this.value), 10);
+            });
+        });
     }
 
     const token = localStorage.getItem("token");
@@ -60,10 +61,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (statusSelect) statusSelect.value = blog.status || "Published";
                 if (imageInput) {
                     imageInput.value = blog.image || "";
-                    if (blog.image && imagePreview) {
-                        imagePreview.src = blog.image;
-                        imagePreview.style.display = "block";
-                    }
+                    updateImagePreview(blog.image);
                 }
                 if (contentInput) contentInput.value = blog.content || "";
             }
@@ -181,10 +179,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
-            showToast(editId ? "✅ Blog post updated successfully in MongoDB!" : "🎉 Blog post published to MongoDB!", "success");
+            const isUserAdmin = JSON.parse(localStorage.getItem("currentUser") || "{}").role === "admin";
+            const successMsg = isUserAdmin 
+                ? (editId ? "✅ Blog post updated successfully!" : "🎉 Blog post published!")
+                : (editId ? "✅ Blog updated! Sent to Admin for approval." : "🎉 Blog created! Sent to Admin for approval.");
+
+            showToast(successMsg, "success");
             setTimeout(() => {
                 window.location.href = "dashboard.html";
-            }, 1000);
+            }, 1200);
         } catch (err) {
             console.error("Save blog error:", err);
             showError("generalError", "Server error. Could not connect to backend.");

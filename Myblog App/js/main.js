@@ -1,7 +1,3 @@
-// ==========================================
-// MAIN.JS - Global Helpers & Home Page Controller
-// ==========================================
-
 const API_BLOGS_URL = "http://localhost:5000/api/blogs";
 
 function getCurrentUser() {
@@ -12,20 +8,19 @@ function getCurrentUser() {
     }
 }
 
-// Global Nav UI update
 function updateNav() {
     const navButtons = document.getElementById("navButtons");
     if (!navButtons) return;
 
     const currentUser = getCurrentUser();
 
-    if (currentUser) {
+    if (currentUser && currentUser.name) {
         const avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
         navButtons.innerHTML = `
             <div style="display: flex; align-items: center; gap: 12px;">
                 <a href="profile.html" style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1E293B; font-weight: 500;">
                     <img src="${escapeHTML(avatarUrl)}" alt="Avatar" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4F46E5;">
-                    <span>Hi, <strong>${escapeHTML(currentUser.name)}</strong></span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: #0F172A;">${escapeHTML(currentUser.name)}</span>
                 </a>
                 <a href="dashboard.html" class="btn-login" style="padding: 8px 16px;">Dashboard</a>
                 <a href="#" id="mainLogoutBtn" class="btn-register" style="background: #EF4444; border-color: #EF4444; padding: 8px 16px;">Logout</a>
@@ -62,7 +57,6 @@ function escapeHTML(str) {
         .replace(/'/g, "&#039;");
 }
 
-// Render Featured Blogs on Home Page from API
 async function renderHomeBlogs(categoryFilter = null) {
     const container = document.getElementById("featuredBlogsContainer");
     if (!container) return;
@@ -80,11 +74,9 @@ async function renderHomeBlogs(categoryFilter = null) {
             blogs = await response.json();
         }
 
-        const publishedBlogs = blogs.filter(b => (b.status || "").toLowerCase() === "published");
-
-        let displayList = publishedBlogs;
+        let displayList = blogs;
         if (categoryFilter && categoryFilter.toLowerCase() !== "all") {
-            displayList = publishedBlogs.filter(b => 
+            displayList = blogs.filter(b => 
                 b.category && b.category.toLowerCase() === categoryFilter.toLowerCase()
             );
         }
@@ -92,7 +84,7 @@ async function renderHomeBlogs(categoryFilter = null) {
         if (displayList.length === 0) {
             container.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #64748B;">
-                    <h3>No published articles found.</h3>
+                    <h3>No published articles found in this category.</h3>
                     <p>Be the first to <a href="createBlog.html" style="color: #4F46E5;">write one yourself</a>!</p>
                 </div>
             `;
@@ -101,7 +93,7 @@ async function renderHomeBlogs(categoryFilter = null) {
 
         container.innerHTML = displayList.map(blog => {
             const imageSrc = blog.image || "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
-            const authorName = blog.author ? (blog.author.name || "Author") : "Anonymous";
+            const authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
             const authorAvatar = blog.author && blog.author.profilePic ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
 
             return `
@@ -134,12 +126,12 @@ async function renderHomeBlogs(categoryFilter = null) {
     }
 }
 
-// Modal view for blog content
 function readBlogModal(title, content, author) {
     showConfirmModal(`📖 ${title}`, `By ${author || 'Anonymous'}\n\n${content}`, () => {}, false);
 }
 
 window.readBlogModal = readBlogModal;
+window.renderHomeBlogs = renderHomeBlogs;
 
 function setupCategoryFilters() {
     const categoryCards = document.querySelectorAll(".category-card");
