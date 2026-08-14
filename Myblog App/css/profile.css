@@ -62,13 +62,16 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    transition: background 0.2s;
+    transition: background 0.2s, transform 0.2s;
 }
 
-.camera-overlay:hover {
+.avatar-wrapper label:hover .camera-overlay {
     background: #6366F1;
+    transform: scale(1.1);
+}
+.avatar-wrapper label:hover .profile-avatar {
+    opacity: 0.8;
 }
 
 .profile-card-sidebar h2 {
