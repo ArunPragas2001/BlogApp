@@ -81,6 +81,17 @@ function showTermsModal() {
     showConfirmModal("Terms of Service & Privacy Policy", cachedTerms, function () {}, false);
 }
 
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch (e) {
+        return "";
+    }
+}
+
 function openArticleReader(blogId) {
     var blog = cachedBlogs.find(function (b) { return (b._id || b.id) === blogId; });
     if (!blog) return;
@@ -105,11 +116,13 @@ function openArticleReader(blogId) {
     if (meta) {
         var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
         var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var pubDate = formatDate(blog.createdAt);
         meta.innerHTML =
             '<span class="article-category-badge">' + esc(blog.category || "General") + '</span>' +
             '<div class="article-author-chip">' +
             '<img src="' + esc(authorAvatar) + '" alt="' + esc(authorName) + '" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
-            '<span>By ' + esc(authorName) + '</span></div>';
+            '<span>By ' + esc(authorName) + '</span></div>' +
+            (pubDate ? '<span style="font-size:0.85rem;color:#64748B;font-weight:500;display:inline-flex;align-items:center;gap:6px;"><i class="fa-regular fa-calendar-days" style="color:#4F46E5;"></i> Published: ' + esc(pubDate) + '</span>' : '');
     }
 
     if (titleEl) titleEl.textContent = blog.title || "";
@@ -158,11 +171,15 @@ async function renderHomeBlogs(categoryFilter) {
             var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
             var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
             var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
+            var pubDate = formatDate(blog.createdAt);
 
             return '<div class="blog-card">' +
                 '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" style="width:100%;height:210px;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
                 '<div class="blog-card-content">' +
-                '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;display:block;">' + esc(blog.category || "General") + '</span>' +
+                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +
+                '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;">' + esc(blog.category || "General") + '</span>' +
+                (pubDate ? '<span style="font-size:0.78rem;color:#64748B;font-weight:500;"><i class="fa-regular fa-calendar-days" style="margin-right:4px;"></i>' + esc(pubDate) + '</span>' : '') +
+                '</div>' +
                 '<h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:8px;line-height:1.3;">' + esc(blog.title) + '</h3>' +
                 '<p class="blog-card-preview">' + esc(preview) + '</p>' +
                 '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">' +
@@ -207,12 +224,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     var newsletterForm = document.getElementById("newsletterForm");
     if (newsletterForm) {
-        newsletterForm.addEventListener("submit", function (e) {
+        newsletterForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             var input = newsletterForm.querySelector("input[type='email']");
             if (input && input.value) {
-                showToast("✅ Subscribed with " + input.value + "!", "success", 4000);
-                input.value = "";
+                var email = input.value.trim();
+                try {
+                    showToast("Subscribing...", "info");
+                    var res = await fetch("http://localhost:5000/api/subscribers/subscribe", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: email })
+                    });
+                    var data = await res.json();
+                    if (res.ok) {
+                        showToast(data.message || "🎉 Thank you for subscribing!", "success", 4000);
+                        input.value = "";
+                    } else {
+                        showToast(data.message || "Subscription failed", "error");
+                    }
+                } catch (err) {
+                    showToast("Error connecting to server", "error");
+                }
             }
         });
     }

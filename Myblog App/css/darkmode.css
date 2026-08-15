@@ -404,3 +404,13 @@ body.dark-mode .theme-toggle-btn:hover {
     background: rgba(252, 211, 77, 0.12);
     border-color: rgba(252, 211, 77, 0.6);
 }
+
+body.dark-mode .logo-text {
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .logo-highlight {
+    background: linear-gradient(135deg, #818CF8, #38BDF8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

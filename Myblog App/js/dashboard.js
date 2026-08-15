@@ -11,6 +11,17 @@ function esc(str) {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+function formatDate(dateStr) {
+    if (!dateStr) return "";
+    try {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch (e) {
+        return "";
+    }
+}
+
 function setupWelcomeAndAuth() {
     var welcomeHeading = document.getElementById("welcomeHeading");
     var userRoleBadgeText = document.getElementById("userRoleBadgeText");
@@ -277,6 +288,7 @@ async function displayBlogs() {
             var statusText = isApproved ? "✅ Approved & Live" : (approvalStatus === "pending_author" ? "🖊️ Admin edited · Author review needed" : "⏳ Pending Approval");
             var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Unknown";
             var blogImage = blog.image && blog.image.trim() !== "" ? blog.image : "";
+            var pubDate = formatDate(blog.createdAt);
 
             var isAuthorOfBlog = currentUser && blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email);
             var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
@@ -293,10 +305,11 @@ async function displayBlogs() {
                 '<div class="blog-info" style="flex:1;">' +
                 '<h3>' + esc(blog.title) + '</h3>' +
                 '<p>' + esc((blog.content || "").substring(0, 100)) + (blog.content && blog.content.length > 100 ? "…" : "") + '</p>' +
-                '<div style="display:flex;gap:10px;align-items:center;margin-top:8px;flex-wrap:wrap;">' +
+                '<div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">' +
                 '<span class="badge ' + badgeClass + '">' + statusText + '</span>' +
                 '<span style="font-size:0.8rem;font-weight:600;color:#4F46E5;">' + esc(blog.category || "General") + '</span>' +
                 '<small style="color:#64748B;">By ' + esc(authorName) + '</small>' +
+                (pubDate ? '<small style="color:#64748B;"><i class="fa-regular fa-calendar-days" style="color:#6366F1;"></i> ' + esc(pubDate) + '</small>' : '') +
                 '</div></div>' +
                 actionsHtml +
                 '</div>';

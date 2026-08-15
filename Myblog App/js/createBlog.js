@@ -15,6 +15,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (!form) return;
 
+    var removePhotoBtn = document.getElementById("removePhotoBtn");
+
     function updateImagePreview(url) {
         if (!imagePreview || !imagePreviewContainer) return;
         var trimmed = (url || "").trim();
@@ -33,12 +35,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         imagePreview.src = trimmed;
     }
 
-    if (imageInput) {
-        imageInput.addEventListener("input", function () {
-            updateImagePreview(this.value);
+    if (removePhotoBtn) {
+        removePhotoBtn.addEventListener("click", function () {
+            if (imageInput) imageInput.value = "";
+            if (imageUploadInput) imageUploadInput.value = "";
+            if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
+            showToast("Photo removed.", "info");
         });
-        imageInput.addEventListener("paste", function () {
-            setTimeout(function () { updateImagePreview(imageInput.value); }, 50);
+    }
+
+    if (imageInput) {
+        ["input", "keyup", "paste", "change"].forEach(function (evt) {
+            imageInput.addEventListener(evt, function () {
+                setTimeout(function () { updateImagePreview(imageInput.value); }, 20);
+            });
         });
     }
 

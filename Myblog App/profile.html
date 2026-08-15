@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - BlogSphere</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
@@ -15,8 +15,8 @@
 <body>
     <header class="global-header">
         <a href="index.html" class="logo">
-            <i class="fa-solid fa-layer-group"></i>
-            <span>BlogSphere</span>
+            <div class="logo-badge"><i class="fa-solid fa-feather-pointed"></i></div>
+            <span class="logo-text">Blog<span class="logo-highlight">Sphere</span></span>
         </a>
 
         <nav class="global-nav-links">
@@ -70,8 +70,14 @@
                     <input type="email" id="profileEmail" placeholder="Your email address" required>
                 </div>
 
-                <div class="form-group" style="display:none;">
-                    <label for="profilePic"><i class="fa-regular fa-image"></i> Profile Picture URL</label>
+                <div class="form-group">
+                    <label for="profilePic"><i class="fa-solid fa-camera"></i> Profile Picture</label>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+                        <label for="profileImageUpload" style="background:#4F46E5; color:#fff; padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload New Photo
+                        </label>
+                        <span style="font-size:0.82rem; color:#64748B;">or paste Image URL below:</span>
+                    </div>
                     <input type="url" id="profilePic" placeholder="https://example.com/avatar.jpg">
                 </div>
 

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Blog | BlogSphere</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
@@ -16,8 +16,8 @@
     <header class="header">
         <nav class="navbar">
             <a href="index.html" class="logo">
-                <i class="fa-solid fa-layer-group logo-icon"></i>
-                <span>BlogSphere</span>
+                <div class="logo-badge"><i class="fa-solid fa-feather-pointed"></i></div>
+                <span class="logo-text">Blog<span class="logo-highlight">Sphere</span></span>
             </a>
 
             <ul class="nav-links">
@@ -70,12 +70,24 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="blog-image">Featured Image Upload</label>
-                    <input type="file" id="blogImageUpload" accept="image/*">
-                    <input type="hidden" id="blog-image">
-                    <div id="imagePreviewContainer" style="margin-top: 12px; display: none;">
-                        <span style="font-size: 0.85rem; font-weight: 600; color: #64748B; display: block; margin-bottom: 6px;">Live Image Preview:</span>
-                        <img id="imagePreview" alt="Image Preview" style="max-height: 220px; width: 100%; object-fit: cover; border-radius: 12px; border: 2px solid #6366F1;">
+                    <label for="blogImageUpload"><i class="fa-solid fa-image"></i> Featured Image</label>
+                    <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px;">
+                        <label for="blogImageUpload" class="publish-btn" style="background:#4F46E5; padding:10px 18px; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo File
+                        </label>
+                        <input type="file" id="blogImageUpload" accept="image/*" style="display:none;">
+                        <span style="font-size:0.85rem; color:#64748B;">or enter image URL below</span>
+                    </div>
+                    <input type="url" id="blog-image" name="blog-image" placeholder="https://example.com/image.jpg (or upload above)" style="width:100%;">
+                    
+                    <div id="imagePreviewContainer" style="margin-top: 14px; display: none; position:relative;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                            <span style="font-size: 0.85rem; font-weight: 600; color: #64748B;">Live Featured Image Preview:</span>
+                            <button type="button" id="removePhotoBtn" style="background:#EF4444; color:#fff; border:none; border-radius:6px; padding:4px 10px; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+                                <i class="fa-solid fa-trash-can"></i> Remove Photo
+                            </button>
+                        </div>
+                        <img id="imagePreview" alt="Image Preview" style="max-height: 240px; width: 100%; object-fit: cover; border-radius: 14px; border: 2px solid #6366F1; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
                     </div>
                 </div>
 

@@ -24,7 +24,10 @@ export const createBlog = async (req, res) => {
     });
 
     await blog.populate("author", "name email profilePic");
-    sendNewBlogNotification(blog.title, req.user.name, req.user.email);
+    if (blog.isApproved) {
+      const preview = (blog.content || "").substring(0, 150) + ((blog.content || "").length > 150 ? "..." : "");
+      sendNewBlogNotification(blog.title, req.user.name, req.user.email, blog.category, preview);
+    }
 
     res.status(201).json(blog);
   } catch (error) {
@@ -132,11 +135,19 @@ export const approveBlog = async (req, res) => {
       return res.status(404).json({ message: "Blog post not found" });
     }
 
+    const wasApprovedBefore = blog.isApproved;
     blog.isApproved = isApproved !== undefined ? isApproved : true;
     blog.approvalStatus = approvalStatus || (blog.isApproved ? "approved" : "rejected");
 
     const updatedBlog = await blog.save();
     await updatedBlog.populate("author", "name email profilePic");
+
+    if (!wasApprovedBefore && updatedBlog.isApproved) {
+      const authorName = updatedBlog.author ? updatedBlog.author.name : "Author";
+      const authorEmail = updatedBlog.author ? updatedBlog.author.email : "";
+      const preview = (updatedBlog.content || "").substring(0, 150) + ((updatedBlog.content || "").length > 150 ? "..." : "");
+      sendNewBlogNotification(updatedBlog.title, authorName, authorEmail, updatedBlog.category, preview);
+    }
 
     res.json(updatedBlog);
   } catch (error) {

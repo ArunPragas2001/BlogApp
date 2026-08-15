@@ -23,6 +23,41 @@ document.addEventListener("DOMContentLoaded", async function () {
     const headerNavName = document.getElementById("headerNavName");
     const profileImageUpload = document.getElementById("profileImageUpload");
 
+    async function autoSaveProfilePhoto(photoUrl) {
+        try {
+            const name = nameInput ? nameInput.value.trim() : "";
+            const email = emailInput ? emailInput.value.trim() : "";
+            const bio = bioInput ? bioInput.value.trim() : "";
+
+            const res = await fetch(API_PROFILE_URL, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify({ name, email, bio, profilePic: photoUrl })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                localStorage.setItem("token", data.token);
+                const existingUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+                localStorage.setItem("currentUser", JSON.stringify({
+                    ...existingUser,
+                    id: data._id,
+                    _id: data._id,
+                    name: data.name,
+                    email: data.email,
+                    role: data.role,
+                    profilePic: data.profilePic,
+                    bio: data.bio
+                }));
+                showToast("✨ Profile photo updated and saved to account!", "success");
+            }
+        } catch (err) {
+            console.error("Auto save profile photo error:", err);
+        }
+    }
+
     if (profileImageUpload) {
         profileImageUpload.addEventListener("change", async function () {
             const file = this.files[0];
@@ -42,7 +77,8 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (res.ok) {
                     if (picInput) picInput.value = data.url;
                     if (sidebarAvatarPreview) sidebarAvatarPreview.src = data.url;
-                    showToast("Image uploaded successfully!", "success");
+                    if (headerNavAvatar) headerNavAvatar.src = data.url;
+                    await autoSaveProfilePhoto(data.url);
                 } else {
                     showToast(data.message || "Failed to upload image", "error");
                 }
@@ -59,6 +95,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     const url = this.value.trim();
                     if (url && sidebarAvatarPreview) {
                         sidebarAvatarPreview.src = url;
+                        if (headerNavAvatar) headerNavAvatar.src = url;
                     }
                 }, 10);
             });
@@ -168,9 +205,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 function selectSampleAvatar(url) {
     const picInput = document.getElementById("profilePic");
     const sidebarAvatarPreview = document.getElementById("sidebarAvatarPreview");
+    const headerNavAvatar = document.getElementById("headerNavAvatar");
     if (picInput) picInput.value = url;
     if (sidebarAvatarPreview) sidebarAvatarPreview.src = url;
-    showToast("Avatar preset selected. Click 'Save Profile Changes' to save.", "info");
+    if (headerNavAvatar) headerNavAvatar.src = url;
+    showToast("Avatar preset selected! Click 'Save Profile Changes' to save.", "info");
 }
 
 window.selectSampleAvatar = selectSampleAvatar;
