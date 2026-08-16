@@ -21,7 +21,6 @@ A full-stack blog publishing platform with role-based content moderation, built 
 - [Environment Variables](#environment-variables)
 - [Running the Application Locally](#running-the-application-locally)
 - [Deployment](#deployment)
-- [Screenshots](#screenshots)
 - [Future Improvements](#future-improvements)
 - [Learning Outcomes](#learning-outcomes)
 - [Internship / Project Information](#internship--project-information)
