@@ -1,0 +1,185 @@
+/* =========================================================
+   NAVIGATION HELPERS & PASSWORD STRENGTH UTILITIES
+   ========================================================= */
+
+(function () {
+    // ─── 1. Floating Scroll Top, Bottom & Previous Page Controls ───────────
+    function goBackPreviousPage() {
+        if (window.history && window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = "index.html";
+        }
+    }
+
+    function scrollToTop() {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
+    function scrollToBottom() {
+        window.scrollTo({
+            top: document.documentElement.scrollHeight || document.body.scrollHeight,
+            behavior: "smooth"
+        });
+    }
+
+    function initFloatingNavigation() {
+        if (document.getElementById("floatingNavContainer")) return;
+
+        var navContainer = document.createElement("div");
+        navContainer.id = "floatingNavContainer";
+        navContainer.className = "floating-nav-container";
+
+        // Previous Page Button
+        var backBtn = document.createElement("button");
+        backBtn.type = "button";
+        backBtn.className = "floating-btn btn-back-page";
+        backBtn.title = "Go to Previous Page";
+        backBtn.setAttribute("aria-label", "Previous Page");
+        backBtn.innerHTML = '<i class="fa-solid fa-arrow-left"></i>';
+        backBtn.onclick = goBackPreviousPage;
+
+        // Scroll to Top Button
+        var topBtn = document.createElement("button");
+        topBtn.type = "button";
+        topBtn.className = "floating-btn btn-scroll-top";
+        topBtn.title = "Scroll to Top";
+        topBtn.setAttribute("aria-label", "Scroll to Top");
+        topBtn.innerHTML = '<i class="fa-solid fa-arrow-up"></i>';
+        topBtn.onclick = scrollToTop;
+
+        // Scroll to Bottom Button
+        var bottomBtn = document.createElement("button");
+        bottomBtn.type = "button";
+        bottomBtn.className = "floating-btn btn-scroll-bottom";
+        bottomBtn.title = "Scroll to Bottom";
+        bottomBtn.setAttribute("aria-label", "Scroll to Bottom");
+        bottomBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
+        bottomBtn.onclick = scrollToBottom;
+
+        navContainer.appendChild(backBtn);
+        navContainer.appendChild(topBtn);
+        navContainer.appendChild(bottomBtn);
+        document.body.appendChild(navContainer);
+    }
+
+    // ─── 2. Strong Password Generator & Strength Meter ─────────────────────
+    function generateStrongPassword(length) {
+        length = length || 12;
+        var uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        var lowercase = "abcdefghjkmnpqrstuvwxyz";
+        var numbers = "23456789";
+        var symbols = "!@#$%^&*_-+=";
+
+        var allChars = uppercase + lowercase + numbers + symbols;
+        var password = "";
+
+        // Guarantee at least one of each character category
+        password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+        password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+        password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+        password += symbols.charAt(Math.floor(Math.random() * symbols.length));
+
+        for (var i = 4; i < length; i++) {
+            password += allChars.charAt(Math.floor(Math.random() * allChars.length));
+        }
+
+        // Shuffle characters
+        return password.split("").sort(function () { return 0.5 - Math.random(); }).join("");
+    }
+
+    function evaluatePasswordStrength(password) {
+        if (!password) {
+            return { score: 0, label: "Enter a password", color: "#94A3B8", width: "0%" };
+        }
+
+        var score = 0;
+        if (password.length >= 6) score += 1;
+        if (password.length >= 10) score += 1;
+        if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+        if (/[0-9]/.test(password)) score += 1;
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+        if (score <= 1) {
+            return { score: 1, label: "Weak - Add numbers & letters", color: "#EF4444", width: "25%" };
+        } else if (score === 2 || score === 3) {
+            return { score: 2, label: "Fair - Add symbols or uppercase", color: "#F59E0B", width: "50%" };
+        } else if (score === 4) {
+            return { score: 3, label: "Good - Strong security", color: "#3B82F6", width: "75%" };
+        } else {
+            return { score: 4, label: "Very Strong - Excellent password! 🔒", color: "#10B981", width: "100%" };
+        }
+    }
+
+    function setupPasswordStrengthMeter(passwordInputId, containerId, confirmInputId) {
+        var input = document.getElementById(passwordInputId);
+        var container = document.getElementById(containerId);
+        if (!input || !container) return;
+
+        container.className = "password-strength-container";
+        container.innerHTML =
+            '<div class="strength-bar-track"><div class="strength-bar-fill" id="' + containerId + '_fill"></div></div>' +
+            '<div class="strength-meta-row">' +
+            '<span class="strength-label" id="' + containerId + '_label">Password Strength</span>' +
+            '<button type="button" class="btn-suggest-password" id="' + containerId + '_suggestBtn">' +
+            '<i class="fa-solid fa-wand-magic-sparkles"></i> Suggest Strong Password</button>' +
+            '</div>';
+
+        var fillEl = document.getElementById(containerId + "_fill");
+        var labelEl = document.getElementById(containerId + "_label");
+        var suggestBtn = document.getElementById(containerId + "_suggestBtn");
+
+        function updateMeter() {
+            var val = input.value;
+            var res = evaluatePasswordStrength(val);
+            if (fillEl) {
+                fillEl.style.width = res.width;
+                fillEl.style.backgroundColor = res.color;
+            }
+            if (labelEl) {
+                labelEl.textContent = res.label;
+                labelEl.style.color = res.color;
+            }
+        }
+
+        input.addEventListener("input", updateMeter);
+
+        if (suggestBtn) {
+            suggestBtn.addEventListener("click", function (e) {
+                e.preventDefault();
+                var generated = generateStrongPassword(12);
+                input.value = generated;
+                input.type = "text"; // Show briefly so user can see it
+
+                if (confirmInputId) {
+                    var confirmInput = document.getElementById(confirmInputId);
+                    if (confirmInput) {
+                        confirmInput.value = generated;
+                        confirmInput.type = "text";
+                    }
+                }
+
+                updateMeter();
+
+                if (typeof window.showToast === "function") {
+                    window.showToast("🔑 Strong password generated and filled!", "success", 4000);
+                }
+            });
+        }
+    }
+
+    // Expose globals
+    window.goBackPreviousPage = goBackPreviousPage;
+    window.scrollToTop = scrollToTop;
+    window.scrollToBottom = scrollToBottom;
+    window.generateStrongPassword = generateStrongPassword;
+    window.evaluatePasswordStrength = evaluatePasswordStrength;
+    window.setupPasswordStrengthMeter = setupPasswordStrengthMeter;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initFloatingNavigation();
+    });
+})();

@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
+    <link rel="stylesheet" href="css/navigationHelpers.css">
     <link rel="stylesheet" href="css/profile.css">
 </head>
 
@@ -113,6 +114,7 @@
                         <input type="password" id="profilePassword" placeholder="Enter new password (min. 6 chars)" autocomplete="new-password">
                         <button type="button" onclick="togglePwVisibility('profilePassword', this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#64748B;font-size:1rem;"><i class="fa-regular fa-eye"></i></button>
                     </div>
+                    <div id="profileStrengthMeter"></div>
                 </div>
 
                 <div class="form-group" id="confirmPasswordGroup" style="display:none;">
@@ -154,6 +156,7 @@
 
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/navigationHelpers.js"></script>
     <script src="js/profile.js"></script>
 </body>
 

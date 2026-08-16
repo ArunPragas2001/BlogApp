@@ -9,13 +9,17 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
+    <link rel="stylesheet" href="css/navigationHelpers.css">
     <link rel="stylesheet" href="css/register.css">
 </head>
 
 <body>
     <div class="auth-container">
         <div class="auth-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap:wrap; gap:10px;">
+                <button type="button" class="header-back-btn" onclick="goBackPreviousPage()" title="Go back to previous page">
+                    <i class="fa-solid fa-arrow-left"></i> Back
+                </button>
                 <a href="index.html" class="logo" style="margin-bottom: 0;">
                     <div class="logo-badge"><i class="fa-solid fa-feather-pointed"></i></div>
                     <span class="logo-text" style="color:#0F172A;">Blog<span class="logo-highlight">Sphere</span></span>
@@ -65,6 +69,7 @@
                         <i class="fa-solid fa-lock input-icon"></i>
                         <input type="password" placeholder="Create Password" id="registerPassword">
                     </div>
+                    <div id="registerStrengthMeter"></div>
                     <small class="error-text" id="passwordError"></small>
                 </div>
 
@@ -93,6 +98,7 @@
     </div>
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/navigationHelpers.js"></script>
     <script src="js/register.js"></script>
 </body>
 

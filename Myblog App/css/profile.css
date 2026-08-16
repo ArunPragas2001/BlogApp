@@ -45,7 +45,15 @@ body {
     width: 130px;
     height: 130px;
     margin: 0 auto 20px auto;
+    /* Perfect circle enforcement */
+    border-radius: 50%;
+    /* Indigo gradient ring */
+    background: linear-gradient(135deg, #4F46E5, #818CF8);
+    padding: 3px;
+    box-shadow: 0 8px 24px rgba(79, 70, 229, 0.25);
+    flex-shrink: 0;
 }
+
 
 .avatar-img-container {
     width: 100%;
@@ -54,17 +62,26 @@ body {
     position: relative;
     cursor: pointer;
     overflow: hidden;
+    /* Ensures the inner circle clips perfectly inside the gradient ring */
+    background: #E2E8F0;
 }
+
 
 .profile-avatar {
     width: 100%;
     height: 100%;
     border-radius: 50%;
     object-fit: cover;
-    border: 4px solid #EEF2FF;
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.15);
+    object-position: center center;
+    /* No border here – gradient ring on .avatar-wrapper handles it */
+    border: none;
+    display: block;
     transition: transform 0.25s ease, filter 0.25s ease;
+    /* Force the image to fill the container perfectly */
+    min-width: 100%;
+    min-height: 100%;
 }
+
 
 .avatar-zoom-hint {
     position: absolute;
@@ -93,21 +110,24 @@ body {
 
 .camera-overlay {
     position: absolute;
-    bottom: 2px;
-    right: 2px;
+    bottom: 4px;
+    right: 4px;
     background: #4F46E5;
     color: #ffffff !important;
-    border: 2px solid #ffffff;
+    border: 2.5px solid #ffffff;
     border-radius: 50%;
-    width: 38px;
-    height: 38px;
+    width: 34px;
+    height: 34px;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    font-size: 0.85rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     cursor: pointer;
     z-index: 10;
     transition: background 0.2s, transform 0.2s;
+    /* Positioned outside the gradient ring wrapper — absolute to .avatar-wrapper */
+    pointer-events: all;
 }
 
 .camera-overlay:hover {
@@ -115,6 +135,7 @@ body {
     color: #ffffff !important;
     transform: scale(1.15);
 }
+
 
 .profile-card-sidebar h2 {
     font-size: 1.35rem;
@@ -286,9 +307,13 @@ body {
 .nav-user-avatar {
     width: 32px;
     height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     border-radius: 50%;
     object-fit: cover;
+    object-position: center center;
     border: 2px solid #4F46E5;
+    display: block;
 }
 
 /* Responsive navigation on smaller screens */

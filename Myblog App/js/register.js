@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!registerForm) return;
 
+    if (typeof setupPasswordStrengthMeter === "function") {
+        setupPasswordStrengthMeter("registerPassword", "registerStrengthMeter", "confirmPassword");
+    }
+
     if (roleSelect && roleNotice) {
         roleSelect.addEventListener("change", function () {
             if (this.value === "admin") {

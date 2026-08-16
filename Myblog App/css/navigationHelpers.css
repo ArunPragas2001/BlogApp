@@ -1,0 +1,181 @@
+/* =========================================================
+   FLOATING NAVIGATION & PASSWORD HELPER STYLES
+   ========================================================= */
+
+/* Floating Action Button Container */
+.floating-nav-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+}
+
+.floating-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #0F172A;
+    color: #FFFFFF;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.05rem;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    outline: none;
+}
+
+.floating-btn:hover {
+    background: #4F46E5;
+    color: #FFFFFF;
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.4);
+}
+
+.floating-btn.btn-back-page {
+    background: #4F46E5;
+}
+
+.floating-btn.btn-back-page:hover {
+    background: #4338CA;
+}
+
+/* Header Back Button */
+.header-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #EEF2FF;
+    color: #4F46E5;
+    border: 1px solid #C7D2FE;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.header-back-btn:hover {
+    background: #4F46E5;
+    color: #FFFFFF !important;
+    border-color: #4F46E5;
+    transform: translateX(-2px);
+}
+
+/* Password Strength Indicator & Suggestion */
+.password-strength-container {
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+.strength-bar-track {
+    width: 100%;
+    height: 6px;
+    background: #E2E8F0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.strength-bar-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 6px;
+}
+
+.strength-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.strength-label {
+    font-weight: 600;
+    color: #64748B;
+}
+
+.btn-suggest-password {
+    background: #EEF2FF;
+    color: #4F46E5;
+    border: 1px solid #C7D2FE;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.2s ease;
+}
+
+.btn-suggest-password:hover {
+    background: #4F46E5;
+    color: #FFFFFF;
+    border-color: #4F46E5;
+}
+
+.password-hints {
+    font-size: 0.75rem;
+    color: #64748B;
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* Dark Mode Overrides for Navigation & Strength Meter */
+body.dark-mode .floating-btn {
+    background: #1E293B;
+    color: #F1F5F9;
+    border: 1px solid #334155;
+}
+
+body.dark-mode .floating-btn:hover {
+    background: #4F46E5;
+    color: #FFFFFF;
+    border-color: #4F46E5;
+}
+
+body.dark-mode .header-back-btn {
+    background: #1E293B;
+    color: #A5B4FC;
+    border-color: #3730A3;
+}
+
+body.dark-mode .header-back-btn:hover {
+    background: #4F46E5;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .strength-bar-track {
+    background: #334155;
+}
+
+body.dark-mode .strength-label {
+    color: #CBD5E1;
+}
+
+body.dark-mode .btn-suggest-password {
+    background: #1E293B;
+    color: #818CF8;
+    border-color: #3730A3;
+}
+
+body.dark-mode .btn-suggest-password:hover {
+    background: #4F46E5;
+    color: #FFFFFF;
+}
+
+body.dark-mode .password-hints {
+    color: #94A3B8;
+}

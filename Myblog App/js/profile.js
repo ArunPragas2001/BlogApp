@@ -87,6 +87,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
+    // Initialize password strength meter for new password field
+    if (typeof setupPasswordStrengthMeter === "function") {
+        setupPasswordStrengthMeter("profilePassword", "profileStrengthMeter", "profileConfirmPassword");
+    }
+
     // Set avatar src safely - always uses object-fit cover and fixed dimensions
     function setAvatarSrc(imgEl, url, fallbackName) {
         if (!imgEl) return;
@@ -345,6 +350,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
+function selectSampleAvatar(url) {
+    var picInput = document.getElementById("profilePic");
+    if (picInput) {
+        picInput.value = url;
+    }
+    var sidebarAvatarPreview = document.getElementById("sidebarAvatarPreview");
+    var headerNavAvatar = document.getElementById("headerNavAvatar");
+    var zoomedAvatarImg = document.getElementById("zoomedAvatarImg");
+
+    if (sidebarAvatarPreview) sidebarAvatarPreview.src = url;
+    if (headerNavAvatar) headerNavAvatar.src = url;
+    if (zoomedAvatarImg) zoomedAvatarImg.src = url;
+
+    // Visual active highlight for selected sample avatar
+    var sampleImgs = document.querySelectorAll("#sampleAvatars img");
+    sampleImgs.forEach(function (img) {
+        if (img.src === url) {
+            img.style.borderColor = "#4F46E5";
+            img.style.transform = "scale(1.15)";
+            img.style.boxShadow = "0 0 0 3px rgba(79, 70, 229, 0.4)";
+        } else {
+            img.style.borderColor = "#E2E8F0";
+            img.style.transform = "scale(1)";
+            img.style.boxShadow = "none";
+        }
+    });
+
+    showToast("✨ Sample avatar selected! Click 'Save Profile Changes' to update.", "success");
+}
+
 function openAvatarZoomModal() {
     var modal = document.getElementById("avatarZoomModal");
     var zoomedImg = document.getElementById("zoomedAvatarImg");
@@ -378,4 +413,5 @@ window.openAvatarZoomModal = openAvatarZoomModal;
 window.closeAvatarZoomModal = closeAvatarZoomModal;
 window.selectSampleAvatar = selectSampleAvatar;
 window.resolveImageUrl = resolveImageUrl;
+
 
