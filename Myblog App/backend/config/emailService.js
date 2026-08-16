@@ -7,7 +7,10 @@ const getTransporter = () => {
     auth: {
       user: process.env.EMAIL_USER || "blogapp.notifications@gmail.com",
       pass: process.env.EMAIL_PASS || ""
-    }
+    },
+    connectionTimeout: 3000,
+    greetingTimeout: 3000,
+    socketTimeout: 4000
   });
 };
 
