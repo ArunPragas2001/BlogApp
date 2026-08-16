@@ -1,4 +1,5 @@
-const API_SETTINGS_URL = "http://localhost:5000/api/settings";
+const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_SETTINGS_URL = `${API_BASE_URL}/api/settings`;
 
 document.addEventListener("DOMContentLoaded", async function () {
     const token = localStorage.getItem("token");

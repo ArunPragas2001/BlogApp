@@ -1,6 +1,21 @@
-const API_PROFILE_URL = "http://localhost:5000/api/auth/profile";
-const API_ME_URL = "http://localhost:5000/api/auth/me";
+const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_PROFILE_URL = `${API_BASE_URL}/api/auth/profile`;
+const API_ME_URL = `${API_BASE_URL}/api/auth/me`;
+const API_UPLOAD_URL = `${API_BASE_URL}/api/upload`;
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=4F46E5&color=fff&size=150&name=User";
+
+function resolveImageUrl(url) {
+    if (!url || typeof url !== "string") return "";
+    var trimmed = url.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+        return trimmed;
+    }
+    if (trimmed.startsWith("/")) {
+        return API_BASE_URL + trimmed;
+    }
+    return API_BASE_URL + "/" + trimmed;
+}
 
 function getDefaultAvatar(name) {
     var n = encodeURIComponent(name || "User");
@@ -72,7 +87,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Set avatar src safely - always uses object-fit cover and fixed dimensions
     function setAvatarSrc(imgEl, url, fallbackName) {
         if (!imgEl) return;
-        var src = (url && url.trim()) ? url.trim() : getDefaultAvatar(fallbackName);
+        var resolved = resolveImageUrl(url);
+        var src = (resolved && resolved.trim()) ? resolved.trim() : getDefaultAvatar(fallbackName);
         imgEl.src = src;
         imgEl.onerror = function () {
             this.onerror = null;
@@ -92,6 +108,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Auto-save profile photo to backend and update localStorage
     async function autoSaveProfilePhoto(photoUrl) {
         try {
+            var currentToken = localStorage.getItem("token") || token;
             var name = nameInput ? nameInput.value.trim() : "";
             var email = emailInput ? emailInput.value.trim() : "";
             var bio = bioInput ? bioInput.value.trim() : "";
@@ -100,14 +117,14 @@ document.addEventListener("DOMContentLoaded", async function () {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
+                    "Authorization": "Bearer " + currentToken
                 },
                 body: JSON.stringify({ name, email, bio, profilePic: photoUrl })
             });
             var data = await res.json();
             if (res.ok) {
                 // Update token
-                localStorage.setItem("token", data.token);
+                if (data.token) localStorage.setItem("token", data.token);
                 // Sync currentUser in localStorage
                 var existingUser = {};
                 try { existingUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch(e) {}
@@ -136,14 +153,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             var file = this.files[0];
             if (!file) return;
 
+            var currentToken = localStorage.getItem("token") || token;
             var formData = new FormData();
             formData.append("image", file);
 
             try {
                 showToast("Uploading image...", "info");
-                var res = await fetch("http://localhost:5000/api/upload", {
+                var res = await fetch(API_UPLOAD_URL, {
                     method: "POST",
-                    headers: { "Authorization": "Bearer " + token },
+                    headers: { "Authorization": "Bearer " + currentToken },
                     body: formData
                 });
                 var data = await res.json();
@@ -156,7 +174,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             } catch (err) {
                 console.error("Upload error:", err);
-                showToast("Upload error. Please try again.", "error");
+                showToast("Upload error. Please check your connection and try again.", "error");
             }
         });
     }
@@ -175,8 +193,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Load current user profile from backend
     try {
+        var currentToken = localStorage.getItem("token") || token;
         var response = await fetch(API_ME_URL, {
-            headers: { "Authorization": "Bearer " + token }
+            headers: { "Authorization": "Bearer " + currentToken }
         });
 
         if (!response.ok) {
@@ -227,6 +246,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         form.addEventListener("submit", async function (e) {
             e.preventDefault();
 
+            var currentToken = localStorage.getItem("token") || token;
             var name = nameInput ? nameInput.value.trim() : "";
             var email = emailInput ? emailInput.value.trim() : "";
             var profilePic = picInput ? picInput.value.trim() : "";
@@ -272,7 +292,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": "Bearer " + token
+                        "Authorization": "Bearer " + currentToken
                     },
                     body: JSON.stringify(bodyData)
                 });
@@ -286,7 +306,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
 
                 // Update token & localStorage
-                localStorage.setItem("token", data.token);
+                if (data.token) localStorage.setItem("token", data.token);
                 localStorage.setItem("currentUser", JSON.stringify({
                     id: data._id,
                     _id: data._id,
@@ -333,3 +353,4 @@ function selectSampleAvatar(url) {
 }
 
 window.selectSampleAvatar = selectSampleAvatar;
+window.resolveImageUrl = resolveImageUrl;

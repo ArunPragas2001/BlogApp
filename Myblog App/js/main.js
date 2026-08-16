@@ -1,5 +1,6 @@
-var API_BLOGS_URL = "http://localhost:5000/api/blogs";
-var API_SETTINGS_URL = "http://localhost:5000/api/settings";
+var API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
+var API_SETTINGS_URL = API_BASE_URL + "/api/settings";
 
 var cachedTerms = "Welcome to BlogSphere. By using our platform you agree to post respectful, original content and abide by our community guidelines.";
 var cachedBlogs = [];
@@ -11,6 +12,19 @@ function getCurrentUser() {
 function esc(str) {
     if (!str) return "";
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+function resolveImageUrl(url) {
+    if (!url || typeof url !== "string") return "";
+    var trimmed = url.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+        return trimmed;
+    }
+    if (trimmed.startsWith("/")) {
+        return API_BASE_URL + trimmed;
+    }
+    return API_BASE_URL + "/" + trimmed;
 }
 
 function updateNav() {
@@ -27,7 +41,8 @@ function updateNav() {
     if (!navButtons) return;
 
     if (currentUser && currentUser.name) {
-        var avatarUrl = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var rawAvatar = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var avatarUrl = resolveImageUrl(rawAvatar);
 
         navButtons.innerHTML =
             '<a href="profile.html" class="nav-user-badge" id="navUserBadge">' +
@@ -105,8 +120,8 @@ function openArticleReader(blogId) {
     if (!overlay) return;
 
     if (img) {
-        if (blog.image) {
-            img.src = blog.image;
+        if (blog.image && blog.image.trim() !== "") {
+            img.src = resolveImageUrl(blog.image);
             img.style.display = "block";
         } else {
             img.style.display = "none";
@@ -115,7 +130,8 @@ function openArticleReader(blogId) {
 
     if (meta) {
         var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
-        var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var authorAvatar = resolveImageUrl(rawAvatar);
         var pubDate = formatDate(blog.createdAt);
         meta.innerHTML =
             '<span class="article-category-badge">' + esc(blog.category || "General") + '</span>' +
@@ -167,9 +183,11 @@ async function renderHomeBlogs(categoryFilter) {
 
         container.innerHTML = displayList.map(function (blog) {
             var blogId = blog._id || blog.id;
-            var imageSrc = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
+            var rawImage = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
+            var imageSrc = resolveImageUrl(rawImage);
             var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
-            var authorAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+            var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+            var authorAvatar = resolveImageUrl(rawAvatar);
             var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
             var pubDate = formatDate(blog.createdAt);
 
@@ -193,7 +211,7 @@ async function renderHomeBlogs(categoryFilter) {
         }).join("");
     } catch (err) {
         console.error("Home blogs fetch error:", err);
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Ensure backend is running on http://localhost:5000</p></div>';
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Please check your connection and try again.</p></div>';
     }
 }
 
@@ -231,7 +249,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 var email = input.value.trim();
                 try {
                     showToast("Subscribing...", "info");
-                    var res = await fetch("http://localhost:5000/api/subscribers/subscribe", {
+                    var res = await fetch(API_BASE_URL + "/api/subscribers/subscribe", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email: email })
@@ -244,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         showToast(data.message || "Subscription failed", "error");
                     }
                 } catch (err) {
-                    showToast("Error connecting to server", "error");
+                    showToast("Error connecting to server. Please try again.", "error");
                 }
             }
         });
@@ -252,3 +270,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 window.openArticleReader = openArticleReader;
+window.resolveImageUrl = resolveImageUrl;

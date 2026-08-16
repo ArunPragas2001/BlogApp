@@ -1,4 +1,5 @@
-const API_URL = "http://localhost:5000/api/auth/login";
+const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_URL = `${API_BASE_URL}/api/auth/login`;
 
 document.addEventListener("DOMContentLoaded", function () {
     const loginForm = document.getElementById("loginForm");
@@ -99,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function () {
         } catch (error) {
             console.error("Login error:", error);
             showError("generalError", "Unable to connect to backend server.");
-            showToast("Unable to connect to backend server on http://localhost:5000", "error");
+            showToast("Unable to connect to backend server. Please try again.", "error");
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
