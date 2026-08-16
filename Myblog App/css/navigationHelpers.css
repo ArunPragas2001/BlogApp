@@ -49,17 +49,18 @@
 .header-back-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 5px;
     background: #EEF2FF;
     color: #4F46E5;
     border: 1px solid #C7D2FE;
-    padding: 7px 14px;
-    border-radius: 10px;
-    font-size: 0.88rem;
+    padding: 4px 10px;
+    border-radius: 7px;
+    font-size: 0.78rem;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
     transition: all 0.2s ease;
+    line-height: 1.4;
 }
 
 .header-back-btn:hover {
