@@ -1,6 +1,7 @@
-var API_BLOGS_URL = "http://localhost:5000/api/blogs";
-var API_ADMIN_REQ_URL = "http://localhost:5000/api/auth/admin-requests";
-var API_USERS_URL = "http://localhost:5000/api/users";
+var API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
+var API_ADMIN_REQ_URL = API_BASE_URL + "/api/auth/admin-requests";
+var API_USERS_URL = API_BASE_URL + "/api/users";
 
 function getCurrentUser() {
     try { return JSON.parse(localStorage.getItem("currentUser")); } catch (e) { return null; }
@@ -9,6 +10,22 @@ function getCurrentUser() {
 function esc(str) {
     if (!str) return "";
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+}
+
+function resolveImageUrl(url) {
+    if (!url || typeof url !== "string") return "";
+    var trimmed = url.trim();
+    if (!trimmed) return "";
+    if (trimmed.includes("localhost:5000") || trimmed.includes("localhost:8000")) {
+        return trimmed.replace(/http:\/\/localhost:(5000|8000)/g, API_BASE_URL);
+    }
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+        return trimmed;
+    }
+    if (trimmed.startsWith("/")) {
+        return API_BASE_URL + trimmed;
+    }
+    return API_BASE_URL + "/" + trimmed;
 }
 
 function formatDate(dateStr) {
@@ -43,7 +60,8 @@ function setupWelcomeAndAuth() {
     // Set avatar with fallback
     function setAvatar(el, url, name) {
         if (!el) return;
-        el.src = (url && url.trim()) ? url.trim() : getDefaultAvatar(name);
+        var resolved = resolveImageUrl(url);
+        el.src = (resolved && resolved.trim()) ? resolved.trim() : getDefaultAvatar(name);
         el.onerror = function () {
             this.onerror = null;
             this.src = getDefaultAvatar(name);
@@ -58,7 +76,7 @@ function setupWelcomeAndAuth() {
     // Fetch fresh user data from backend to ensure avatars are up-to-date
     var token = localStorage.getItem("token");
     if (token) {
-        fetch("http://localhost:5000/api/auth/me", {
+        fetch(API_BASE_URL + "/api/auth/me", {
             headers: { "Authorization": "Bearer " + token }
         }).then(function(res) {
             if (!res.ok) return;
@@ -211,6 +229,9 @@ async function displayOwnerUserManagement() {
             var blockBtnColor = user.isBlocked ? "#10B981" : "#F59E0B";
             var blockBtnIcon = user.isBlocked ? "fa-unlock" : "fa-lock";
 
+            var rawAvatar = user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+            var userAvatar = resolveImageUrl(rawAvatar);
+
             var actionsHtml = "";
             if (currentUser.role === "owner") {
                 actionsHtml = '<div class="blog-actions">' +
@@ -220,7 +241,7 @@ async function displayOwnerUserManagement() {
             }
 
             return '<div class="dashboard-blog" style="border-left:5px solid ' + badgeColor + ';">' +
-                '<img src="' + esc(user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80') + '" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+                '<img src="' + esc(userAvatar) + '" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
                 '<div class="blog-info" style="flex:1;"><h3>' + esc(user.name) + '</h3><p>Email: <strong>' + esc(user.email) + '</strong> — Role: <span style="font-weight:700;color:' + badgeColor + ';">' + esc(user.role.toUpperCase()) + '</span>' + (user.isBlocked ? ' <span style="color:#EF4444;font-weight:700;">(BLOCKED)</span>' : '') + '</p></div>' +
                 actionsHtml +
                 '</div>';
@@ -299,7 +320,7 @@ async function displayBlogs() {
 
     } catch (error) {
         console.error("Fetch dashboard blogs error:", error);
-        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Make sure backend is running on http://localhost:5000</p></div>';
+        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
     }
 }
 
@@ -308,6 +329,82 @@ function filterDashboardBlogs(filterType) {
     renderBlogsList();
 }
 window.filterDashboardBlogs = filterDashboardBlogs;
+
+// ─── Blog Preview Modal for Owners and Admins ─────────────────────────────────
+function openAdminBlogPreview(blogId) {
+    var blog = (window.allBlogs || []).find(function (b) { return (b._id || b.id) === blogId; });
+    if (!blog) {
+        showToast("Could not find blog details.", "error");
+        return;
+    }
+
+    var overlay = document.getElementById("adminBlogPreviewModal");
+    if (!overlay) {
+        overlay = document.createElement("div");
+        overlay.id = "adminBlogPreviewModal";
+        overlay.style.cssText = "position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(15,23,42,0.8);backdrop-filter:blur(6px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box;";
+        document.body.appendChild(overlay);
+    }
+
+    var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "User";
+    var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+    var authorAvatar = resolveImageUrl(rawAvatar);
+    var pubDate = formatDate(blog.createdAt);
+    var fullImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
+    var currentUser = getCurrentUser();
+    var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
+
+    var approveButtons = "";
+    if (isAdminOrOwner && !blog.isApproved) {
+        approveButtons = '<button type="button" style="background:#10B981;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve & Publish</button>' +
+                         '<button type="button" style="background:#EF4444;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject Post</button>';
+    }
+
+    overlay.innerHTML = '<div style="background:#FFFFFF;width:100%;max-width:760px;max-height:90vh;border-radius:24px;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.3);position:relative;display:flex;flex-direction:column;border:1px solid rgba(99,102,241,0.2);">' +
+        '<div style="padding:24px 32px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#FFFFFF;z-index:10;">' +
+        '<div style="display:flex;align-items:center;gap:10px;">' +
+        '<span style="background:#EEF2FF;color:#4F46E5;padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;">' + esc(blog.category || "General") + '</span>' +
+        '<span style="background:' + (blog.isApproved ? '#ECFDF5;color:#059669;' : '#FFFBEB;color:#D97706;') + 'padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;">' + (blog.isApproved ? '✅ Approved' : '⏳ Pending Review') + '</span>' +
+        '</div>' +
+        '<button type="button" onclick="closeAdminBlogPreview()" style="background:#F1F5F9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;color:#475569;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>' +
+        '</div>' +
+        '<div style="padding:32px;flex:1;">' +
+        (fullImage ? '<img src="' + esc(fullImage) + '" alt="preview" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.08);">' : '') +
+        '<h1 style="font-size:1.85rem;color:#0F172A;font-weight:800;line-height:1.3;margin-bottom:14px;">' + esc(blog.title) + '</h1>' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #F1F5F9;">' +
+        '<img src="' + esc(authorAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+        '<div><strong style="color:#0F172A;font-size:0.95rem;display:block;">' + esc(authorName) + '</strong>' +
+        (pubDate ? '<small style="color:#64748B;font-size:0.82rem;"><i class="fa-regular fa-calendar-days"></i> ' + esc(pubDate) + '</small>' : '') +
+        '</div></div>' +
+        '<div style="color:#334155;font-size:1.05rem;line-height:1.8;white-space:pre-line;word-break:break-word;">' + esc(blog.content) + '</div>' +
+        '</div>' +
+        '<div style="padding:20px 32px;background:#F8FAFC;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;border-radius:0 0 24px 24px;">' +
+        approveButtons +
+        '<button type="button" style="background:#E2E8F0;color:#334155;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;" onclick="closeAdminBlogPreview()">Close</button>' +
+        '</div></div>';
+
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    overlay.onclick = function (e) {
+        if (e.target === overlay) closeAdminBlogPreview();
+    };
+}
+
+function closeAdminBlogPreview() {
+    var overlay = document.getElementById("adminBlogPreviewModal");
+    if (overlay) overlay.style.display = "none";
+    document.body.style.overflow = "";
+}
+
+async function handleApproveBlogFromModal(blogId, approve) {
+    closeAdminBlogPreview();
+    await handleApproveBlog(blogId, approve);
+}
+
+window.openAdminBlogPreview = openAdminBlogPreview;
+window.closeAdminBlogPreview = closeAdminBlogPreview;
+window.handleApproveBlogFromModal = handleApproveBlogFromModal;
 
 function renderBlogsList() {
     var blogContainer = document.getElementById("blogContainer");
@@ -342,9 +439,13 @@ function renderBlogsList() {
             adminPendingContainer.innerHTML = pendingBlogs.map(function (blog) {
                 var blogId = blog._id || blog.id;
                 var authorName = blog.author ? (blog.author.name || blog.author.email) : "User";
+                var rawBlogImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
+
                 return '<div class="dashboard-blog" style="border-left:5px solid #F59E0B;">' +
-                    '<div class="blog-info"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
+                    (rawBlogImage ? '<img src="' + esc(rawBlogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;margin-right:12px;" onerror="this.style.display=\'none\'">' : '') +
+                    '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
+                    '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View Blog</button>' +
                     '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
                     '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
                     '</div></div>';
@@ -368,21 +469,22 @@ function renderBlogsList() {
         var badgeClass = isApproved ? "published" : "draft";
         var statusText = isApproved ? "✅ Approved & Live" : (approvalStatus === "pending_author" ? "🖊️ Admin edited · Author review needed" : "⏳ Pending Approval");
         var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Unknown";
-        var blogImage = blog.image && blog.image.trim() !== "" ? blog.image : "";
+        var blogImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
         var pubDate = formatDate(blog.createdAt);
 
         var isAuthorOfBlog = currentUser && blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email);
         var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
 
-        var actionsHtml = canEditDelete ? (
+        var actionsHtml = (
             '<div class="blog-actions">' +
-            '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
-            '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' +
+            '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+            (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
+            (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
             '</div>'
-        ) : "";
+        );
 
         return '<div class="dashboard-blog">' +
-            (blogImage ? '<img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display=\'none\'">' : '') +
+            (blogImage ? '<img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;margin-right:12px;" onerror="this.style.display=\'none\'">' : '') +
             '<div class="blog-info" style="flex:1;">' +
             '<h3>' + esc(blog.title) + '</h3>' +
             '<p>' + esc((blog.content || "").substring(0, 100)) + (blog.content && blog.content.length > 100 ? "…" : "") + '</p>' +
@@ -453,3 +555,4 @@ document.addEventListener("DOMContentLoaded", function () {
     displayOwnerUserManagement();
     displayBlogs();
 });
+

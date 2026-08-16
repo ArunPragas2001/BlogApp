@@ -8,6 +8,9 @@ function resolveImageUrl(url) {
     if (!url || typeof url !== "string") return "";
     var trimmed = url.trim();
     if (!trimmed) return "";
+    if (trimmed.includes("localhost:5000") || trimmed.includes("localhost:8000")) {
+        return trimmed.replace(/http:\/\/localhost:(5000|8000)/g, API_BASE_URL);
+    }
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
         return trimmed;
     }
