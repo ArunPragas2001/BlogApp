@@ -1,8 +1,22 @@
-var API_BLOGS_URL = "http://localhost:5000/api/blogs";
-var API_UPLOAD_URL = "http://localhost:5000/api/upload";
+var API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
+var API_UPLOAD_URL = API_BASE_URL + "/api/upload";
 
 // Holds the uploaded/entered image URL
 var _currentImageUrl = "";
+
+function resolveImageUrl(url) {
+    if (!url || typeof url !== "string") return "";
+    var trimmed = url.trim();
+    if (!trimmed) return "";
+    if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
+        return trimmed;
+    }
+    if (trimmed.startsWith("/")) {
+        return API_BASE_URL + trimmed;
+    }
+    return API_BASE_URL + "/" + trimmed;
+}
 
 document.addEventListener("DOMContentLoaded", async function () {
     var form = document.getElementById("createBlogForm");
@@ -31,7 +45,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // ─── Image Preview Helpers ────────────────────────────────────────────────
     function showImagePreview(url) {
-        _currentImageUrl = (url || "").trim();
+        var resolved = resolveImageUrl(url);
+        _currentImageUrl = resolved;
         if (!imagePreview || !imagePreviewContainer) return;
         if (!_currentImageUrl) {
             imagePreviewContainer.style.display = "none";
@@ -64,7 +79,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             imageUrlInput.addEventListener(evt, function () {
                 clearTimeout(imageUrlInput._debounce);
                 imageUrlInput._debounce = setTimeout(function () {
-                    showImagePreview(imageUrlInput.value);
+                    var val = (imageUrlInput.value || "").trim();
+                    if (val) {
+                        showImagePreview(val);
+                    } else {
+                        clearImage();
+                    }
                 }, 300);
             });
         });
@@ -83,6 +103,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
+            var currentToken = localStorage.getItem("token") || token;
             var formData = new FormData();
             formData.append("image", file);
 
@@ -93,15 +114,16 @@ document.addEventListener("DOMContentLoaded", async function () {
             try {
                 var res = await fetch(API_UPLOAD_URL, {
                     method: "POST",
-                    headers: { "Authorization": "Bearer " + token },
+                    headers: { "Authorization": "Bearer " + currentToken },
                     body: formData
                 });
 
                 var data = await res.json();
 
                 if (res.ok && data.url) {
-                    if (imageUrlInput) imageUrlInput.value = data.url;
-                    showImagePreview(data.url);
+                    var fullImageUrl = resolveImageUrl(data.url);
+                    if (imageUrlInput) imageUrlInput.value = fullImageUrl;
+                    showImagePreview(fullImageUrl);
                     showToast("✅ Image uploaded successfully!", "success");
                 } else {
                     showToast(data.message || "Upload failed. Please try again.", "error");
@@ -109,7 +131,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             } catch (err) {
                 console.error("Image upload error:", err);
-                showToast("Upload error. Check your connection.", "error");
+                showToast("Upload error. Please check your connection and try again.", "error");
                 this.value = "";
             } finally {
                 if (uploadProgressEl) { uploadProgressEl.style.display = "none"; }
@@ -131,8 +153,9 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     if (editId) {
         try {
+            var currentToken = localStorage.getItem("token") || token;
             var res = await fetch(API_BLOGS_URL + "/" + editId, {
-                headers: { "Authorization": "Bearer " + token }
+                headers: { "Authorization": "Bearer " + currentToken }
             });
             if (res.ok) {
                 var blog = await res.json();
@@ -146,9 +169,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (contentInput) contentInput.value = blog.content || "";
 
                 if (blog.image && blog.image.trim()) {
-                    if (imageUrlInput) imageUrlInput.value = blog.image;
-                    // slight delay to allow DOM to fully render
-                    setTimeout(function () { showImagePreview(blog.image); }, 150);
+                    var resolvedImg = resolveImageUrl(blog.image);
+                    if (imageUrlInput) imageUrlInput.value = resolvedImg;
+                    setTimeout(function () { showImagePreview(resolvedImg); }, 150);
                 }
             } else {
                 showToast("Could not load blog for editing.", "error");
@@ -213,6 +236,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         try {
+            var currentToken = localStorage.getItem("token") || token;
             var method = editId ? "PUT" : "POST";
             var endpoint = editId ? API_BLOGS_URL + "/" + editId : API_BLOGS_URL;
 
@@ -220,7 +244,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 method: method,
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
+                    "Authorization": "Bearer " + currentToken
                 },
                 body: JSON.stringify({
                     title: title,
@@ -261,8 +285,11 @@ document.addEventListener("DOMContentLoaded", async function () {
             showToast("Server error connecting to backend.", "error");
             if (submitBtn) {
                 submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publish Blog';
+                submitBtn.innerHTML = editId
+                    ? '<i class="fa-solid fa-floppy-disk"></i> Update Blog'
+                    : '<i class="fa-solid fa-paper-plane"></i> Publish Blog';
             }
         }
     });
 });
+
