@@ -49,20 +49,38 @@ const ensureOwnerExists = async () => {
 
 ensureOwnerExists();
 
+import { sendPasswordResetEmail } from "../config/emailService.js";
+
 export const registerUser = async (req, res) => {
   try {
     await ensureOwnerExists();
 
     const { name, email, password, requestedRole, profilePic } = req.body;
 
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please provide all required fields" });
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: "Full Name is required." });
+    }
+    if (name.trim().length < 3) {
+      return res.status(400).json({ message: "Full Name must be at least 3 characters long." });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: "Email address is required." });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: "Please provide a valid email address." });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Password is required." });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters long." });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const userExists = await User.findOne({ email: normalizedEmail });
     if (userExists) {
-      return res.status(400).json({ message: "User with this email already exists" });
+      return res.status(400).json({ message: "An account with this email already exists. Please log in instead." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -100,10 +118,10 @@ export const registerUser = async (req, res) => {
         token: generateToken(user._id)
       });
     } else {
-      res.status(400).json({ message: "Invalid user data" });
+      res.status(400).json({ message: "Invalid user registration data." });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server error during registration", error: error.message });
+    res.status(500).json({ message: "Server error during registration. " + error.message });
   }
 };
 
@@ -113,29 +131,111 @@ export const loginUser = async (req, res) => {
 
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Please provide email and password" });
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: "Please enter your email address." });
+    }
+    if (!password) {
+      return res.status(400).json({ message: "Please enter your password." });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const user = await User.findOne({ email: normalizedEmail });
 
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        adminStatus: user.adminStatus,
-        profilePic: user.profilePic,
-        bio: user.bio,
-        token: generateToken(user._id)
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email address. Please register first." });
     }
+
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been deactivated by the administrator." });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Incorrect password. Please verify your credentials and try again." });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      adminStatus: user.adminStatus,
+      profilePic: user.profilePic,
+      bio: user.bio,
+      token: generateToken(user._id)
+    });
   } catch (error) {
-    res.status(500).json({ message: "Server error during login", error: error.message });
+    res.status(500).json({ message: "Server error during login. " + error.message });
+  }
+};
+
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: "Please provide your registered email address." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.status(404).json({ message: "No registered account found with that email address." });
+    }
+
+    // Generate 6-digit numeric verification code
+    const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordCode = resetCode;
+    user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
+    await user.save();
+
+    // Dispatch email
+    await sendPasswordResetEmail(normalizedEmail, resetCode);
+
+    res.json({
+      message: "A 6-digit verification code has been dispatched to your email.",
+      resetCode: resetCode // returned so users can proceed even if custom SMTP is unreachable
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to process password recovery request. " + error.message });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, resetCode, newPassword } = req.body;
+
+    if (!email || !resetCode || !newPassword) {
+      return res.status(400).json({ message: "Email, verification code, and new password are required." });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: "New password must be at least 6 characters long." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({
+      email: normalizedEmail,
+      resetPasswordCode: resetCode.trim()
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or incorrect verification code." });
+    }
+
+    if (user.resetPasswordExpires && user.resetPasswordExpires < Date.now()) {
+      return res.status(400).json({ message: "Verification code has expired. Please request a new code." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetPasswordCode = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    res.json({ message: "🎉 Password successfully updated! You can now log in with your new password." });
+  } catch (error) {
+    res.status(500).json({ message: "Error resetting password. " + error.message });
   }
 };
 

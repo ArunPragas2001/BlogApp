@@ -454,11 +454,11 @@ function renderBlogsList() {
     }
 
     if (filteredBlogs.length === 0) {
-        blogContainer.innerHTML = '<div style="text-align:center;padding:48px;background:#fff;border-radius:16px;color:#64748B;">' +
-            '<i class="fa-regular fa-folder-open" style="font-size:3rem;color:#94A3B8;margin-bottom:14px;display:block;"></i>' +
-            '<h3 style="margin-bottom:8px;color:#0F172A;">No blogs found</h3>' +
-            '<p style="margin-bottom:18px;">No stories match this filter.</p>' +
-            '<a href="createBlog.html" class="create-btn" style="display:inline-flex;text-decoration:none;padding:12px 24px;"><i class="fa-solid fa-plus"></i> Create Blog</a></div>';
+        blogContainer.innerHTML = '<div class="empty-state-box">' +
+            '<i class="fa-regular fa-folder-open empty-state-icon"></i>' +
+            '<h3 class="empty-state-title">No blogs found</h3>' +
+            '<p class="empty-state-subtitle">No stories match this filter.</p>' +
+            '<a href="createBlog.html" class="create-btn" style="display:inline-flex;text-decoration:none;padding:12px 24px;margin-top:8px;"><i class="fa-solid fa-plus"></i> Create Blog</a></div>';
         return;
     }
 

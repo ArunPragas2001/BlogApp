@@ -39,11 +39,14 @@
     <div class="profile-container">
         <aside class="profile-card-sidebar">
             <div class="avatar-wrapper">
-                <label for="profileImageUpload" style="cursor: pointer; display: block; position: relative; width: 100%; height: 100%;" title="Click to change profile picture">
+                <!-- Avatar image triggers zoom preview -->
+                <div class="avatar-img-container" onclick="openAvatarZoomModal()" title="Click to view full photo">
                     <img id="sidebarAvatarPreview" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" alt="Profile Picture" class="profile-avatar" onerror="this.src='https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'">
-                    <div class="camera-overlay">
-                        <i class="fa-solid fa-camera"></i>
-                    </div>
+                    <div class="avatar-zoom-hint"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                </div>
+                <!-- Camera icon triggers file upload -->
+                <label for="profileImageUpload" class="camera-overlay" title="Click camera to change profile photo">
+                    <i class="fa-solid fa-camera"></i>
                 </label>
                 <input type="file" id="profileImageUpload" style="display:none;" accept="image/*">
             </div>
@@ -73,7 +76,7 @@
                 <div class="form-group">
                     <label for="profilePic"><i class="fa-solid fa-camera"></i> Profile Picture</label>
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
-                        <label for="profileImageUpload" style="background:#4F46E5; color:#fff; padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                        <label for="profileImageUpload" class="btn-upload-photo" style="background:#4F46E5; color:#fff; padding:8px 16px; border-radius:8px; font-size:0.85rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Upload New Photo
                         </label>
                         <span style="font-size:0.82rem; color:#64748B;">or paste Image URL below:</span>
@@ -83,7 +86,7 @@
 
                 <div style="margin-bottom: 20px;">
                     <label style="font-size: 0.85rem; font-weight: 600; color: #475569; display: block; margin-bottom: 8px;">Or Pick a Sample Avatar:</label>
-                    <div style="display: flex; gap: 10px;" id="sampleAvatars">
+                    <div style="display: flex; gap: 10px; flex-wrap:wrap;" id="sampleAvatars">
                         <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid #E2E8F0;" onclick="selectSampleAvatar(this.src)">
                         <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid #E2E8F0;" onclick="selectSampleAvatar(this.src)">
                         <img src="https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?auto=format&fit=crop&w=150&q=80" style="width: 44px; height: 44px; border-radius: 50%; cursor: pointer; border: 2px solid #E2E8F0;" onclick="selectSampleAvatar(this.src)">
@@ -126,6 +129,27 @@
                 </button>
             </form>
         </main>
+    </div>
+
+    <!-- Profile Avatar Lightbox / Zoom Modal -->
+    <div id="avatarZoomModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.85); backdrop-filter:blur(8px); z-index:99999; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+        <div style="background:#FFFFFF; border-radius:24px; max-width:480px; width:100%; padding:28px; text-align:center; position:relative; box-shadow:0 25px 60px rgba(0,0,0,0.4); border:1px solid rgba(99,102,241,0.2);">
+            <button type="button" onclick="closeAvatarZoomModal()" style="position:absolute; top:18px; right:18px; background:#F1F5F9; border:none; width:36px; height:36px; border-radius:50%; cursor:pointer; color:#64748B; font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <h3 id="zoomModalTitle" style="color:#0F172A; font-size:1.3rem; margin:0 0 16px 0;">Profile Picture</h3>
+            <div style="width:240px; height:240px; margin:0 auto 20px auto; border-radius:50%; overflow:hidden; border:4px solid #4F46E5; box-shadow:0 10px 30px rgba(79,70,229,0.3);">
+                <img id="zoomedAvatarImg" src="" alt="Zoomed Avatar" style="width:100%; height:100%; object-fit:cover; display:block;">
+            </div>
+            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                <label for="profileImageUpload" onclick="closeAvatarZoomModal()" style="background:#4F46E5; color:#fff; padding:10px 20px; border-radius:10px; font-weight:600; font-size:0.9rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                    <i class="fa-solid fa-camera"></i> Change Picture
+                </label>
+                <button type="button" onclick="closeAvatarZoomModal()" style="background:#F1F5F9; color:#475569; border:none; padding:10px 20px; border-radius:10px; font-weight:600; font-size:0.9rem; cursor:pointer;">
+                    Close
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="js/toast.js"></script>

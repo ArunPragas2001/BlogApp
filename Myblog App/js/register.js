@@ -130,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const isTermsValid = validateTerms(termsChecked);
 
         if (!isNameValid || !isEmailValid || !isPasswordValid || !isConfirmValid || !isTermsValid) {
+            showToast("Please fix the highlighted errors before submitting.", "error");
             return;
         }
 
@@ -137,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const originalBtnText = submitBtn ? submitBtn.textContent : "Create Account";
         if (submitBtn) {
             submitBtn.disabled = true;
-            submitBtn.textContent = "Creating Account...";
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Account...';
         }
 
         try {
@@ -152,8 +153,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
 
             if (!response.ok) {
-                showError("generalError", data.message || "Registration failed.");
-                showToast(data.message || "Registration failed", "error");
+                const errorMsg = data.message || "Registration failed. Please check your information.";
+                showError("generalError", errorMsg);
+                showToast(errorMsg, "error", 6000);
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = originalBtnText;
@@ -175,7 +177,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (data.adminStatus === "pending") {
                 showToast("🎉 Account created! Your Admin request is pending Owner approval.", "info", 5000);
             } else {
-                showToast("🎉 Registration successful! Saved in MongoDB.", "success");
+                showToast("🎉 Registration successful! Welcome to BlogSphere.", "success");
             }
 
             setTimeout(() => {
@@ -183,8 +185,9 @@ document.addEventListener("DOMContentLoaded", function () {
             }, 1200);
         } catch (error) {
             console.error("Registration error:", error);
-            showError("generalError", "Unable to connect to server.");
-            showToast("Unable to connect to backend server. Please try again.", "error");
+            const netErrorMsg = "Unable to connect to the backend server. Please check your connection and try again.";
+            showError("generalError", netErrorMsg);
+            showToast(netErrorMsg, "error", 6000);
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;

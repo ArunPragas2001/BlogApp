@@ -1,4 +1,5 @@
 import Subscriber from "../models/subscriber.js";
+import { sendWelcomeSubscriptionEmail } from "../config/emailService.js";
 
 export const subscribeUser = async (req, res) => {
   try {
@@ -23,8 +24,11 @@ export const subscribeUser = async (req, res) => {
 
     subscriber = await Subscriber.create({ email: normalizedEmail });
 
+    // Send welcome confirmation email
+    sendWelcomeSubscriptionEmail(normalizedEmail);
+
     res.status(201).json({
-      message: "🎉 Thank you for subscribing! You will receive email notifications for new posts.",
+      message: "🎉 Thank you for subscribing! A confirmation email has been dispatched.",
       subscriber
     });
   } catch (error) {

@@ -51,7 +51,7 @@
                     <label class="remember-me">
                         <input type="checkbox"> Remember me
                     </label>
-                    <a href="#" class="forgot-password">Forgot password?</a>
+                    <a href="#" class="forgot-password" id="forgotPasswordBtn">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="btn-submit">Login</button>
@@ -60,6 +60,78 @@
             <p class="auth-footer">Don't have an account? <a href="register.html">Register</a></p>
         </div>
     </div>
+
+    <!-- Password Recovery Modal -->
+    <div id="forgotPasswordModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); backdrop-filter:blur(6px); z-index:9999; align-items:center; justify-content:center; padding:20px; box-sizing:border-box;">
+        <div class="auth-card" style="max-width:440px; width:100%; position:relative; box-shadow:0 25px 60px rgba(0,0,0,0.3); border-radius:24px; padding:32px;">
+            <button type="button" id="closeForgotModalBtn" style="position:absolute; top:20px; right:20px; background:#F1F5F9; border:none; width:34px; height:34px; border-radius:50%; cursor:pointer; color:#64748B; font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Step 1: Request Code -->
+            <div id="forgotStep1">
+                <div style="width:50px; height:50px; border-radius:14px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:16px;">
+                    <i class="fa-solid fa-key"></i>
+                </div>
+                <h2 style="font-size:1.5rem; margin-bottom:6px;">Reset Password</h2>
+                <p class="subtitle" style="margin-bottom:20px;">Enter your registered email address to receive a 6-digit recovery code.</p>
+
+                <div id="forgotStep1Error" class="error-text general-error" style="display:none; margin-bottom:14px;"></div>
+
+                <div class="input-field-wrapper" style="margin-bottom:20px;">
+                    <div class="input-group">
+                        <i class="fa-regular fa-envelope input-icon"></i>
+                        <input type="email" id="forgotEmailInput" placeholder="Enter your registered email">
+                    </div>
+                </div>
+
+                <button type="button" id="sendRecoveryCodeBtn" class="btn-submit" style="width:100%;">
+                    <i class="fa-solid fa-paper-plane"></i> Send Verification Code
+                </button>
+            </div>
+
+            <!-- Step 2: Enter Code and New Password -->
+            <div id="forgotStep2" style="display:none;">
+                <div style="width:50px; height:50px; border-radius:14px; background:#ECFDF5; color:#10B981; display:flex; align-items:center; justify-content:center; font-size:1.4rem; margin-bottom:16px;">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h2 style="font-size:1.5rem; margin-bottom:6px;">Set New Password</h2>
+                <p class="subtitle" style="margin-bottom:20px;">We sent a 6-digit code to <strong id="sentToEmailSpan" style="color:#4F46E5;"></strong></p>
+
+                <div id="forgotStep2Error" class="error-text general-error" style="display:none; margin-bottom:14px;"></div>
+
+                <div class="input-field-wrapper" style="margin-bottom:14px;">
+                    <div class="input-group">
+                        <i class="fa-solid fa-hashtag input-icon"></i>
+                        <input type="text" id="resetCodeInput" placeholder="6-digit Verification Code" maxlength="6" style="letter-spacing:2px; font-weight:700;">
+                    </div>
+                </div>
+
+                <div class="input-field-wrapper" style="margin-bottom:14px;">
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="resetNewPasswordInput" placeholder="Enter new password (min. 6 chars)">
+                    </div>
+                </div>
+
+                <div class="input-field-wrapper" style="margin-bottom:20px;">
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="resetConfirmPasswordInput" placeholder="Confirm new password">
+                    </div>
+                </div>
+
+                <button type="button" id="submitResetPasswordBtn" class="btn-submit" style="width:100%; margin-bottom:10px;">
+                    <i class="fa-solid fa-check"></i> Reset & Update Password
+                </button>
+
+                <button type="button" id="backToStep1Btn" style="background:none; border:none; color:#64748B; width:100%; cursor:pointer; font-size:0.88rem; padding:6px;">
+                    <i class="fa-solid fa-arrow-left"></i> Change email address
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/login.js"></script>

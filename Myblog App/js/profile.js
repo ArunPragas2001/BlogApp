@@ -345,15 +345,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-function selectSampleAvatar(url) {
-    var picInput = document.getElementById("profilePic");
-    if (picInput) picInput.value = url;
-    var sidebarAvatarPreview = document.getElementById("sidebarAvatarPreview");
-    var headerNavAvatar = document.getElementById("headerNavAvatar");
-    if (sidebarAvatarPreview) { sidebarAvatarPreview.src = url; }
-    if (headerNavAvatar) { headerNavAvatar.src = url; }
-    showToast("Avatar selected! Click 'Save Profile Changes' to save.", "info");
+function openAvatarZoomModal() {
+    var modal = document.getElementById("avatarZoomModal");
+    var zoomedImg = document.getElementById("zoomedAvatarImg");
+    var sidebarImg = document.getElementById("sidebarAvatarPreview");
+    var titleEl = document.getElementById("zoomModalTitle");
+    var nameEl = document.getElementById("sidebarName");
+
+    if (!modal) return;
+
+    var currentSrc = sidebarImg ? sidebarImg.src : "";
+    if (zoomedImg) {
+        zoomedImg.src = currentSrc;
+        zoomedImg.onerror = function () {
+            this.onerror = null;
+            this.src = DEFAULT_AVATAR;
+        };
+    }
+    if (titleEl && nameEl && nameEl.textContent && nameEl.textContent !== "Loading...") {
+        titleEl.textContent = nameEl.textContent + "'s Profile Picture";
+    }
+
+    modal.style.display = "flex";
 }
 
+function closeAvatarZoomModal() {
+    var modal = document.getElementById("avatarZoomModal");
+    if (modal) modal.style.display = "none";
+}
+
+window.openAvatarZoomModal = openAvatarZoomModal;
+window.closeAvatarZoomModal = closeAvatarZoomModal;
 window.selectSampleAvatar = selectSampleAvatar;
 window.resolveImageUrl = resolveImageUrl;
+

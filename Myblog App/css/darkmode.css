@@ -440,3 +440,84 @@ body.dark-mode .logo-highlight {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+/* Empty State Card in Dark Mode */
+body.dark-mode .empty-state-box {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .empty-state-title {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .empty-state-subtitle {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .empty-state-icon {
+    color: #818CF8 !important;
+}
+
+/* Profile Page Button and Hover Fixes in Dark Mode */
+body.dark-mode .btn-save-profile {
+    background: #4F46E5 !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .btn-save-profile:hover {
+    background: #6366F1 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4) !important;
+}
+
+body.dark-mode .btn-upload-photo {
+    background: #4F46E5 !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .btn-upload-photo:hover {
+    background: #6366F1 !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .user-bio-badge {
+    background: #162033 !important;
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .nav-link-btn {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .nav-link-btn:hover {
+    color: #FFFFFF !important;
+    background: #312E81 !important;
+}
+
+/* Modals & Dialogs in Dark Mode */
+body.dark-mode #avatarZoomModal > div,
+body.dark-mode #forgotPasswordModal .auth-card {
+    background-color: #1E293B !important;
+    border: 1px solid #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #avatarZoomModal h3,
+body.dark-mode #forgotPasswordModal h2 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #avatarZoomModal button,
+body.dark-mode #closeForgotModalBtn {
+    background-color: #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #avatarZoomModal button:hover,
+body.dark-mode #closeForgotModalBtn:hover {
+    background-color: #475569 !important;
+    color: #FFFFFF !important;
+}
+
