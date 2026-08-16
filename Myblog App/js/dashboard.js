@@ -22,20 +22,65 @@ function formatDate(dateStr) {
     }
 }
 
+function getDefaultAvatar(name) {
+    var n = encodeURIComponent(name || "User");
+    return "https://ui-avatars.com/api/?background=4F46E5&color=fff&size=150&name=" + n;
+}
+
 function setupWelcomeAndAuth() {
     var welcomeHeading = document.getElementById("welcomeHeading");
     var userRoleBadgeText = document.getElementById("userRoleBadgeText");
     var adminSettingsNavLink = document.getElementById("adminSettingsNavLink");
     var adminSettingsBtn = document.getElementById("adminSettingsBtn");
     var dashboardAvatarEl = document.getElementById("dashboardAvatar");
+    var dashNavAvatarEl = document.getElementById("dashboardNavAvatar");
     var currentUser = getCurrentUser();
 
     if (welcomeHeading && currentUser && currentUser.name) {
         welcomeHeading.innerHTML = "Hey, " + esc(currentUser.name) + "! <span class='welcome-icon'>▪</span>";
     }
 
-    if (dashboardAvatarEl && currentUser) {
-        dashboardAvatarEl.src = currentUser.profilePic || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+    // Set avatar with fallback
+    function setAvatar(el, url, name) {
+        if (!el) return;
+        el.src = (url && url.trim()) ? url.trim() : getDefaultAvatar(name);
+        el.onerror = function () {
+            this.onerror = null;
+            this.src = getDefaultAvatar(name);
+        };
+    }
+
+    if (currentUser) {
+        setAvatar(dashboardAvatarEl, currentUser.profilePic, currentUser.name);
+        setAvatar(dashNavAvatarEl, currentUser.profilePic, currentUser.name);
+    }
+
+    // Fetch fresh user data from backend to ensure avatars are up-to-date
+    var token = localStorage.getItem("token");
+    if (token) {
+        fetch("http://localhost:5000/api/auth/me", {
+            headers: { "Authorization": "Bearer " + token }
+        }).then(function(res) {
+            if (!res.ok) return;
+            return res.json();
+        }).then(function(user) {
+            if (!user) return;
+            setAvatar(dashboardAvatarEl, user.profilePic, user.name);
+            setAvatar(dashNavAvatarEl, user.profilePic, user.name);
+            if (welcomeHeading && user.name) {
+                welcomeHeading.innerHTML = "Hey, " + esc(user.name) + "! <span class='welcome-icon'>▪</span>";
+            }
+            // Sync localStorage
+            var existing = getCurrentUser() || {};
+            localStorage.setItem("currentUser", JSON.stringify(Object.assign({}, existing, {
+                id: user._id, _id: user._id,
+                name: user.name, email: user.email,
+                role: user.role, profilePic: user.profilePic || "",
+                bio: user.bio || ""
+            })));
+        }).catch(function(err) {
+            console.warn("Could not refresh user from API:", err.message);
+        });
     }
 
     if (currentUser && userRoleBadgeText) {
@@ -240,85 +285,116 @@ async function displayBlogs() {
         if (!response.ok) throw new Error("Failed to fetch blogs");
 
         var blogs = await response.json();
+        window.allBlogs = blogs;
 
         var myBlogs = blogs;
         if (currentUser && currentUser.role === "user") {
             myBlogs = blogs.filter(function (b) { return b.author && (b.author._id === currentUser.id || b.author.email === currentUser.email); });
         }
+        window.allMyBlogs = myBlogs;
+        window.currentFilter = window.currentFilter || 'all';
 
         updateStatistics(myBlogs);
-
-        var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
-
-        if (isAdminOrOwner && adminApprovalSection && adminPendingContainer) {
-            var pendingBlogs = blogs.filter(function (b) { return !b.isApproved; });
-            adminApprovalSection.style.display = "block";
-            if (pendingAdminCount) pendingAdminCount.textContent = pendingBlogs.length + " Pending";
-
-            if (pendingBlogs.length === 0) {
-                adminPendingContainer.innerHTML = '<p style="color:#92400E;margin:0;">No pending blogs waiting for approval. 🎉</p>';
-            } else {
-                adminPendingContainer.innerHTML = pendingBlogs.map(function (blog) {
-                    var blogId = blog._id || blog.id;
-                    var authorName = blog.author ? (blog.author.name || blog.author.email) : "User";
-                    return '<div class="dashboard-blog" style="border-left:5px solid #F59E0B;">' +
-                        '<div class="blog-info"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
-                        '<div class="blog-actions">' +
-                        '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
-                        '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
-                        '</div></div>';
-                }).join("");
-            }
-        }
-
-        if (myBlogs.length === 0) {
-            blogContainer.innerHTML = '<div style="text-align:center;padding:48px;background:#fff;border-radius:16px;color:#64748B;">' +
-                '<i class="fa-regular fa-folder-open" style="font-size:3rem;color:#94A3B8;margin-bottom:14px;display:block;"></i>' +
-                '<h3 style="margin-bottom:8px;color:#0F172A;">No blogs yet</h3>' +
-                '<p style="margin-bottom:18px;">You haven\'t created any stories yet.</p>' +
-                '<a href="createBlog.html" class="create-btn" style="display:inline-flex;text-decoration:none;padding:12px 24px;"><i class="fa-solid fa-plus"></i> Create Blog</a></div>';
-            return;
-        }
-
-        blogContainer.innerHTML = myBlogs.map(function (blog) {
-            var blogId = blog._id || blog.id;
-            var isApproved = blog.isApproved;
-            var approvalStatus = blog.approvalStatus || (isApproved ? "approved" : "pending");
-            var badgeClass = isApproved ? "published" : "draft";
-            var statusText = isApproved ? "✅ Approved & Live" : (approvalStatus === "pending_author" ? "🖊️ Admin edited · Author review needed" : "⏳ Pending Approval");
-            var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Unknown";
-            var blogImage = blog.image && blog.image.trim() !== "" ? blog.image : "";
-            var pubDate = formatDate(blog.createdAt);
-
-            var isAuthorOfBlog = currentUser && blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email);
-            var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
-
-            var actionsHtml = canEditDelete ? (
-                '<div class="blog-actions">' +
-                '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
-                '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' +
-                '</div>'
-            ) : "";
-
-            return '<div class="dashboard-blog">' +
-                (blogImage ? '<img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display=\'none\'">' : '') +
-                '<div class="blog-info" style="flex:1;">' +
-                '<h3>' + esc(blog.title) + '</h3>' +
-                '<p>' + esc((blog.content || "").substring(0, 100)) + (blog.content && blog.content.length > 100 ? "…" : "") + '</p>' +
-                '<div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">' +
-                '<span class="badge ' + badgeClass + '">' + statusText + '</span>' +
-                '<span style="font-size:0.8rem;font-weight:600;color:#4F46E5;">' + esc(blog.category || "General") + '</span>' +
-                '<small style="color:#64748B;">By ' + esc(authorName) + '</small>' +
-                (pubDate ? '<small style="color:#64748B;"><i class="fa-regular fa-calendar-days" style="color:#6366F1;"></i> ' + esc(pubDate) + '</small>' : '') +
-                '</div></div>' +
-                actionsHtml +
-                '</div>';
-        }).join("");
+        renderBlogsList();
 
     } catch (error) {
         console.error("Fetch dashboard blogs error:", error);
         blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Make sure backend is running on http://localhost:5000</p></div>';
     }
+}
+
+function filterDashboardBlogs(filterType) {
+    window.currentFilter = filterType;
+    renderBlogsList();
+}
+window.filterDashboardBlogs = filterDashboardBlogs;
+
+function renderBlogsList() {
+    var blogContainer = document.getElementById("blogContainer");
+    var adminApprovalSection = document.getElementById("adminApprovalSection");
+    var adminPendingContainer = document.getElementById("adminPendingContainer");
+    var pendingAdminCount = document.getElementById("pendingAdminCount");
+    var currentUser = getCurrentUser();
+
+    if (!blogContainer) return;
+
+    var blogs = window.allBlogs || [];
+    var myBlogs = window.allMyBlogs || [];
+
+    // Filter myBlogs based on currentFilter
+    var filteredBlogs = myBlogs;
+    if (window.currentFilter === 'published') {
+        filteredBlogs = myBlogs.filter(function(b) { return b.isApproved; });
+    } else if (window.currentFilter === 'pending') {
+        filteredBlogs = myBlogs.filter(function(b) { return !b.isApproved; });
+    }
+
+    var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
+
+    if (isAdminOrOwner && adminApprovalSection && adminPendingContainer) {
+        var pendingBlogs = blogs.filter(function (b) { return !b.isApproved; });
+        adminApprovalSection.style.display = "block";
+        if (pendingAdminCount) pendingAdminCount.textContent = pendingBlogs.length + " Pending";
+
+        if (pendingBlogs.length === 0) {
+            adminPendingContainer.innerHTML = '<p style="color:#92400E;margin:0;">No pending blogs waiting for approval. 🎉</p>';
+        } else {
+            adminPendingContainer.innerHTML = pendingBlogs.map(function (blog) {
+                var blogId = blog._id || blog.id;
+                var authorName = blog.author ? (blog.author.name || blog.author.email) : "User";
+                return '<div class="dashboard-blog" style="border-left:5px solid #F59E0B;">' +
+                    '<div class="blog-info"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
+                    '<div class="blog-actions">' +
+                    '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
+                    '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
+                    '</div></div>';
+            }).join("");
+        }
+    }
+
+    if (filteredBlogs.length === 0) {
+        blogContainer.innerHTML = '<div style="text-align:center;padding:48px;background:#fff;border-radius:16px;color:#64748B;">' +
+            '<i class="fa-regular fa-folder-open" style="font-size:3rem;color:#94A3B8;margin-bottom:14px;display:block;"></i>' +
+            '<h3 style="margin-bottom:8px;color:#0F172A;">No blogs found</h3>' +
+            '<p style="margin-bottom:18px;">No stories match this filter.</p>' +
+            '<a href="createBlog.html" class="create-btn" style="display:inline-flex;text-decoration:none;padding:12px 24px;"><i class="fa-solid fa-plus"></i> Create Blog</a></div>';
+        return;
+    }
+
+    blogContainer.innerHTML = filteredBlogs.map(function (blog) {
+        var blogId = blog._id || blog.id;
+        var isApproved = blog.isApproved;
+        var approvalStatus = blog.approvalStatus || (isApproved ? "approved" : "pending");
+        var badgeClass = isApproved ? "published" : "draft";
+        var statusText = isApproved ? "✅ Approved & Live" : (approvalStatus === "pending_author" ? "🖊️ Admin edited · Author review needed" : "⏳ Pending Approval");
+        var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Unknown";
+        var blogImage = blog.image && blog.image.trim() !== "" ? blog.image : "";
+        var pubDate = formatDate(blog.createdAt);
+
+        var isAuthorOfBlog = currentUser && blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email);
+        var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
+
+        var actionsHtml = canEditDelete ? (
+            '<div class="blog-actions">' +
+            '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+            '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' +
+            '</div>'
+        ) : "";
+
+        return '<div class="dashboard-blog">' +
+            (blogImage ? '<img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.style.display=\'none\'">' : '') +
+            '<div class="blog-info" style="flex:1;">' +
+            '<h3>' + esc(blog.title) + '</h3>' +
+            '<p>' + esc((blog.content || "").substring(0, 100)) + (blog.content && blog.content.length > 100 ? "…" : "") + '</p>' +
+            '<div style="display:flex;gap:12px;align-items:center;margin-top:8px;flex-wrap:wrap;">' +
+            '<span class="badge ' + badgeClass + '">' + statusText + '</span>' +
+            '<span style="font-size:0.8rem;font-weight:600;color:#4F46E5;">' + esc(blog.category || "General") + '</span>' +
+            '<small style="color:#64748B;">By ' + esc(authorName) + '</small>' +
+            (pubDate ? '<small style="color:#64748B;"><i class="fa-regular fa-calendar-days" style="color:#6366F1;"></i> ' + esc(pubDate) + '</small>' : '') +
+            '</div></div>' +
+            actionsHtml +
+            '</div>';
+    }).join("");
 }
 
 async function handleApproveBlog(id, approve) {

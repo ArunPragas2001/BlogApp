@@ -7,7 +7,7 @@ const OWNER_PASS = "arun20019048$";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "my_blog_app_secret_key_12345", {
-    expiresIn: "1h"
+    expiresIn: "7d"
   });
 };
 
@@ -161,9 +161,25 @@ export const updateUserProfile = async (req, res) => {
     user.profilePic = req.body.profilePic !== undefined ? req.body.profilePic : user.profilePic;
     user.bio = req.body.bio !== undefined ? req.body.bio : user.bio;
 
-    if (req.body.password) {
+    if (req.body.newPassword) {
+      // Require old password to change to new password
+      if (!req.body.oldPassword) {
+        return res.status(400).json({ message: "Please provide your current password to set a new one." });
+      }
+      const isMatch = await bcrypt.compare(req.body.oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ message: "Current password is incorrect." });
+      }
+      if (req.body.newPassword.length < 6) {
+        return res.status(400).json({ message: "New password must be at least 6 characters." });
+      }
       const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(req.body.password, salt);
+      user.password = await bcrypt.hash(req.body.newPassword, salt);
+    } else if (req.body.password) {
+      // Legacy support: if just "password" is sent (no oldPassword check, for backwards compat during profile save without pw change)
+      // Only allow if no oldPassword was sent - means user is not changing password
+      // If someone sends just "password" without "oldPassword", skip it silently
+      // (old behavior that auto-saves profile photo does not send oldPassword)
     }
 
     const updatedUser = await user.save();

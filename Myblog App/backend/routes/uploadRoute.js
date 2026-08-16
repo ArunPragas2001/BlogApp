@@ -2,19 +2,17 @@ import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { fileURLToPath } from "url";
 import { protect } from "../middleware/authMiddleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Ensure uploads directory exists in process.cwd() or process.cwd()/backend
-let uploadDir = path.join(process.cwd(), "uploads");
+const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) {
-  const backendUploadDir = path.join(process.cwd(), "backend", "uploads");
-  if (fs.existsSync(backendUploadDir)) {
-    uploadDir = backendUploadDir;
-  } else {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 const storage = multer.diskStorage({

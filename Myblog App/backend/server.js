@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import path from "path";
+import { fileURLToPath } from "url";
 import authRoutes from "./routes/authRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
 import configRoutes from "./routes/configRoute.js";
@@ -10,6 +11,9 @@ import uploadRoutes from "./routes/uploadRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import subscriberRoutes from "./routes/subscriberRoute.js";
 import { checkMaintenanceMode } from "./middleware/maintenanceMiddleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -30,11 +34,9 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
-const uploadDir = path.join(process.cwd(), "uploads");
-const backendUploadDir = path.join(process.cwd(), "backend", "uploads");
+const uploadDir = path.join(__dirname, "uploads");
 
 app.use("/uploads", express.static(uploadDir));
-app.use("/uploads", express.static(backendUploadDir));
 
 app.get("/", (req, res) => {
   res.json({

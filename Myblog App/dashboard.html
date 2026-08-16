@@ -92,15 +92,15 @@
         </section>
 
         <section class="dashboard-stats">
-            <div class="stat-card">
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.2s;" onclick="filterDashboardBlogs('all')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 <div class="stat-icon"><i class="fa-solid fa-newspaper"></i></div>
                 <div class="stat-info"><h3 id="totalBlogs">0</h3><p>Total Blogs</p></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.2s;" onclick="filterDashboardBlogs('published')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 <div class="stat-icon published-icon"><i class="fa-solid fa-circle-check"></i></div>
                 <div class="stat-info"><h3 id="publishedBlogs">0</h3><p>Published & Approved</p></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="cursor: pointer; transition: transform 0.2s;" onclick="filterDashboardBlogs('pending')" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
                 <div class="stat-icon draft-icon"><i class="fa-solid fa-clock"></i></div>
                 <div class="stat-info"><h3 id="draftBlogs">0</h3><p>Pending Approval</p></div>
             </div>
