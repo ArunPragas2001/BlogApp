@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Blog | BlogSphere</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
@@ -71,40 +72,47 @@
 
                 <div class="form-group">
                     <label><i class="fa-solid fa-image"></i> Featured Image</label>
-                    
+
                     <!-- Upload button row -->
                     <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:12px;">
-                        <label for="blogImageUpload" class="publish-btn" style="background:#4F46E5; padding:10px 18px; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; border-radius:10px;">
+                        <label for="blogImageUpload" class="publish-btn"
+                            style="background:#4F46E5; padding:10px 18px; font-size:0.88rem; cursor:pointer; display:inline-flex; align-items:center; gap:8px; border-radius:10px;">
                             <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
                         </label>
                         <input type="file" id="blogImageUpload" accept="image/*" style="display:none;">
                         <!-- Upload progress indicator -->
-                        <div id="uploadProgress" style="display:none; align-items:center; gap:8px; color:#4F46E5; font-size:0.88rem; font-weight:600;">
+                        <div id="uploadProgress"
+                            style="display:none; align-items:center; gap:8px; color:#4F46E5; font-size:0.88rem; font-weight:600;">
                             <i class="fa-solid fa-spinner fa-spin"></i> Uploading...
                         </div>
                         <span style="font-size:0.85rem; color:#64748B;">or paste URL below</span>
                     </div>
 
                     <!-- URL input -->
-                    <input type="url" id="blog-image" name="blog-image" placeholder="https://example.com/image.jpg" style="width:100%; box-sizing:border-box;">
-                    
+                    <input type="url" id="blog-image" name="blog-image" placeholder="https://example.com/image.jpg"
+                        style="width:100%; box-sizing:border-box;">
+
                     <!-- Preview -->
                     <div id="imagePreviewContainer" style="margin-top:14px; display:none; position:relative;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <div
+                            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                             <span style="font-size:0.85rem; font-weight:600; color:#64748B;">
                                 <i class="fa-solid fa-eye" style="color:#4F46E5;"></i> Image Preview:
                             </span>
-                            <button type="button" id="removePhotoBtn" style="background:#EF4444; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
+                            <button type="button" id="removePhotoBtn"
+                                style="background:#EF4444; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:0.78rem; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">
                                 <i class="fa-solid fa-trash-can"></i> Remove
                             </button>
                         </div>
-                        <img id="imagePreview" alt="Featured Image Preview" style="max-height:260px; width:100%; object-fit:cover; border-radius:14px; border:2px solid #6366F1; box-shadow:0 4px 16px rgba(99,102,241,0.15); display:block;">
+                        <img id="imagePreview" alt="Featured Image Preview"
+                            style="max-height:260px; width:100%; object-fit:cover; border-radius:14px; border:2px solid #6366F1; box-shadow:0 4px 16px rgba(99,102,241,0.15); display:block;">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="blog-content">Blog Content</label>
-                    <textarea id="blog-content" name="blog-content" rows="10" placeholder="Write your story here..."></textarea>
+                    <textarea id="blog-content" name="blog-content" rows="10"
+                        placeholder="Write your story here..."></textarea>
                     <small class="error-text" id="contentError"></small>
                 </div>
 
