@@ -181,5 +181,66 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         initFloatingNavigation();
+        initMobileNav();
     });
+
+    // ─── 3. Mobile Navigation (Hamburger Menu) ───────────────────────────────
+    function initMobileNav() {
+        document.querySelectorAll(".navbar").forEach(function (navbar) {
+            if (navbar.querySelector(".nav-toggle")) return;
+
+            var toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "nav-toggle";
+            toggle.setAttribute("aria-label", "Toggle navigation menu");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.innerHTML =
+                '<span class="nav-toggle-bar"></span>' +
+                '<span class="nav-toggle-bar"></span>' +
+                '<span class="nav-toggle-bar"></span>';
+
+            var logo = navbar.querySelector(".logo");
+            if (logo) {
+                logo.insertAdjacentElement("afterend", toggle);
+            } else {
+                navbar.prepend(toggle);
+            }
+
+            toggle.addEventListener("click", function (e) {
+                e.stopPropagation();
+                var isOpen = navbar.classList.toggle("nav-open");
+                toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+                document.body.classList.toggle("nav-menu-open", isOpen);
+            });
+
+            navbar.querySelectorAll(".nav-links a, .nav-buttons a, .nav-buttons button").forEach(function (link) {
+                link.addEventListener("click", function () {
+                    navbar.classList.remove("nav-open");
+                    toggle.setAttribute("aria-expanded", "false");
+                    document.body.classList.remove("nav-menu-open");
+                });
+            });
+        });
+
+        document.addEventListener("click", function (e) {
+            if (e.target.closest(".navbar")) return;
+            document.querySelectorAll(".navbar.nav-open").forEach(function (navbar) {
+                navbar.classList.remove("nav-open");
+                var btn = navbar.querySelector(".nav-toggle");
+                if (btn) btn.setAttribute("aria-expanded", "false");
+            });
+            document.body.classList.remove("nav-menu-open");
+        });
+
+        window.addEventListener("resize", function () {
+            if (window.innerWidth > 992) {
+                document.querySelectorAll(".navbar.nav-open").forEach(function (navbar) {
+                    navbar.classList.remove("nav-open");
+                    var btn = navbar.querySelector(".nav-toggle");
+                    if (btn) btn.setAttribute("aria-expanded", "false");
+                });
+                document.body.classList.remove("nav-menu-open");
+            }
+        });
+    }
 })();

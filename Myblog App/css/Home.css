@@ -768,3 +768,104 @@ footer {
     font-size: 0.9rem;
     color: #64748B;
 }
+
+/* Mobile & Tablet Responsive */
+@media (max-width: 992px) {
+    .hero,
+    .hero {
+        min-height: auto;
+        padding: 60px 20px;
+    }
+
+    .hero h1 {
+        font-size: 2.25rem;
+    }
+
+    .hero p {
+        font-size: 1.05rem;
+    }
+
+    .features-header h2,
+    .testimonial h2 {
+        font-size: 1.75rem;
+    }
+
+    #featured,
+    .features,
+    .statistics,
+    .testimonial,
+    .categories-section {
+        padding: 60px 5%;
+    }
+
+    .blog-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .newsletter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .newsletter-form input[type="email"] {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .newsletter-form button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .navbar {
+        padding: 12px 16px;
+    }
+
+    .logo {
+        font-size: 1.15rem;
+    }
+
+    .logo-badge {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+
+    .hero h1 {
+        font-size: 1.85rem;
+    }
+
+    .hero p {
+        font-size: 0.95rem;
+        margin-bottom: 24px;
+    }
+
+    .hero-buttons,
+    .hero-button {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .button-primary,
+    .button-secondary,
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        text-align: center;
+    }
+
+    .stat-box h2 {
+        font-size: 2rem;
+    }
+
+    .feature-card {
+        padding: 28px 20px;
+    }
+
+    footer {
+        padding: 50px 5% 24px;
+    }
+}

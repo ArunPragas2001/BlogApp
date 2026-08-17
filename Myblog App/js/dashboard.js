@@ -7,6 +7,18 @@ function getCurrentUser() {
     try { return JSON.parse(localStorage.getItem("currentUser")); } catch (e) { return null; }
 }
 
+function getAuthorId(author) {
+    if (!author) return "";
+    var id = author._id || author.id || author;
+    return String(id);
+}
+
+function isAuthorMatch(author, user) {
+    if (!author || !user) return false;
+    if (user.email && author.email && user.email === author.email) return true;
+    return getAuthorId(author) === String(user.id || user._id || "");
+}
+
 function esc(str) {
     if (!str) return "";
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
@@ -310,7 +322,7 @@ async function displayBlogs() {
 
         var myBlogs = blogs;
         if (currentUser && currentUser.role === "user") {
-            myBlogs = blogs.filter(function (b) { return b.author && (b.author._id === currentUser.id || b.author.email === currentUser.email); });
+            myBlogs = blogs.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
         }
         window.allMyBlogs = myBlogs;
         window.currentFilter = window.currentFilter || 'all';
@@ -472,7 +484,7 @@ function renderBlogsList() {
         var blogImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
         var pubDate = formatDate(blog.createdAt);
 
-        var isAuthorOfBlog = currentUser && blog.author && (blog.author._id === currentUser.id || blog.author.email === currentUser.email);
+        var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
         var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
 
         var actionsHtml = (

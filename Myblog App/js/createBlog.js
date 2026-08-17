@@ -21,6 +21,14 @@ function resolveImageUrl(url) {
     return API_BASE_URL + "/" + trimmed;
 }
 
+function isUnsupportedMobileImage(file) {
+    if (!file) return false;
+    var name = (file.name || "").toLowerCase();
+    var type = (file.type || "").toLowerCase();
+    return type.indexOf("heic") !== -1 || type.indexOf("heif") !== -1 ||
+        name.endsWith(".heic") || name.endsWith(".heif");
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
     var form = document.getElementById("createBlogForm");
     if (!form) return;
@@ -58,9 +66,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         imagePreview.onerror = function () {
             this.onerror = null;
             imagePreviewContainer.style.display = "none";
-            _currentImageUrl = "";
-            if (imageUrlInput) imageUrlInput.value = "";
-            showToast("Could not load image from that URL.", "error");
+            showToast("Preview unavailable, but the image URL was saved.", "info");
         };
         imagePreview.onload = function () {
             imagePreviewContainer.style.display = "block";
@@ -99,6 +105,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             var file = this.files && this.files[0];
             if (!file) return;
 
+            if (isUnsupportedMobileImage(file)) {
+                showToast("HEIC photos aren't supported. Change camera settings to JPG or use a JPG/PNG file.", "error");
+                this.value = "";
+                return;
+            }
+
             // Validate file size client-side (10MB)
             if (file.size > 10 * 1024 * 1024) {
                 showToast("Image must be under 10 MB.", "error");
@@ -125,6 +137,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (res.ok && data.url) {
                     var fullImageUrl = resolveImageUrl(data.url);
+                    _currentImageUrl = fullImageUrl;
                     if (imageUrlInput) imageUrlInput.value = fullImageUrl;
                     showImagePreview(fullImageUrl);
                     showToast("✅ Image uploaded successfully!", "success");
@@ -168,11 +181,12 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 if (titleInput) titleInput.value = blog.title || "";
                 if (categorySelect) categorySelect.value = blog.category || "";
-                if (statusSelect) statusSelect.value = blog.status || "published";
+                if (statusSelect) statusSelect.value = (blog.status || "published").toLowerCase();
                 if (contentInput) contentInput.value = blog.content || "";
 
                 if (blog.image && blog.image.trim()) {
                     var resolvedImg = resolveImageUrl(blog.image);
+                    _currentImageUrl = resolvedImg;
                     if (imageUrlInput) imageUrlInput.value = resolvedImg;
                     setTimeout(function () { showImagePreview(resolvedImg); }, 150);
                 }
@@ -212,8 +226,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         var title = titleInput ? titleInput.value.trim() : "";
         var category = categorySelect ? categorySelect.value : "";
         var status = statusSelect ? statusSelect.value : "published";
-        // Use the module-level _currentImageUrl OR fall back to what's in the URL input
-        var image = _currentImageUrl || (imageUrlInput ? imageUrlInput.value.trim() : "");
+        var image = _currentImageUrl || (imageUrlInput ? resolveImageUrl(imageUrlInput.value.trim()) : "");
         var content = contentInput ? contentInput.value.trim() : "";
 
         var valid = true;
@@ -275,8 +288,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             var currentUser = {};
             try { currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch(e) {}
             var isAdminOrOwner = currentUser.role === "admin" || currentUser.role === "owner";
+            var isEditingOthersBlog = editId && data.author &&
+                String(data.author._id || data.author.id || "") !== String(currentUser.id || currentUser._id || "");
             var successMsg = isAdminOrOwner
-                ? (editId ? "✅ Blog post updated!" : "🎉 Blog published!")
+                ? (editId
+                    ? (isEditingOthersBlog ? "✅ Blog updated! Sent to author for review." : "✅ Blog post updated!")
+                    : "🎉 Blog published!")
                 : (editId ? "✅ Blog updated! Pending Admin approval." : "🎉 Blog created! Pending Admin approval.");
 
             showToast(successMsg, "success");

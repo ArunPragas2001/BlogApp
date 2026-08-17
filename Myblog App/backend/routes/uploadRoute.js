@@ -21,21 +21,42 @@ const storage = multer.diskStorage({
   },
   filename(req, file, cb) {
     const cleanName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    cb(null, `${Date.now()}-${cleanName}`);
+    const extFromName = path.extname(cleanName).toLowerCase();
+    const mimeToExt = {
+      "image/jpeg": ".jpg",
+      "image/jpg": ".jpg",
+      "image/png": ".png",
+      "image/webp": ".webp",
+      "image/gif": ".gif",
+      "image/svg+xml": ".svg",
+      "image/avif": ".avif",
+      "image/bmp": ".bmp"
+    };
+    const ext = extFromName || mimeToExt[file.mimetype] || "";
+    const baseName = extFromName
+      ? cleanName.slice(0, -extFromName.length)
+      : cleanName.replace(/\.+$/, "");
+    cb(null, `${Date.now()}-${baseName}${ext}`);
   }
 });
 
 function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png|webp|gif|svg|avif|bmp/;
+  const blockedMimes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"];
+  const blockedExts = ["heic", "heif"];
+
   const extName = path.extname(file.originalname).toLowerCase().replace(".", "");
+  if (blockedMimes.includes(file.mimetype) || blockedExts.includes(extName)) {
+    return cb(new Error("HEIC/HEIF photos are not supported. Please use JPG or PNG."));
+  }
+
+  const filetypes = /jpg|jpeg|png|webp|gif|svg|avif|bmp/;
   const extValid = filetypes.test(extName);
-  const mimeValid = file.mimetype.startsWith("image/");
+  const mimeValid = file.mimetype.startsWith("image/") && !blockedMimes.includes(file.mimetype);
 
   if (extValid || mimeValid) {
     return cb(null, true);
-  } else {
-    cb(new Error("Images only! (jpg, jpeg, png, webp, gif, svg, avif, bmp)"));
   }
+  cb(new Error("Images only! (jpg, jpeg, png, webp, gif, svg, avif, bmp)"));
 }
 
 const upload = multer({
@@ -59,7 +80,7 @@ router.post("/", protect, (req, res) => {
     }
 
     const host = req.get("host") || "localhost:5000";
-    const protocol = req.protocol || "http";
+    const protocol = req.get("x-forwarded-proto") || req.protocol || "https";
     const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
 
     res.json({

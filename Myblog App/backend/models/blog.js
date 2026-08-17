@@ -27,8 +27,12 @@ const blogSchema = new mongoose.Schema(
     },
     approvalStatus: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "pending_author"],
       default: "pending"
+    },
+    lastEditedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
     },
     image: {
       type: String,

@@ -224,3 +224,34 @@ body.dark-mode .btn-modal-cancel {
 .btn-modal-confirm.danger:hover {
     background: #DC2626;
 }
+
+@media (max-width: 480px) {
+    #toastContainer {
+        top: 72px;
+        width: calc(100% - 24px);
+        left: 12px;
+        transform: none;
+    }
+
+    .toast {
+        min-width: 0;
+        width: 100%;
+        max-width: none;
+        padding: 14px 16px;
+        font-size: 0.9rem;
+    }
+
+    .custom-modal {
+        padding: 28px 20px;
+        width: calc(100% - 24px);
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .btn-modal-cancel,
+    .btn-modal-confirm {
+        width: 100%;
+    }
+}

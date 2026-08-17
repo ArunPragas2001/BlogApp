@@ -161,6 +161,19 @@ document.addEventListener("DOMContentLoaded", async function () {
             var file = this.files[0];
             if (!file) return;
 
+            var name = (file.name || "").toLowerCase();
+            var type = (file.type || "").toLowerCase();
+            if (type.indexOf("heic") !== -1 || type.indexOf("heif") !== -1 || name.endsWith(".heic") || name.endsWith(".heif")) {
+                showToast("HEIC photos aren't supported. Use JPG or PNG.", "error");
+                this.value = "";
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) {
+                showToast("Image must be under 10 MB.", "error");
+                this.value = "";
+                return;
+            }
+
             var currentToken = localStorage.getItem("token") || token;
             var formData = new FormData();
             formData.append("image", file);
@@ -174,9 +187,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                 });
                 var data = await res.json();
                 if (res.ok && data.url) {
-                    if (picInput) picInput.value = data.url;
-                    updateAllAvatars(data.url, nameInput ? nameInput.value : "");
-                    await autoSaveProfilePhoto(data.url);
+                    var fullUrl = resolveImageUrl(data.url);
+                    if (picInput) picInput.value = fullUrl;
+                    updateAllAvatars(fullUrl, nameInput ? nameInput.value : "");
+                    await autoSaveProfilePhoto(fullUrl);
                 } else {
                     showToast(data.message || "Failed to upload image", "error");
                 }
@@ -257,7 +271,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             var currentToken = localStorage.getItem("token") || token;
             var name = nameInput ? nameInput.value.trim() : "";
             var email = emailInput ? emailInput.value.trim() : "";
-            var profilePic = picInput ? picInput.value.trim() : "";
+            var profilePic = picInput ? resolveImageUrl(picInput.value.trim()) : "";
             var bio = bioInput ? bioInput.value.trim() : "";
             var oldPassword = oldPasswordInput ? oldPasswordInput.value : "";
             var newPassword = passwordInput ? passwordInput.value : "";

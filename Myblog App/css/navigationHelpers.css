@@ -180,3 +180,148 @@ body.dark-mode .btn-suggest-password:hover {
 body.dark-mode .password-hints {
     color: #94A3B8;
 }
+
+/* =========================================================
+   MOBILE & TABLET NAVIGATION
+   ========================================================= */
+
+.nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    width: 42px;
+    height: 42px;
+    margin-left: auto;
+    padding: 0;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.06);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.35);
+}
+
+.nav-toggle-bar {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: #FFFFFF;
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(2) {
+    opacity: 0;
+}
+
+.navbar.nav-open .nav-toggle-bar:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+body.nav-menu-open {
+    overflow: hidden;
+}
+
+@media (max-width: 992px) {
+    .nav-toggle {
+        display: flex;
+    }
+
+    .navbar {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0;
+        padding: 12px 16px !important;
+    }
+
+    .navbar .logo {
+        margin-right: 0 !important;
+    }
+
+    .navbar .nav-links {
+        display: none !important;
+        flex: none !important;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0 !important;
+        margin: 0;
+        padding: 12px 0 4px;
+        order: 10;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar .nav-links li {
+        width: 100%;
+    }
+
+    .navbar .nav-links a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 8px !important;
+        font-size: 1rem !important;
+        border-radius: 10px;
+    }
+
+    .navbar .nav-links a:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .navbar .nav-buttons {
+        display: none !important;
+        flex: none !important;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px !important;
+        margin: 0 !important;
+        padding: 8px 0 12px;
+        order: 11;
+    }
+
+    .navbar .nav-buttons .btn-login,
+    .navbar .nav-buttons .btn-register,
+    .navbar .nav-buttons .btn-logout,
+    .navbar .nav-buttons .nav-user-pill,
+    .navbar .nav-buttons .nav-user-badge {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        margin-left: 0 !important;
+    }
+
+    .navbar.nav-open .nav-links,
+    .navbar.nav-open .nav-buttons {
+        display: flex !important;
+    }
+
+    .floating-nav-container {
+        bottom: 16px;
+        right: 16px;
+    }
+
+    .floating-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-back-btn {
+        font-size: 0.72rem;
+        padding: 4px 8px;
+    }
+}
