@@ -14,6 +14,9 @@ function resolveImageUrl(url) {
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
         return trimmed;
     }
+    if (trimmed.startsWith("/api/images/")) {
+        return API_BASE_URL + trimmed;
+    }
     if (trimmed.startsWith("/")) {
         return API_BASE_URL + trimmed;
     }

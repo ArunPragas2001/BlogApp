@@ -24,6 +24,9 @@ function resolveImageUrl(url) {
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
         return trimmed;
     }
+    if (trimmed.startsWith("/api/images/")) {
+        return API_BASE_URL + trimmed;
+    }
     if (trimmed.startsWith("/")) {
         return API_BASE_URL + trimmed;
     }
@@ -124,6 +127,9 @@ function openArticleReader(blogId) {
 
     if (img) {
         if (blog.image && blog.image.trim() !== "") {
+            img.style.opacity = "0";
+            img.onload = function () { this.style.opacity = "1"; };
+            img.onerror = function () { this.style.opacity = "1"; this.style.display = "none"; };
             img.src = resolveImageUrl(blog.image);
             img.style.display = "block";
         } else {
@@ -195,7 +201,12 @@ async function renderHomeBlogs(categoryFilter) {
             var pubDate = formatDate(blog.createdAt);
 
             return '<div class="blog-card">' +
-                '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" style="width:100%;height:210px;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                '<div class="blog-card-image-wrap" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;">' +
+                '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
+                '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
+                'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
+                'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                '</div>' +
                 '<div class="blog-card-content">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +
                 '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;">' + esc(blog.category || "General") + '</span>' +

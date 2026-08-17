@@ -1,44 +1,11 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import fs from "fs";
-import { fileURLToPath } from "url";
+import mongoose from "mongoose";
+import { GridFSBucket } from "mongodb";
 import { protect } from "../middleware/authMiddleware.js";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const router = express.Router();
-
-const uploadDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    const cleanName = file.originalname.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-    const extFromName = path.extname(cleanName).toLowerCase();
-    const mimeToExt = {
-      "image/jpeg": ".jpg",
-      "image/jpg": ".jpg",
-      "image/png": ".png",
-      "image/webp": ".webp",
-      "image/gif": ".gif",
-      "image/svg+xml": ".svg",
-      "image/avif": ".avif",
-      "image/bmp": ".bmp"
-    };
-    const ext = extFromName || mimeToExt[file.mimetype] || "";
-    const baseName = extFromName
-      ? cleanName.slice(0, -extFromName.length)
-      : cleanName.replace(/\.+$/, "");
-    cb(null, `${Date.now()}-${baseName}${ext}`);
-  }
-});
 
 function checkFileType(file, cb) {
   const blockedMimes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"];
@@ -60,18 +27,39 @@ function checkFileType(file, cb) {
 }
 
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: function (req, file, cb) {
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter(req, file, cb) {
     checkFileType(file, cb);
   }
 });
 
+function getBucket() {
+  const db = mongoose.connection.db;
+  if (!db) throw new Error("Database not connected");
+  return new GridFSBucket(db, { bucketName: "uploads" });
+}
+
+function uploadToGridFS(buffer, filename, contentType, userId) {
+  return new Promise((resolve, reject) => {
+    const bucket = getBucket();
+    const uploadStream = bucket.openUploadStream(filename, {
+      contentType: contentType || "image/jpeg",
+      metadata: { uploadedBy: userId ? String(userId) : "" }
+    });
+
+    uploadStream.on("error", reject);
+    uploadStream.on("finish", () => resolve(uploadStream.id));
+    uploadStream.end(buffer);
+  });
+}
+
 router.post("/", protect, (req, res) => {
-  upload.single("image")(req, res, function (err) {
+  upload.single("image")(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
-      return res.status(400).json({ message: `Multer Error: ${err.message}` });
-    } else if (err) {
+      return res.status(400).json({ message: `Upload error: ${err.message}` });
+    }
+    if (err) {
       return res.status(400).json({ message: err.message });
     }
 
@@ -79,15 +67,29 @@ router.post("/", protect, (req, res) => {
       return res.status(400).json({ message: "No image file provided." });
     }
 
-    const host = req.get("host") || "localhost:5000";
-    const protocol = req.get("x-forwarded-proto") || req.protocol || "https";
-    const fileUrl = `${protocol}://${host}/uploads/${req.file.filename}`;
+    try {
+      const fileId = await uploadToGridFS(
+        req.file.buffer,
+        req.file.originalname,
+        req.file.mimetype,
+        req.user._id
+      );
 
-    res.json({
-      message: "Image uploaded successfully",
-      url: fileUrl,
-      filename: req.file.filename
-    });
+      const imagePath = `/api/images/${fileId}`;
+      const host = req.get("host") || "localhost:5000";
+      const protocol = req.get("x-forwarded-proto") || req.protocol || "https";
+      const fullUrl = `${protocol}://${host}${imagePath}`;
+
+      res.json({
+        message: "Image uploaded successfully",
+        url: fullUrl,
+        path: imagePath,
+        id: String(fileId)
+      });
+    } catch (uploadErr) {
+      console.error("GridFS upload error:", uploadErr.message);
+      res.status(500).json({ message: "Failed to save image. Please try again." });
+    }
   });
 });
 

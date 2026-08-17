@@ -4,6 +4,7 @@ var API_UPLOAD_URL = API_BASE_URL + "/api/upload";
 
 // Holds the uploaded/entered image URL
 var _currentImageUrl = "";
+var _uploadInProgress = false;
 
 function resolveImageUrl(url) {
     if (!url || typeof url !== "string") return "";
@@ -14,6 +15,9 @@ function resolveImageUrl(url) {
     }
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
         return trimmed;
+    }
+    if (trimmed.startsWith("/api/images/")) {
+        return API_BASE_URL + trimmed;
     }
     if (trimmed.startsWith("/")) {
         return API_BASE_URL + trimmed;
@@ -123,7 +127,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             formData.append("image", file);
 
             // Show loading state
+            _uploadInProgress = true;
             if (uploadProgressEl) { uploadProgressEl.style.display = "flex"; }
+            if (submitBtn) submitBtn.disabled = true;
             showToast("Uploading image...", "info");
 
             try {
@@ -135,11 +141,11 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 var data = await res.json();
 
-                if (res.ok && data.url) {
-                    var fullImageUrl = resolveImageUrl(data.url);
-                    _currentImageUrl = fullImageUrl;
-                    if (imageUrlInput) imageUrlInput.value = fullImageUrl;
-                    showImagePreview(fullImageUrl);
+                if (res.ok && (data.url || data.path)) {
+                    var savedUrl = data.path ? resolveImageUrl(data.path) : resolveImageUrl(data.url);
+                    _currentImageUrl = savedUrl;
+                    if (imageUrlInput) imageUrlInput.value = savedUrl;
+                    showImagePreview(savedUrl);
                     showToast("✅ Image uploaded successfully!", "success");
                 } else {
                     showToast(data.message || "Upload failed. Please try again.", "error");
@@ -150,7 +156,9 @@ document.addEventListener("DOMContentLoaded", async function () {
                 showToast("Upload error. Please check your connection and try again.", "error");
                 this.value = "";
             } finally {
+                _uploadInProgress = false;
                 if (uploadProgressEl) { uploadProgressEl.style.display = "none"; }
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
@@ -175,6 +183,19 @@ document.addEventListener("DOMContentLoaded", async function () {
             });
             if (res.ok) {
                 var blog = await res.json();
+                var currentUser = {};
+                try { currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch (e) {}
+                var isAdminOrOwner = currentUser.role === "admin" || currentUser.role === "owner";
+                var authorId = blog.author ? String(blog.author._id || blog.author.id || blog.author) : "";
+                var userId = String(currentUser.id || currentUser._id || "");
+                var canEdit = isAdminOrOwner || (authorId && userId && authorId === userId);
+
+                if (!canEdit) {
+                    showToast("You are not authorized to edit this blog.", "error");
+                    setTimeout(function () { window.location.href = "dashboard.html"; }, 1500);
+                    return;
+                }
+
                 if (pageHeading) pageHeading.textContent = "Edit Blog Post";
                 if (pageSubtitle) pageSubtitle.textContent = "Update your post details below.";
                 if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
@@ -245,6 +266,17 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         if (!valid) return;
+
+        if (_uploadInProgress) {
+            showToast("Please wait for the image upload to finish before saving.", "error");
+            return;
+        }
+
+        var pendingFile = imageUploadInput && imageUploadInput.files && imageUploadInput.files[0];
+        if (pendingFile && !_currentImageUrl) {
+            showToast("Image is still uploading. Please wait a moment and try again.", "error");
+            return;
+        }
 
         if (submitBtn) {
             submitBtn.disabled = true;

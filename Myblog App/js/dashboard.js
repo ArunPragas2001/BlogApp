@@ -34,6 +34,9 @@ function resolveImageUrl(url) {
     if (trimmed.startsWith("http://") || trimmed.startsWith("https://") || trimmed.startsWith("data:")) {
         return trimmed;
     }
+    if (trimmed.startsWith("/api/images/")) {
+        return API_BASE_URL + trimmed;
+    }
     if (trimmed.startsWith("/")) {
         return API_BASE_URL + trimmed;
     }
@@ -367,8 +370,14 @@ function openAdminBlogPreview(blogId) {
     var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
 
     var approveButtons = "";
+    var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
+    var canEditBlog = isAdminOrOwner || isAuthorOfBlog;
+
+    if (canEditBlog) {
+        approveButtons += '<button type="button" style="background:#4F46E5;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="closeAdminBlogPreview();editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit Post</button>';
+    }
     if (isAdminOrOwner && !blog.isApproved) {
-        approveButtons = '<button type="button" style="background:#10B981;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve & Publish</button>' +
+        approveButtons += '<button type="button" style="background:#10B981;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve & Publish</button>' +
                          '<button type="button" style="background:#EF4444;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject Post</button>';
     }
 
@@ -458,6 +467,7 @@ function renderBlogsList() {
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
                     '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View Blog</button>' +
+                    '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
                     '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
                     '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
                     '</div></div>';

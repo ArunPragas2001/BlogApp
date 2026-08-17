@@ -97,11 +97,13 @@ export const updateBlog = async (req, res) => {
 
     const { title, content, category, status, image } = req.body;
 
-    blog.title = title || blog.title;
-    blog.content = content || blog.content;
-    blog.category = category || blog.category;
-    blog.status = status || blog.status;
-    blog.image = image !== undefined ? image : blog.image;
+    blog.title = title ?? blog.title;
+    blog.content = content ?? blog.content;
+    blog.category = category ?? blog.category;
+    blog.status = status ?? blog.status;
+    if (image !== undefined) {
+      blog.image = image;
+    }
 
     if (isAdminOrOwner && !isAuthor) {
       blog.isApproved = false;

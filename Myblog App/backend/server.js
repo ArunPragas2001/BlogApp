@@ -8,6 +8,7 @@ import authRoutes from "./routes/authRoute.js";
 import blogRoutes from "./routes/blogRoute.js";
 import configRoutes from "./routes/configRoute.js";
 import uploadRoutes from "./routes/uploadRoute.js";
+import imageRoutes from "./routes/imageRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import subscriberRoutes from "./routes/subscriberRoute.js";
 import { checkMaintenanceMode } from "./middleware/maintenanceMiddleware.js";
@@ -33,6 +34,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/blogs", blogRoutes);
 app.use("/api/settings", configRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/images", imageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
