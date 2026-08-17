@@ -189,12 +189,20 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
     await user.save();
 
-    // Dispatch email
-    await sendPasswordResetEmail(normalizedEmail, resetCode);
+    try {
+      await sendPasswordResetEmail(normalizedEmail, resetCode);
+    } catch (emailError) {
+      user.resetPasswordCode = null;
+      user.resetPasswordExpires = null;
+      await user.save();
+      console.error("Password reset email failed:", emailError.message);
+      return res.status(503).json({
+        message: "Unable to send verification email right now. Please try again in a few minutes."
+      });
+    }
 
     res.json({
-      message: "A 6-digit verification code has been dispatched to your email.",
-      resetCode: resetCode // returned so users can proceed even if custom SMTP is unreachable
+      message: "A 6-digit verification code has been sent to your email. Please check your inbox."
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to process password recovery request. " + error.message });

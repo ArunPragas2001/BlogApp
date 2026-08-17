@@ -259,24 +259,36 @@ document.addEventListener("DOMContentLoaded", function () {
         newsletterForm.addEventListener("submit", async function (e) {
             e.preventDefault();
             var input = newsletterForm.querySelector("input[type='email']");
-            if (input && input.value) {
-                var email = input.value.trim();
-                try {
-                    showToast("Subscribing...", "info");
-                    var res = await fetch(API_BASE_URL + "/api/subscribers/subscribe", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email: email })
-                    });
-                    var data = await res.json();
-                    if (res.ok) {
-                        showToast(data.message || "🎉 Thank you for subscribing!", "success", 4000);
-                        input.value = "";
-                    } else {
-                        showToast(data.message || "Subscription failed", "error");
-                    }
-                } catch (err) {
-                    showToast("Error connecting to server. Please try again.", "error");
+            var submitBtn = newsletterForm.querySelector("button[type='submit']");
+            if (!input || !input.value) return;
+
+            var email = input.value.trim();
+            var originalBtnHtml = submitBtn ? submitBtn.innerHTML : "Subscribe";
+
+            try {
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subscribing...';
+                }
+                showToast("Subscribing...", "info");
+                var res = await fetch(API_BASE_URL + "/api/subscribers/subscribe", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email: email })
+                });
+                var data = await res.json();
+                if (res.ok) {
+                    showToast(data.message || "Thank you for subscribing!", "success", 4000);
+                    input.value = "";
+                } else {
+                    showToast(data.message || "Subscription failed", "error");
+                }
+            } catch (err) {
+                showToast("Error connecting to server. Please try again.", "error");
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
                 }
             }
         });

@@ -10,25 +10,40 @@ export const subscribeUser = async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-
     let subscriber = await Subscriber.findOne({ email: normalizedEmail });
+    let isNewSubscription = false;
 
     if (subscriber) {
       if (!subscriber.isActive) {
         subscriber.isActive = true;
         await subscriber.save();
-        return res.status(200).json({ message: "Welcome back! Your subscription has been reactivated.", subscriber });
+        isNewSubscription = true;
+      } else {
+        return res.status(200).json({ message: "You are already subscribed to BlogSphere notifications!", subscriber });
       }
-      return res.status(200).json({ message: "You are already subscribed to BlogSphere notifications!", subscriber });
+    } else {
+      subscriber = await Subscriber.create({ email: normalizedEmail });
+      isNewSubscription = true;
     }
 
-    subscriber = await Subscriber.create({ email: normalizedEmail });
+    if (isNewSubscription) {
+      try {
+        await sendWelcomeSubscriptionEmail(normalizedEmail);
+        return res.status(201).json({
+          message: "Thank you for subscribing! A confirmation email has been sent to your inbox.",
+          subscriber
+        });
+      } catch (emailError) {
+        console.error("Subscription welcome email failed:", emailError.message);
+        return res.status(201).json({
+          message: "You are subscribed, but we could not send the confirmation email right now. Please try again later.",
+          subscriber
+        });
+      }
+    }
 
-    // Send welcome confirmation email
-    sendWelcomeSubscriptionEmail(normalizedEmail);
-
-    res.status(201).json({
-      message: "🎉 Thank you for subscribing! A confirmation email has been dispatched.",
+    res.status(200).json({
+      message: "Welcome back! Your subscription has been reactivated.",
       subscriber
     });
   } catch (error) {

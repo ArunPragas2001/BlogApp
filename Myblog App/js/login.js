@@ -131,7 +131,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const backToStep1Btn = document.getElementById("backToStep1Btn");
 
     let currentRecoveryEmail = "";
-    let localGeneratedCode = "";
 
     // Initialize password strength meter for reset modal
     if (typeof setupPasswordStrengthMeter === "function") {
@@ -195,62 +194,41 @@ document.addEventListener("DOMContentLoaded", function () {
             sendRecoveryCodeBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending code...';
 
             try {
-                let codeToUse = "";
-                let responseOk = false;
+                const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
 
-                try {
-                    const res = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email })
-                    });
+                const data = await res.json();
 
-                    if (res.status === 404) {
-                        // Deployed cloud server has not synced new route yet; generate secure code gracefully
-                        codeToUse = Math.floor(100000 + Math.random() * 900000).toString();
-                        localGeneratedCode = codeToUse;
-                        responseOk = true;
-                    } else {
-                        const data = await res.json();
-                        if (res.ok) {
-                            responseOk = true;
-                            codeToUse = data.resetCode || Math.floor(100000 + Math.random() * 900000).toString();
-                            localGeneratedCode = codeToUse;
-                        } else {
-                            if (forgotStep1Error) {
-                                forgotStep1Error.textContent = data.message || "Could not find account with that email.";
-                                forgotStep1Error.style.display = "block";
-                            }
-                            showToast(data.message || "Account not found", "error");
-                            return;
-                        }
+                if (!res.ok) {
+                    if (forgotStep1Error) {
+                        forgotStep1Error.textContent = data.message || "Could not send verification email.";
+                        forgotStep1Error.style.display = "block";
                     }
-                } catch (netErr) {
-                    // Network or offline fallback
-                    codeToUse = Math.floor(100000 + Math.random() * 900000).toString();
-                    localGeneratedCode = codeToUse;
-                    responseOk = true;
+                    showToast(data.message || "Could not send verification email.", "error");
+                    return;
                 }
 
-                if (responseOk) {
-                    currentRecoveryEmail = email;
-                    if (sentToEmailSpan) sentToEmailSpan.textContent = email;
-                    if (forgotStep1) forgotStep1.style.display = "none";
-                    if (forgotStep2) forgotStep2.style.display = "block";
-                    if (resetCodeInput) {
-                        resetCodeInput.placeholder = "Enter code: " + codeToUse;
-                        resetCodeInput.value = codeToUse; // Pre-filled for user convenience!
-                        resetCodeInput.focus();
-                    }
-
-                    showToast(`✉️ Verification Code: ${codeToUse}. Please set your new password!`, "success", 7000);
+                currentRecoveryEmail = email;
+                if (sentToEmailSpan) sentToEmailSpan.textContent = email;
+                if (forgotStep1) forgotStep1.style.display = "none";
+                if (forgotStep2) forgotStep2.style.display = "block";
+                if (resetCodeInput) {
+                    resetCodeInput.value = "";
+                    resetCodeInput.placeholder = "6-digit Verification Code";
+                    resetCodeInput.focus();
                 }
+
+                showToast(data.message || "A verification code has been sent to your email. Please check your inbox.", "success", 7000);
             } catch (err) {
                 console.error("Forgot password error:", err);
                 if (forgotStep1Error) {
                     forgotStep1Error.textContent = "Server connection error. Please try again.";
                     forgotStep1Error.style.display = "block";
                 }
+                showToast("Unable to connect to the server. Please try again.", "error");
             } finally {
                 sendRecoveryCodeBtn.disabled = false;
                 sendRecoveryCodeBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Verification Code';
@@ -294,49 +272,33 @@ document.addEventListener("DOMContentLoaded", function () {
             submitResetPasswordBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Updating password...';
 
             try {
-                let success = false;
-                try {
-                    const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            email: currentRecoveryEmail,
-                            resetCode: resetCode,
-                            newPassword: newPassword
-                        })
-                    });
+                const res = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: currentRecoveryEmail,
+                        resetCode: resetCode,
+                        newPassword: newPassword
+                    })
+                });
 
-                    if (res.status === 404) {
-                        // Remote server route fallback
-                        success = true;
-                    } else {
-                        const data = await res.json();
-                        if (res.ok) {
-                            success = true;
-                        } else {
-                            if (forgotStep2Error) {
-                                forgotStep2Error.textContent = data.message || "Failed to reset password.";
-                                forgotStep2Error.style.display = "block";
-                            }
-                            showToast(data.message || "Failed to reset password", "error");
-                            return;
-                        }
+                const data = await res.json();
+
+                if (!res.ok) {
+                    if (forgotStep2Error) {
+                        forgotStep2Error.textContent = data.message || "Failed to reset password.";
+                        forgotStep2Error.style.display = "block";
                     }
-                } catch (netErr) {
-                    success = true;
+                    showToast(data.message || "Failed to reset password", "error");
+                    return;
                 }
 
-                if (success) {
-                    showToast("🎉 Password updated successfully! Please log in now.", "success", 5000);
-                    closeForgotModal();
-                    if (passwordInput) {
-                        passwordInput.value = newPassword;
-                        passwordInput.focus();
-                    }
-                    if (emailInput && currentRecoveryEmail) {
-                        emailInput.value = currentRecoveryEmail;
-                    }
+                showToast(data.message || "Password updated successfully! Please log in now.", "success", 5000);
+                closeForgotModal();
+                if (emailInput && currentRecoveryEmail) {
+                    emailInput.value = currentRecoveryEmail;
                 }
+                if (passwordInput) passwordInput.focus();
             } catch (err) {
                 console.error("Reset password error:", err);
                 if (forgotStep2Error) {
@@ -349,4 +311,4 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
-});
+});
