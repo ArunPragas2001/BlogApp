@@ -33,6 +33,65 @@ function isUnsupportedMobileImage(file) {
         name.endsWith(".heic") || name.endsWith(".heif");
 }
 
+function isAdminOrOwnerUser(user) {
+    if (!user) return false;
+    return user.role === "admin" || user.role === "owner";
+}
+
+async function refreshCurrentUser(token) {
+    if (!token) {
+        try { return JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch (e) { return {}; }
+    }
+
+    try {
+        var res = await fetch(API_BASE_URL + "/api/auth/me", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) {
+            try { return JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch (e) { return {}; }
+        }
+
+        var user = await res.json();
+        var syncedUser = {
+            id: user._id,
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            adminStatus: user.adminStatus,
+            profilePic: user.profilePic || "",
+            bio: user.bio || ""
+        };
+        localStorage.setItem("currentUser", JSON.stringify(syncedUser));
+        return syncedUser;
+    } catch (err) {
+        console.warn("Could not refresh user session:", err.message);
+        try { return JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch (e) { return {}; }
+    }
+}
+
+function setCategoryValue(selectEl, category) {
+    if (!selectEl) return;
+    var value = (category || "").trim();
+    if (!value) {
+        selectEl.value = "";
+        return;
+    }
+
+    var hasOption = Array.prototype.some.call(selectEl.options, function (opt) {
+        return opt.value === value;
+    });
+
+    if (!hasOption) {
+        var dynamicOption = document.createElement("option");
+        dynamicOption.value = value;
+        dynamicOption.textContent = value;
+        selectEl.appendChild(dynamicOption);
+    }
+
+    selectEl.value = value;
+}
+
 document.addEventListener("DOMContentLoaded", async function () {
     var form = document.getElementById("createBlogForm");
     if (!form) return;
@@ -176,47 +235,67 @@ document.addEventListener("DOMContentLoaded", async function () {
     var editId = urlParams.get("id");
 
     if (editId) {
+        if (pageHeading) pageHeading.textContent = "Loading Blog...";
+        if (pageSubtitle) pageSubtitle.textContent = "Please wait while we load the post for editing.";
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
+        }
+
         try {
             var currentToken = localStorage.getItem("token") || token;
-            var res = await fetch(API_BLOGS_URL + "/" + editId, {
+            var currentUser = await refreshCurrentUser(currentToken);
+            var res = await fetch(API_BLOGS_URL + "/" + encodeURIComponent(editId), {
                 headers: { "Authorization": "Bearer " + currentToken }
             });
-            if (res.ok) {
-                var blog = await res.json();
-                var currentUser = {};
-                try { currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch (e) {}
-                var isAdminOrOwner = currentUser.role === "admin" || currentUser.role === "owner";
-                var authorId = blog.author ? String(blog.author._id || blog.author.id || blog.author) : "";
-                var userId = String(currentUser.id || currentUser._id || "");
-                var canEdit = isAdminOrOwner || (authorId && userId && authorId === userId);
 
-                if (!canEdit) {
-                    showToast("You are not authorized to edit this blog.", "error");
-                    setTimeout(function () { window.location.href = "dashboard.html"; }, 1500);
-                    return;
-                }
+            if (!res.ok) {
+                var loadError = {};
+                try { loadError = await res.json(); } catch (e) {}
+                showToast(loadError.message || "Could not load blog for editing.", "error");
+                setTimeout(function () { window.location.href = "dashboard.html"; }, 1500);
+                return;
+            }
 
-                if (pageHeading) pageHeading.textContent = "Edit Blog Post";
-                if (pageSubtitle) pageSubtitle.textContent = "Update your post details below.";
-                if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
+            var blog = await res.json();
+            var isAdminOrOwner = isAdminOrOwnerUser(currentUser);
+            var authorId = blog.author ? String(blog.author._id || blog.author.id || blog.author) : "";
+            var userId = String(currentUser.id || currentUser._id || "");
+            var canEdit = isAdminOrOwner || (authorId && userId && authorId === userId);
 
-                if (titleInput) titleInput.value = blog.title || "";
-                if (categorySelect) categorySelect.value = blog.category || "";
-                if (statusSelect) statusSelect.value = (blog.status || "published").toLowerCase();
-                if (contentInput) contentInput.value = blog.content || "";
+            if (!canEdit) {
+                showToast("You are not authorized to edit this blog.", "error");
+                setTimeout(function () { window.location.href = "dashboard.html"; }, 1500);
+                return;
+            }
 
-                if (blog.image && blog.image.trim()) {
-                    var resolvedImg = resolveImageUrl(blog.image);
-                    _currentImageUrl = resolvedImg;
-                    if (imageUrlInput) imageUrlInput.value = resolvedImg;
-                    setTimeout(function () { showImagePreview(resolvedImg); }, 150);
-                }
-            } else {
-                showToast("Could not load blog for editing.", "error");
+            if (pageHeading) pageHeading.textContent = "Edit Blog Post";
+            if (pageSubtitle) pageSubtitle.textContent = isAdminOrOwner && authorId !== userId
+                ? "You are editing another author's post as an administrator."
+                : "Update your post details below.";
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
+            }
+
+            if (titleInput) titleInput.value = blog.title || "";
+            setCategoryValue(categorySelect, blog.category || "General");
+            if (statusSelect) statusSelect.value = (blog.status || "published").toLowerCase();
+            if (contentInput) contentInput.value = blog.content || "";
+
+            if (blog.image && blog.image.trim()) {
+                var resolvedImg = resolveImageUrl(blog.image);
+                _currentImageUrl = resolvedImg;
+                if (imageUrlInput) imageUrlInput.value = resolvedImg;
+                setTimeout(function () { showImagePreview(resolvedImg); }, 150);
             }
         } catch (err) {
             console.error("Error loading blog for edit:", err);
             showToast("Failed to load blog post for editing.", "error");
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
+            }
         }
     }
 
@@ -286,7 +365,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         try {
             var currentToken = localStorage.getItem("token") || token;
             var method = editId ? "PUT" : "POST";
-            var endpoint = editId ? API_BLOGS_URL + "/" + editId : API_BLOGS_URL;
+            var endpoint = editId ? API_BLOGS_URL + "/" + encodeURIComponent(editId) : API_BLOGS_URL;
 
             var response = await fetch(endpoint, {
                 method: method,
@@ -317,16 +396,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
-            var currentUser = {};
-            try { currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch(e) {}
-            var isAdminOrOwner = currentUser.role === "admin" || currentUser.role === "owner";
+            var currentUser = await refreshCurrentUser(currentToken);
+            var isAdminOrOwner = isAdminOrOwnerUser(currentUser);
             var isEditingOthersBlog = editId && data.author &&
                 String(data.author._id || data.author.id || "") !== String(currentUser.id || currentUser._id || "");
             var successMsg = isAdminOrOwner
                 ? (editId
-                    ? (isEditingOthersBlog ? "✅ Blog updated! Sent to author for review." : "✅ Blog post updated!")
-                    : "🎉 Blog published!")
-                : (editId ? "✅ Blog updated! Pending Admin approval." : "🎉 Blog created! Pending Admin approval.");
+                    ? (isEditingOthersBlog ? "Blog updated successfully!" : "Blog post updated!")
+                    : "Blog published!")
+                : (editId ? "Blog updated! Pending Admin approval." : "Blog created! Pending Admin approval.");
 
             showToast(successMsg, "success");
             setTimeout(function () { window.location.href = "dashboard.html"; }, 1200);

@@ -68,7 +68,13 @@ export const getAllBlogs = async (req, res) => {
 
 export const getBlogById = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id).populate("author", "name email profilePic");
+    const { id } = req.params;
+
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid blog id" });
+    }
+
+    const blog = await Blog.findById(id).populate("author", "name email profilePic");
 
     if (!blog) {
       return res.status(404).json({ message: "Blog post not found" });
@@ -82,7 +88,13 @@ export const getBlogById = async (req, res) => {
 
 export const updateBlog = async (req, res) => {
   try {
-    const blog = await Blog.findById(req.params.id);
+    const { id } = req.params;
+
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid blog id" });
+    }
+
+    const blog = await Blog.findById(id);
 
     if (!blog) {
       return res.status(404).json({ message: "Blog post not found" });
@@ -105,11 +117,13 @@ export const updateBlog = async (req, res) => {
       blog.image = image;
     }
 
-    if (isAdminOrOwner && !isAuthor) {
-      blog.isApproved = false;
-      blog.approvalStatus = "pending_author";
-      blog.lastEditedBy = req.user._id;
-    } else if (!isAdminOrOwner) {
+    if (isAdminOrOwner) {
+      blog.isApproved = true;
+      blog.approvalStatus = "approved";
+      if (!isAuthor) {
+        blog.lastEditedBy = req.user._id;
+      }
+    } else {
       blog.isApproved = false;
       blog.approvalStatus = "pending";
     }

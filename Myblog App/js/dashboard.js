@@ -13,6 +13,40 @@ function getAuthorId(author) {
     return String(id);
 }
 
+function isAdminOrOwnerUser(user) {
+    if (!user) return false;
+    return user.role === "admin" || user.role === "owner";
+}
+
+async function refreshCurrentUser() {
+    var token = localStorage.getItem("token");
+    if (!token) return getCurrentUser();
+
+    try {
+        var res = await fetch(API_BASE_URL + "/api/auth/me", {
+            headers: { "Authorization": "Bearer " + token }
+        });
+        if (!res.ok) return getCurrentUser();
+
+        var user = await res.json();
+        var syncedUser = {
+            id: user._id,
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            adminStatus: user.adminStatus,
+            profilePic: user.profilePic || "",
+            bio: user.bio || ""
+        };
+        localStorage.setItem("currentUser", JSON.stringify(syncedUser));
+        return syncedUser;
+    } catch (err) {
+        console.warn("Could not refresh user session:", err.message);
+        return getCurrentUser();
+    }
+}
+
 function isAuthorMatch(author, user) {
     if (!author || !user) return false;
     if (user.email && author.email && user.email === author.email) return true;
@@ -91,26 +125,18 @@ function setupWelcomeAndAuth() {
     // Fetch fresh user data from backend to ensure avatars are up-to-date
     var token = localStorage.getItem("token");
     if (token) {
-        fetch(API_BASE_URL + "/api/auth/me", {
-            headers: { "Authorization": "Bearer " + token }
-        }).then(function(res) {
-            if (!res.ok) return;
-            return res.json();
-        }).then(function(user) {
+        refreshCurrentUser().then(function(user) {
             if (!user) return;
             setAvatar(dashboardAvatarEl, user.profilePic, user.name);
             setAvatar(dashNavAvatarEl, user.profilePic, user.name);
             if (welcomeHeading && user.name) {
                 welcomeHeading.innerHTML = "Hey, " + esc(user.name) + "! <span class='welcome-icon'>▪</span>";
             }
-            // Sync localStorage
-            var existing = getCurrentUser() || {};
-            localStorage.setItem("currentUser", JSON.stringify(Object.assign({}, existing, {
-                id: user._id, _id: user._id,
-                name: user.name, email: user.email,
-                role: user.role, profilePic: user.profilePic || "",
-                bio: user.bio || ""
-            })));
+            if (user.role === "admin" || user.role === "owner") {
+                if (adminSettingsNavLink) adminSettingsNavLink.style.display = "block";
+                if (adminSettingsBtn) adminSettingsBtn.style.display = "inline-flex";
+            }
+            renderBlogsList();
         }).catch(function(err) {
             console.warn("Could not refresh user from API:", err.message);
         });
@@ -347,7 +373,9 @@ window.filterDashboardBlogs = filterDashboardBlogs;
 
 // ─── Blog Preview Modal for Owners and Admins ─────────────────────────────────
 function openAdminBlogPreview(blogId) {
-    var blog = (window.allBlogs || []).find(function (b) { return (b._id || b.id) === blogId; });
+    var blog = (window.allBlogs || []).find(function (b) {
+        return String(b._id || b.id) === String(blogId);
+    });
     if (!blog) {
         showToast("Could not find blog details.", "error");
         return;
@@ -367,7 +395,7 @@ function openAdminBlogPreview(blogId) {
     var pubDate = formatDate(blog.createdAt);
     var fullImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
     var currentUser = getCurrentUser();
-    var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
+    var isAdminOrOwner = isAdminOrOwnerUser(currentUser);
 
     var approveButtons = "";
     var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
@@ -447,7 +475,7 @@ function renderBlogsList() {
         filteredBlogs = myBlogs.filter(function(b) { return !b.isApproved; });
     }
 
-    var isAdminOrOwner = currentUser && (currentUser.role === "admin" || currentUser.role === "owner");
+    var isAdminOrOwner = isAdminOrOwnerUser(currentUser);
 
     if (isAdminOrOwner && adminApprovalSection && adminPendingContainer) {
         var pendingBlogs = blogs.filter(function (b) { return !b.isApproved; });
@@ -541,7 +569,13 @@ async function handleApproveBlog(id, approve) {
     }
 }
 
-function editBlog(id) { window.location.href = "createBlog.html?id=" + id; }
+function editBlog(id) {
+    if (!id) {
+        showToast("Invalid blog selected for editing.", "error");
+        return;
+    }
+    window.location.href = "createBlog.html?id=" + encodeURIComponent(String(id));
+}
 
 function deleteBlog(id, title) {
     var token = localStorage.getItem("token");
@@ -571,8 +605,9 @@ window.handleApproveAdminUser = handleApproveAdminUser;
 window.toggleBlockUserDashboard = toggleBlockUserDashboard;
 window.deleteUserDashboard = deleteUserDashboard;
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     setupWelcomeAndAuth();
+    await refreshCurrentUser();
     displayOwnerAdminRequests();
     displayOwnerUserManagement();
     displayBlogs();
