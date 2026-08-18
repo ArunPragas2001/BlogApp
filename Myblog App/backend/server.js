@@ -42,6 +42,14 @@ const uploadDir = path.join(__dirname, "uploads");
 
 app.use("/uploads", express.static(uploadDir));
 
+// Serve frontend static files
+const frontendDir = path.join(__dirname, "..");
+app.use(express.static(frontendDir));
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", message: "BlogSphere API is running" });
+});
+
 app.get("/", (req, res) => {
   res.json({
     message: "Welcome to BlogApp REST API",
@@ -69,7 +77,10 @@ app.get("/", (req, res) => {
 });
 
 app.use((req, res, next) => {
-  res.status(404).json({ message: `Route not found - ${req.originalUrl}` });
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ message: `Route not found - ${req.originalUrl}` });
+  }
+  res.sendFile(path.join(frontendDir, "index.html"));
 });
 
 app.use((err, req, res, next) => {

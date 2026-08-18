@@ -1,8 +1,7 @@
 import express from "express";
 import multer from "multer";
 import path from "path";
-import mongoose from "mongoose";
-import { GridFSBucket } from "mongodb";
+import cloudinary from "../config/cloudinary.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -34,22 +33,20 @@ const upload = multer({
   }
 });
 
-function getBucket() {
-  const db = mongoose.connection.db;
-  if (!db) throw new Error("Database not connected");
-  return new GridFSBucket(db, { bucketName: "uploads" });
-}
-
-function uploadToGridFS(buffer, filename, contentType, userId) {
+function uploadToCloudinary(buffer, folder = "blogsphere_uploads") {
   return new Promise((resolve, reject) => {
-    const bucket = getBucket();
-    const uploadStream = bucket.openUploadStream(filename, {
-      contentType: contentType || "image/jpeg",
-      metadata: { uploadedBy: userId ? String(userId) : "" }
-    });
-
-    uploadStream.on("error", reject);
-    uploadStream.on("finish", () => resolve(uploadStream.id));
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        folder: folder,
+        resource_type: "auto"
+      },
+      (error, result) => {
+        if (error) {
+          return reject(error);
+        }
+        resolve(result);
+      }
+    );
     uploadStream.end(buffer);
   });
 }
@@ -68,27 +65,17 @@ router.post("/", protect, (req, res) => {
     }
 
     try {
-      const fileId = await uploadToGridFS(
-        req.file.buffer,
-        req.file.originalname,
-        req.file.mimetype,
-        req.user._id
-      );
-
-      const imagePath = `/api/images/${fileId}`;
-      const host = req.get("host") || "localhost:5000";
-      const protocol = req.get("x-forwarded-proto") || req.protocol || "https";
-      const fullUrl = `${protocol}://${host}${imagePath}`;
+      const result = await uploadToCloudinary(req.file.buffer, "blogsphere_uploads");
 
       res.json({
         message: "Image uploaded successfully",
-        url: fullUrl,
-        path: imagePath,
-        id: String(fileId)
+        url: result.secure_url,
+        secure_url: result.secure_url,
+        public_id: result.public_id
       });
     } catch (uploadErr) {
-      console.error("GridFS upload error:", uploadErr.message);
-      res.status(500).json({ message: "Failed to save image. Please try again." });
+      console.error("Cloudinary upload error:", uploadErr.message);
+      res.status(500).json({ message: "Failed to upload image to Cloudinary. " + uploadErr.message });
     }
   });
 });

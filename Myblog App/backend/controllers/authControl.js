@@ -49,7 +49,7 @@ const ensureOwnerExists = async () => {
 
 ensureOwnerExists();
 
-import { sendPasswordResetEmail } from "../config/emailService.js";
+import { sendPasswordResetEmail, sendWelcomeRegistrationEmail } from "../config/emailService.js";
 
 export const registerUser = async (req, res) => {
   try {
@@ -107,6 +107,10 @@ export const registerUser = async (req, res) => {
     });
 
     if (user) {
+      sendWelcomeRegistrationEmail(user.name, user.email).catch((err) =>
+        console.warn("Welcome email async notification error:", err.message)
+      );
+
       res.status(201).json({
         _id: user._id,
         name: user.name,

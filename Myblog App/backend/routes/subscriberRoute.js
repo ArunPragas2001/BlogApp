@@ -3,6 +3,7 @@ import { subscribeUser, getSubscribers } from "../controllers/subscriberControl.
 
 const router = express.Router();
 
+router.post("/", subscribeUser);
 router.post("/subscribe", subscribeUser);
 router.get("/", getSubscribers);
 
