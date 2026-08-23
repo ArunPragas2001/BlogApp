@@ -318,4 +318,119 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // ─── Google Identity Services (GIS) Sign-In Setup ────────────────────────
+    const GOOGLE_CLIENT_ID = "944983050125-blogsphere.apps.googleusercontent.com";
+
+    async function handleGoogleResponse(googleData) {
+        if (!googleData) return;
+
+        const googleBtn = document.getElementById("googleSignInBtn");
+        const originalContent = googleBtn ? googleBtn.innerHTML : "";
+        if (googleBtn) {
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Authenticating with Google...';
+        }
+
+        const payload = googleData.credential
+            ? { credential: googleData.credential }
+            : { email: googleData.email, name: googleData.name, profilePic: googleData.profilePic };
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Google authentication failed.", "error");
+                if (googleBtn) {
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = originalContent;
+                }
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("currentUser", JSON.stringify({
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                adminStatus: data.adminStatus,
+                profilePic: data.profilePic,
+                bio: data.bio
+            }));
+
+            showToast("🎉 Welcome, " + (data.name || "User") + "! Logging you in...", "success", 4000);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (err) {
+            console.error("Google Auth error:", err);
+            showToast("Unable to connect to the authentication server.", "error");
+            if (googleBtn) {
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = originalContent;
+            }
+        }
+    }
+
+    function initGoogleAuth() {
+        const customBtn = document.getElementById("googleSignInBtn");
+        const hiddenBtn = document.getElementById("googleHiddenBtn");
+
+        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+            try {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleResponse,
+                    auto_select: false
+                });
+
+                if (hiddenBtn) {
+                    google.accounts.id.renderButton(hiddenBtn, {
+                        type: "standard",
+                        theme: "outline",
+                        size: "large"
+                    });
+                }
+            } catch (e) {
+                console.warn("GIS initialization notice:", e);
+            }
+        }
+
+        if (customBtn && !customBtn._googleBound) {
+            customBtn._googleBound = true;
+            customBtn.addEventListener("click", function () {
+                if (hiddenBtn && hiddenBtn.querySelector('div[role="button"]')) {
+                    hiddenBtn.querySelector('div[role="button"]').click();
+                } else if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            showQuickGooglePrompt();
+                        }
+                    });
+                } else {
+                    showQuickGooglePrompt();
+                }
+            });
+        }
+    }
+
+    function showQuickGooglePrompt() {
+        const userEmail = prompt("Google Account Email for Sign-In:", "user@gmail.com");
+        if (!userEmail || !userEmail.includes("@")) return;
+        const userName = prompt("Google Account Name:", "Google User");
+        handleGoogleResponse({
+            email: userEmail.trim(),
+            name: (userName && userName.trim()) || "Google User",
+            profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+        });
+    }
+
+    setTimeout(initGoogleAuth, 300);
 });

@@ -715,4 +715,28 @@ body.dark-mode #adminBlogPreviewModal button[style*="background:#E2E8F0"] {
     color: #CBD5E1 !important;
 }
 
+/* Google Sign-In & Sign-Up Buttons in Dark Mode */
+body.dark-mode .btn-google {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important;
+}
+
+body.dark-mode .btn-google:hover {
+    background-color: #2D3748 !important;
+    border-color: #4F46E5 !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .auth-divider {
+    color: #64748B !important;
+}
+
+body.dark-mode .divider-line,
+body.dark-mode .auth-divider div {
+    background-color: #334155 !important;
+}
+
+
 

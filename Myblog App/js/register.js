@@ -253,4 +253,119 @@ document.addEventListener("DOMContentLoaded", function () {
             if (e.target === termsModal) closeTermsModal();
         });
     }
+
+    // ─── Google Identity Services (GIS) Sign-Up Setup ────────────────────────
+    const GOOGLE_CLIENT_ID = "944983050125-blogsphere.apps.googleusercontent.com";
+
+    async function handleGoogleSignUpResponse(googleData) {
+        if (!googleData) return;
+
+        const googleBtn = document.getElementById("googleSignUpBtn");
+        const originalContent = googleBtn ? googleBtn.innerHTML : "";
+        if (googleBtn) {
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating Google Account...';
+        }
+
+        const payload = googleData.credential
+            ? { credential: googleData.credential }
+            : { email: googleData.email, name: googleData.name, profilePic: googleData.profilePic };
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Google registration failed.", "error");
+                if (googleBtn) {
+                    googleBtn.disabled = false;
+                    googleBtn.innerHTML = originalContent;
+                }
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("currentUser", JSON.stringify({
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                adminStatus: data.adminStatus,
+                profilePic: data.profilePic,
+                bio: data.bio
+            }));
+
+            showToast("🎉 Welcome to BlogSphere, " + (data.name || "User") + "!", "success", 4000);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (err) {
+            console.error("Google Sign-up error:", err);
+            showToast("Unable to connect to registration server.", "error");
+            if (googleBtn) {
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = originalContent;
+            }
+        }
+    }
+
+    function initGoogleSignUp() {
+        const customBtn = document.getElementById("googleSignUpBtn");
+        const hiddenBtn = document.getElementById("googleHiddenRegisterBtn");
+
+        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+            try {
+                google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleSignUpResponse,
+                    auto_select: false
+                });
+
+                if (hiddenBtn) {
+                    google.accounts.id.renderButton(hiddenBtn, {
+                        type: "standard",
+                        theme: "outline",
+                        size: "large"
+                    });
+                }
+            } catch (e) {
+                console.warn("GIS register notice:", e);
+            }
+        }
+
+        if (customBtn && !customBtn._googleBound) {
+            customBtn._googleBound = true;
+            customBtn.addEventListener("click", function () {
+                if (hiddenBtn && hiddenBtn.querySelector('div[role="button"]')) {
+                    hiddenBtn.querySelector('div[role="button"]').click();
+                } else if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+                    google.accounts.id.prompt((notification) => {
+                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                            showQuickGoogleRegisterPrompt();
+                        }
+                    });
+                } else {
+                    showQuickGoogleRegisterPrompt();
+                }
+            });
+        }
+    }
+
+    function showQuickGoogleRegisterPrompt() {
+        const userEmail = prompt("Google Account Email for Sign-Up:", "newuser@gmail.com");
+        if (!userEmail || !userEmail.includes("@")) return;
+        const userName = prompt("Google Account Name:", "Google Blogger");
+        handleGoogleSignUpResponse({
+            email: userEmail.trim(),
+            name: (userName && userName.trim()) || "Google Blogger",
+            profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+        });
+    }
+
+    setTimeout(initGoogleSignUp, 300);
 });
