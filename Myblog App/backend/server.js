@@ -26,7 +26,12 @@ app.set("trust proxy", 1);
 
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Skip urlencoded parsing for multipart/form-data so multer can read the raw stream
+app.use((req, res, next) => {
+  const ct = req.headers["content-type"] || "";
+  if (ct.startsWith("multipart/form-data")) return next();
+  express.urlencoded({ extended: true })(req, res, next);
+});
 
 app.use(checkMaintenanceMode);
 
