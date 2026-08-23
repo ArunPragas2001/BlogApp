@@ -243,4 +243,66 @@
             }
         });
     }
+
+    // ─── 4. Global Full-Page Preloader / Loading Window ─────────────────────
+    function initGlobalPageLoader() {
+        var existing = document.getElementById("globalPageLoader");
+        if (existing) return existing;
+
+        var loader = document.createElement("div");
+        loader.id = "globalPageLoader";
+        loader.innerHTML =
+            '<div class="page-loader-card">' +
+            '<div class="page-loader-spinner-wrap">' +
+            '<div class="page-loader-ring-outer"></div>' +
+            '<div class="page-loader-ring"></div>' +
+            '<div class="page-loader-logo-icon"><i class="fa-solid fa-feather-pointed"></i></div>' +
+            '</div>' +
+            '<div class="page-loader-brand">Blog<span>Sphere</span></div>' +
+            '<div class="page-loader-text" id="pageLoaderText">Loading fresh stories & insights...</div>' +
+            '<div class="page-loader-progress-track">' +
+            '<div class="page-loader-progress-bar"></div>' +
+            '</div>' +
+            '</div>';
+
+        document.body.appendChild(loader);
+        return loader;
+    }
+
+    function showPageLoader(msg) {
+        var loader = document.getElementById("globalPageLoader") || initGlobalPageLoader();
+        var txt = document.getElementById("pageLoaderText");
+        if (txt && msg) txt.textContent = msg;
+        loader.classList.remove("loader-hidden");
+    }
+
+    function hidePageLoader() {
+        var loader = document.getElementById("globalPageLoader");
+        if (!loader) return;
+        loader.classList.add("loader-hidden");
+        setTimeout(function () {
+            if (loader.classList.contains("loader-hidden")) {
+                loader.style.display = "none";
+            }
+        }, 450);
+    }
+
+    window.showPageLoader = showPageLoader;
+    window.hidePageLoader = hidePageLoader;
+
+    document.addEventListener("DOMContentLoaded", function () {
+        initGlobalPageLoader();
+    });
+
+    // Auto-dismiss loader when all window assets & data finish loading
+    window.addEventListener("load", function () {
+        setTimeout(function () {
+            hidePageLoader();
+        }, 300);
+    });
+
+    // Safety fallback: ensure loader never blocks user for more than 4 seconds
+    setTimeout(function () {
+        hidePageLoader();
+    }, 4000);
 })();

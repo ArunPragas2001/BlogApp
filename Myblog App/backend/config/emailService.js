@@ -9,60 +9,126 @@ function getFrontendUrl() {
 }
 
 // ---------------------------------------------------------------------------
-// Brevo (formerly Sendinblue) SMTP configuration
-// Required environment variables:
-//   BREVO_SMTP_HOST   — smtp-relay.brevo.com
-//   BREVO_SMTP_PORT   — 587
-//   BREVO_SMTP_USER   — your Brevo account login email
-//   BREVO_SMTP_KEY    — the SMTP key from Brevo dashboard (not your account password)
-//   EMAIL_FROM_NAME   — optional display name, defaults to "BlogSphere"
-//   EMAIL_FROM_ADDRESS — verified sender email in Brevo
+// Multi-Provider Email Configuration
+// Supported Providers:
+//   1. Gmail App Password:
+//      GMAIL_USER=your_email@gmail.com
+//      GMAIL_APP_PASSWORD=xxxx xxxx xxxx xxxx  (16-char Google App Password)
+//
+//   2. Brevo (Sendinblue) SMTP:
+//      BREVO_SMTP_USER=your_brevo_account_email@example.com
+//      BREVO_SMTP_KEY=your_brevo_smtp_key
+//      BREVO_SMTP_HOST=smtp-relay.brevo.com (optional, defaults to smtp-relay.brevo.com)
+//      BREVO_SMTP_PORT=587 (optional, defaults to 587)
+//
+//   3. Standard / Custom SMTP:
+//      SMTP_HOST=smtp.yourhost.com
+//      SMTP_PORT=587 (or 465)
+//      SMTP_USER=your_user
+//      SMTP_PASS=your_password
+//      SMTP_SECURE=false (or true for port 465)
 // ---------------------------------------------------------------------------
 
 function getEmailConfig() {
-  const user = process.env.BREVO_SMTP_USER;
-  const pass = process.env.BREVO_SMTP_KEY;
-  const host = process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com";
-  const port = parseInt(process.env.BREVO_SMTP_PORT || "587", 10);
   const fromName = process.env.EMAIL_FROM_NAME || "BlogSphere";
-  const fromAddress = process.env.EMAIL_FROM_ADDRESS || user;
 
-  if (!user || !pass) {
-    console.warn(
-      "⚠️  Email service is not configured. Set BREVO_SMTP_USER and BREVO_SMTP_KEY in .env (or Render environment variables)."
-    );
-    return null;
+  // Check Provider 1: Gmail
+  const gmailUser = process.env.GMAIL_USER || process.env.EMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_PASS || process.env.EMAIL_PASS;
+  if (gmailUser && gmailPass) {
+    return {
+      type: "gmail",
+      user: gmailUser.trim(),
+      pass: gmailPass.trim(),
+      fromName,
+      fromAddress: process.env.EMAIL_FROM_ADDRESS || gmailUser.trim()
+    };
   }
 
-  return { user, pass, host, port, fromName, fromAddress };
+  // Check Provider 2: Brevo SMTP
+  const brevoUser = process.env.BREVO_SMTP_USER;
+  const brevoPass = process.env.BREVO_SMTP_KEY;
+  if (brevoUser && brevoPass && !brevoUser.includes("example.com") && !brevoPass.includes("your_brevo")) {
+    return {
+      type: "brevo",
+      user: brevoUser.trim(),
+      pass: brevoPass.trim(),
+      host: process.env.BREVO_SMTP_HOST || "smtp-relay.brevo.com",
+      port: parseInt(process.env.BREVO_SMTP_PORT || "587", 10),
+      fromName,
+      fromAddress: process.env.EMAIL_FROM_ADDRESS || brevoUser.trim()
+    };
+  }
+
+  // Check Provider 3: Custom / Generic SMTP
+  const smtpHost = process.env.SMTP_HOST;
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  if (smtpHost && smtpUser && smtpPass) {
+    return {
+      type: "smtp",
+      host: smtpHost.trim(),
+      port: parseInt(process.env.SMTP_PORT || "587", 10),
+      secure: process.env.SMTP_SECURE === "true" || process.env.SMTP_PORT === "465",
+      user: smtpUser.trim(),
+      pass: smtpPass.trim(),
+      fromName,
+      fromAddress: process.env.EMAIL_FROM_ADDRESS || smtpUser.trim()
+    };
+  }
+
+  return null;
 }
 
 const getTransporter = () => {
   const config = getEmailConfig();
   if (!config) return null;
 
-  const { user, pass, host, port } = config;
+  if (config.type === "gmail") {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: config.user,
+        pass: config.pass
+      },
+      family: 4
+    });
+  }
 
+  if (config.type === "brevo") {
+    return nodemailer.createTransport({
+      host: config.host,
+      port: config.port,
+      secure: false,           // STARTTLS on port 587
+      authMethod: "LOGIN",
+      auth: { user: config.user, pass: config.pass },
+      family: 4,
+      tls: {
+        rejectUnauthorized: false
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000
+    });
+  }
+
+  // Standard SMTP
   return nodemailer.createTransport({
-    host,
-    port,
-    secure: false,           // STARTTLS on port 587
-    authMethod: "LOGIN",     // Brevo requires LOGIN (not PLAIN)
-    auth: { user, pass },
-    family: 4,               // force IPv4 — avoids ENETUNREACH on IPv6-only paths
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: { user: config.user, pass: config.pass },
+    family: 4,
     tls: {
       rejectUnauthorized: false
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000
+    }
   });
 };
 
 async function sendEmail(mailOptions) {
   const config = getEmailConfig();
   if (!config) {
-    console.warn("Skipping email dispatch: BREVO_SMTP_USER and BREVO_SMTP_KEY are not configured.");
+    console.warn("ℹ️  No external email credentials configured in .env. Logging email details in console instead.");
     return null;
   }
 
@@ -103,11 +169,11 @@ export const sendWelcomeRegistrationEmail = async (name, email) => {
     });
 
     if (info) {
-      console.log(`Welcome registration email sent to ${email}:`, info.messageId);
+      console.log(`✅ Welcome registration email sent to ${email}:`, info.messageId);
     }
     return true;
   } catch (error) {
-    console.error("Welcome registration email dispatch warning:", error.message);
+    console.warn("Welcome registration email dispatch notice:", error.message);
     return false;
   }
 };
@@ -136,16 +202,23 @@ export const sendWelcomeSubscriptionEmail = async (email) => {
     });
 
     if (info) {
-      console.log(`Welcome email sent to subscriber ${email}:`, info.messageId);
+      console.log(`✅ Welcome email sent to subscriber ${email}:`, info.messageId);
     }
     return true;
   } catch (error) {
-    console.error("Welcome subscription email dispatch warning:", error.message);
+    console.warn("Welcome subscription email dispatch notice:", error.message);
     return false;
   }
 };
 
 export const sendPasswordResetEmail = async (email, resetCode) => {
+  console.log("\n==========================================================");
+  console.log(`🔐 [BLOGSPHERE PASSWORD RECOVERY CODE]`);
+  console.log(`👤 Target User: ${email}`);
+  console.log(`🔑 Verification Code: ${resetCode}`);
+  console.log(`⏳ Valid For: 15 Minutes`);
+  console.log("==========================================================\n");
+
   try {
     const info = await sendEmail({
       to: email,
@@ -169,7 +242,7 @@ export const sendPasswordResetEmail = async (email, resetCode) => {
     });
 
     if (info) {
-      console.log(`Password reset code email sent to ${email}:`, info.messageId);
+      console.log(`✅ Password reset code email delivered to ${email}:`, info.messageId);
     }
     return true;
   } catch (error) {
@@ -222,7 +295,7 @@ export const sendNewBlogNotification = async (blogTitle, authorName, authorEmail
     });
 
     if (info) {
-      console.log(`Email notification sent to ${subscriberEmails.length} subscribers:`, info.messageId);
+      console.log(`✅ Email notification sent to ${subscriberEmails.length} subscribers:`, info.messageId);
     }
   } catch (error) {
     console.error("Email notification dispatch error:", error.message);
