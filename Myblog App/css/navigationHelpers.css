@@ -37,12 +37,22 @@
     box-shadow: 0 10px 24px rgba(79, 70, 229, 0.4);
 }
 
+.floating-btn.btn-home-page {
+    background: #059669;
+}
+
+.floating-btn.btn-home-page:hover {
+    background: #047857;
+    box-shadow: 0 10px 24px rgba(5, 150, 105, 0.45);
+}
+
 .floating-btn.btn-back-page {
     background: #4F46E5;
 }
 
 .floating-btn.btn-back-page:hover {
     background: #4338CA;
+    box-shadow: 0 10px 24px rgba(79, 70, 229, 0.45);
 }
 
 /* Header Back Button */

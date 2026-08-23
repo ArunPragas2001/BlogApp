@@ -1,4 +1,9 @@
-const API_BASE_URL = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
+const API_BASE_URL = (typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:" ||
+    window.location.hostname === ""
+))
     ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
     : "https://blogsphere-wtrv.onrender.com";
 const API_URL = `${API_BASE_URL}/api/auth/register`;
@@ -200,4 +205,52 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    // ─── Terms & Privacy Modal Logic ─────────────────────────────────────────
+    const termsModal = document.getElementById("termsModal");
+    const openTermsLink = document.getElementById("openTermsLink");
+    const closeTermsBtn = document.getElementById("closeTermsBtn");
+    const closeTermsBottomBtn = document.getElementById("closeTermsBottomBtn");
+    const agreeTermsBtn = document.getElementById("agreeTermsBtn");
+
+    function openTermsModal() {
+        if (termsModal) {
+            termsModal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+        }
+    }
+
+    function closeTermsModal() {
+        if (termsModal) {
+            termsModal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+    }
+
+    if (openTermsLink) {
+        openTermsLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            openTermsModal();
+        });
+    }
+
+    if (closeTermsBtn) closeTermsBtn.addEventListener("click", closeTermsModal);
+    if (closeTermsBottomBtn) closeTermsBottomBtn.addEventListener("click", closeTermsModal);
+
+    if (agreeTermsBtn) {
+        agreeTermsBtn.addEventListener("click", function () {
+            if (termsCheckbox) {
+                termsCheckbox.checked = true;
+                clearError("termsError");
+            }
+            closeTermsModal();
+            showToast("Terms of Service & Privacy Policy accepted.", "success", 3000);
+        });
+    }
+
+    if (termsModal) {
+        termsModal.addEventListener("click", function (e) {
+            if (e.target === termsModal) closeTermsModal();
+        });
+    }
 });

@@ -60,6 +60,18 @@
         bottomBtn.innerHTML = '<i class="fa-solid fa-arrow-down"></i>';
         bottomBtn.onclick = scrollToBottom;
 
+        // Home Page Button
+        var homeBtn = document.createElement("button");
+        homeBtn.type = "button";
+        homeBtn.className = "floating-btn btn-home-page";
+        homeBtn.title = "Go to Home Page";
+        homeBtn.setAttribute("aria-label", "Home Page");
+        homeBtn.innerHTML = '<i class="fa-solid fa-house"></i>';
+        homeBtn.onclick = function () {
+            window.location.href = "index.html";
+        };
+
+        navContainer.appendChild(homeBtn);
         navContainer.appendChild(backBtn);
         navContainer.appendChild(topBtn);
         navContainer.appendChild(bottomBtn);
