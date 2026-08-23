@@ -244,9 +244,200 @@
     justify-content: center;
     padding: 20px;
     box-sizing: border-box;
-    opacity: 0;
-    transition: opacity 0.25s ease;
 }
+
+.forgot-modal-overlay.active {
+    display: flex;
+}
+
+.forgot-modal-card {
+    background: #FFFFFF;
+    border-radius: 24px;
+    padding: 36px 32px;
+    width: 100%;
+    max-width: 440px;
+    position: relative;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    animation: forgotSlideUp 0.3s ease both;
+}
+
+@keyframes forgotSlideUp {
+    from { transform: translateY(24px) scale(0.97); opacity: 0; }
+    to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* Fix: prevent .auth-card button from overriding modal-specific buttons */
+.forgot-modal-card button.forgot-modal-close,
+.forgot-modal-card button.forgot-modal-close:hover,
+.forgot-modal-card button.forgot-modal-close:active {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: #F1F5F9;
+    border: none;
+    width: 36px !important;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #64748B;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    box-shadow: none;
+    transform: none;
+    transition: background 0.2s, color 0.2s;
+}
+
+.forgot-modal-card button.forgot-modal-close:hover {
+    background: #EF4444 !important;
+    color: #fff !important;
+}
+
+.forgot-modal-card button.forgot-back-btn,
+.forgot-modal-card button.forgot-back-btn:hover,
+.forgot-modal-card button.forgot-back-btn:active {
+    background: transparent !important;
+    border: none !important;
+    color: #64748B !important;
+    width: 100%;
+    cursor: pointer;
+    font-size: 0.88rem;
+    padding: 8px;
+    box-shadow: none !important;
+    font-weight: 500;
+    transform: none !important;
+    border-radius: 0;
+}
+
+.forgot-modal-card button.forgot-back-btn:hover {
+    color: #4F46E5 !important;
+}
+
+.forgot-icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 16px;
+}
+
+.forgot-icon-key   { background: #EEF2FF; color: #4F46E5; }
+.forgot-icon-shield { background: #ECFDF5; color: #10B981; }
+
+.forgot-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 6px;
+}
+
+.forgot-subtitle {
+    color: #64748B;
+    font-size: 0.93rem;
+    margin-bottom: 22px;
+    line-height: 1.55;
+}
+
+.forgot-email-highlight {
+    color: #4F46E5;
+    font-weight: 700;
+}
+
+.reset-code-input {
+    letter-spacing: 6px !important;
+    font-weight: 700 !important;
+    font-size: 1.2rem !important;
+    text-align: center !important;
+}
+
+/* ─── Dark Mode: Forgot Password Modal ──────────────────────────────────── */
+body.dark-mode .forgot-modal-card {
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.6);
+}
+
+body.dark-mode .forgot-title {
+    color: #F1F5F9;
+}
+
+body.dark-mode .forgot-subtitle {
+    color: #94A3B8;
+}
+
+body.dark-mode .forgot-email-highlight {
+    color: #818CF8;
+}
+
+body.dark-mode .forgot-modal-card button.forgot-modal-close,
+body.dark-mode .forgot-modal-card button.forgot-modal-close:hover {
+    background: #334155 !important;
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .forgot-modal-card button.forgot-modal-close:hover {
+    background: #EF4444 !important;
+    color: #fff !important;
+}
+
+body.dark-mode .forgot-icon-key {
+    background: rgba(79, 70, 229, 0.15);
+    color: #818CF8;
+}
+
+body.dark-mode .forgot-icon-shield {
+    background: rgba(16, 185, 129, 0.12);
+    color: #34D399;
+}
+
+body.dark-mode .forgot-modal-card input[type="email"],
+body.dark-mode .forgot-modal-card input[type="password"],
+body.dark-mode .forgot-modal-card input[type="text"] {
+    background: #0F172A;
+    border-color: #334155;
+    color: #F1F5F9;
+}
+
+body.dark-mode .forgot-modal-card input:focus {
+    background: #1E293B;
+    border-color: #6366F1;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+}
+
+body.dark-mode .forgot-modal-card input::placeholder {
+    color: #475569;
+}
+
+body.dark-mode .forgot-modal-card .input-icon {
+    color: #64748B;
+}
+
+body.dark-mode .forgot-modal-card .input-group:focus-within .input-icon {
+    color: #818CF8;
+}
+
+body.dark-mode .forgot-modal-card button.forgot-back-btn,
+body.dark-mode .forgot-modal-card button.forgot-back-btn:hover {
+    color: #64748B !important;
+    background: transparent !important;
+}
+
+body.dark-mode .forgot-modal-card button.forgot-back-btn:hover {
+    color: #818CF8 !important;
+}
+
+body.dark-mode .forgot-modal-card .general-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #FCA5A5;
+}
+
 
 .forgot-modal-overlay.active {
     display: flex;
