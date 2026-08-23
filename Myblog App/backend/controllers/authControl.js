@@ -2,8 +2,8 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
-const OWNER_EMAIL = "pragasarun1@gmail.com";
-const OWNER_PASS = "arun20019048$";
+const OWNER_EMAIL = process.env.OWNER_EMAIL || "owner@blogsphere.com";
+const OWNER_PASS = process.env.OWNER_PASSWORD || "ChangeMe_Owner_2026!";
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "my_blog_app_secret_key_12345", {

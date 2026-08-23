@@ -4,6 +4,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+function getFrontendUrl() {
+  return (process.env.FRONTEND_URL || "https://blogsphere-wtrv.onrender.com").replace(/\/+$/, "");
+}
+
 // ---------------------------------------------------------------------------
 // Brevo (formerly Sendinblue) SMTP configuration
 // Required environment variables:
@@ -92,7 +96,7 @@ export const sendWelcomeRegistrationEmail = async (name, email) => {
             <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
               Your BlogSphere account has been successfully created. You can now publish articles, share insights, and engage with our global creator community.
             </p>
-            <a href="https://blogsphere-wtrv.onrender.com/login.html" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Go to Dashboard</a>
+            <a href="${getFrontendUrl()}/login.html" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Go to Dashboard</a>
           </div>
         </div>
       `
@@ -125,7 +129,7 @@ export const sendWelcomeSubscriptionEmail = async (email) => {
             <p style="color: #475569; font-size: 15px; line-height: 1.6; margin-bottom: 20px;">
               Thank you for joining our community. Whenever our top authors publish fresh insights on Technology, Programming, Politics, and Education, you'll be the first to know!
             </p>
-            <a href="https://blogsphere-wtrv.onrender.com" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Explore Latest Stories</a>
+            <a href="${getFrontendUrl()}" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Explore Latest Stories</a>
           </div>
         </div>
       `
@@ -188,8 +192,12 @@ export const sendNewBlogNotification = async (blogTitle, authorName, authorEmail
       return;
     }
 
+    const config = getEmailConfig();
+    const senderAddress = config ? config.fromAddress : "noreply@blogsphere.com";
+
     const info = await sendEmail({
-      to: subscriberEmails.join(", "),
+      to: senderAddress,
+      bcc: subscriberEmails.join(", "),
       subject: `New Story Published on BlogSphere: "${blogTitle}"`,
       html: `
         <div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; background: #F8FAFC; border-radius: 16px; border: 1px solid #E2E8F0; color: #0F172A;">
@@ -203,7 +211,7 @@ export const sendNewBlogNotification = async (blogTitle, authorName, authorEmail
             <p style="color: #64748B; font-size: 14px; margin-bottom: 16px;">Written by <strong>${authorName}</strong></p>
             ${previewText ? `<p style="color: #334155; font-size: 15px; line-height: 1.6; margin-bottom: 24px; background: #F1F5F9; padding: 14px; border-radius: 8px;">"${previewText}"</p>` : ""}
             <div style="text-align: center;">
-              <a href="https://blogsphere-wtrv.onrender.com" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Read Full Post on BlogSphere</a>
+              <a href="${getFrontendUrl()}" style="display: inline-block; background: #4F46E5; color: #FFFFFF; text-decoration: none; padding: 12px 28px; border-radius: 30px; font-weight: 700; font-size: 14px;">Read Full Post on BlogSphere</a>
             </div>
           </div>
           <div style="text-align: center; margin-top: 24px; color: #94A3B8; font-size: 12px;">

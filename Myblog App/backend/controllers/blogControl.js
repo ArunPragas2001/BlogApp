@@ -4,7 +4,7 @@ import { sendNewBlogNotification } from "../config/emailService.js";
 
 export const createBlog = async (req, res) => {
   try {
-    const { title, content, category, status, image } = req.body;
+    const { title, content, category, status, image, video } = req.body;
 
     if (!title || !content) {
       return res.status(400).json({ message: "Title and content are required fields" });
@@ -18,6 +18,7 @@ export const createBlog = async (req, res) => {
       category: category || "General",
       status: status || "published",
       image: image || "",
+      video: video || "",
       author: req.user._id,
       isApproved: isAdminOrOwner,
       approvalStatus: isAdminOrOwner ? "approved" : "pending"
@@ -26,7 +27,8 @@ export const createBlog = async (req, res) => {
     await blog.populate("author", "name email profilePic");
     if (blog.isApproved) {
       const preview = (blog.content || "").substring(0, 150) + ((blog.content || "").length > 150 ? "..." : "");
-      sendNewBlogNotification(blog.title, req.user.name, req.user.email, blog.category, preview);
+      sendNewBlogNotification(blog.title, req.user.name, req.user.email, blog.category, preview)
+        .catch((err) => console.error("Blog notification email error (non-blocking):", err.message));
     }
 
     res.status(201).json(blog);
@@ -107,7 +109,7 @@ export const updateBlog = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to update this blog" });
     }
 
-    const { title, content, category, status, image } = req.body;
+    const { title, content, category, status, image, video } = req.body;
 
     blog.title = title ?? blog.title;
     blog.content = content ?? blog.content;
@@ -115,6 +117,9 @@ export const updateBlog = async (req, res) => {
     blog.status = status ?? blog.status;
     if (image !== undefined) {
       blog.image = image;
+    }
+    if (video !== undefined) {
+      blog.video = video;
     }
 
     if (isAdminOrOwner) {
@@ -162,7 +167,8 @@ export const approveBlog = async (req, res) => {
       const authorName = updatedBlog.author ? updatedBlog.author.name : "Author";
       const authorEmail = updatedBlog.author ? updatedBlog.author.email : "";
       const preview = (updatedBlog.content || "").substring(0, 150) + ((updatedBlog.content || "").length > 150 ? "..." : "");
-      sendNewBlogNotification(updatedBlog.title, authorName, authorEmail, updatedBlog.category, preview);
+      sendNewBlogNotification(updatedBlog.title, authorName, authorEmail, updatedBlog.category, preview)
+        .catch((err) => console.error("Approval notification email error (non-blocking):", err.message));
     }
 
     res.json(updatedBlog);
