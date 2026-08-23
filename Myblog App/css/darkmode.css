@@ -521,3 +521,198 @@ body.dark-mode #closeForgotModalBtn:hover {
     color: #FFFFFF !important;
 }
 
+/* ==========================================================================
+   Dashboard & Blog Editing Full Dark Mode Typography & Color Fixes
+   ========================================================================== */
+
+/* Select dropdown options fix (prevents dark text on dark background in Windows) */
+body.dark-mode select option {
+    background-color: #1E293B !important;
+    color: #F1F5F9 !important;
+}
+
+/* Create / Edit Blog Page Form & Text */
+body.dark-mode .create-blog-page {
+    background-color: var(--bg-main) !important;
+}
+
+body.dark-mode .create-blog-container {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+body.dark-mode .create-blog-header h1,
+body.dark-mode #pageHeading {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .create-blog-header p,
+body.dark-mode #pageSubtitle {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .blog-form label,
+body.dark-mode .form-group label {
+    color: #F1F5F9 !important;
+    font-weight: 600;
+}
+
+body.dark-mode .form-group label i {
+    color: #818CF8 !important;
+}
+
+body.dark-mode .form-group span {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .form-group input[type="text"],
+body.dark-mode .form-group input[type="url"],
+body.dark-mode .form-group input[type="email"],
+body.dark-mode .form-group input[type="password"],
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background-color: #0F172A !important;
+    color: #F1F5F9 !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .form-group input:focus,
+body.dark-mode .form-group select:focus,
+body.dark-mode .form-group textarea:focus {
+    background-color: #162033 !important;
+    border-color: #6366F1 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+}
+
+body.dark-mode .cancel-btn {
+    background-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .cancel-btn:hover {
+    background-color: #475569 !important;
+    color: #FFFFFF !important;
+}
+
+/* Dashboard Cards & Elements in Dark Mode */
+body.dark-mode .dashboard-container {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .dashboard-blog {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .dashboard-blog:hover {
+    background-color: #253047 !important;
+    border-color: #6366F1 !important;
+}
+
+body.dark-mode .blog-info h3 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .blog-info p {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .blog-info small,
+body.dark-mode .blog-info span {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .blog-info strong {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .stat-card {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .stat-info h3 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .stat-info p {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode .my-blogs {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .section-heading h2 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode .section-heading p {
+    color: #94A3B8 !important;
+}
+
+/* Dashboard Filter Buttons & Dropdowns */
+body.dark-mode .filter-pill,
+body.dark-mode .status-filter-btn {
+    background-color: #0F172A !important;
+    color: #CBD5E1 !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode .filter-pill.active,
+body.dark-mode .status-filter-btn.active {
+    background-color: #4F46E5 !important;
+    color: #FFFFFF !important;
+    border-color: #4F46E5 !important;
+}
+
+/* Dashboard Admin / User Preview Modal in Dark Mode */
+body.dark-mode #adminBlogPreviewModal > div {
+    background-color: #1E293B !important;
+    border-color: #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal div[style*="background:#FFFFFF"],
+body.dark-mode #adminBlogPreviewModal div[style*="background: #FFFFFF"],
+body.dark-mode #adminBlogPreviewModal div[style*="background:#ffffff"] {
+    background-color: #1E293B !important;
+}
+
+body.dark-mode #adminBlogPreviewModal div[style*="background:#F8FAFC"],
+body.dark-mode #adminBlogPreviewModal div[style*="background: #F8FAFC"] {
+    background-color: #0F172A !important;
+    border-top-color: #334155 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal h1,
+body.dark-mode #adminBlogPreviewModal h2,
+body.dark-mode #adminBlogPreviewModal h3 {
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal div,
+body.dark-mode #adminBlogPreviewModal p,
+body.dark-mode #adminBlogPreviewModal strong {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal small {
+    color: #94A3B8 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal button[style*="background:#F1F5F9"] {
+    background-color: #334155 !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #adminBlogPreviewModal button[style*="background:#E2E8F0"] {
+    background-color: #334155 !important;
+    color: #CBD5E1 !important;
+}
+
+

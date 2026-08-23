@@ -414,27 +414,27 @@ function openAdminBlogPreview(blogId) {
                          '<button type="button" style="background:#EF4444;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="handleApproveBlogFromModal(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject Post</button>';
     }
 
-    overlay.innerHTML = '<div style="background:#FFFFFF;width:100%;max-width:760px;max-height:90vh;border-radius:24px;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.3);position:relative;display:flex;flex-direction:column;border:1px solid rgba(99,102,241,0.2);">' +
-        '<div style="padding:24px 32px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#FFFFFF;z-index:10;">' +
+    overlay.innerHTML = '<div style="background:var(--bg-card, #FFFFFF);color:var(--text-primary, #0F172A);width:100%;max-width:760px;max-height:90vh;border-radius:24px;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,0.4);position:relative;display:flex;flex-direction:column;border:1px solid var(--border-color, rgba(99,102,241,0.2));">' +
+        '<div style="padding:24px 32px;border-bottom:1px solid var(--border-color, #E2E8F0);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--bg-card, #FFFFFF);z-index:10;">' +
         '<div style="display:flex;align-items:center;gap:10px;">' +
-        '<span style="background:#EEF2FF;color:#4F46E5;padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;">' + esc(blog.category || "General") + '</span>' +
-        '<span style="background:' + (blog.isApproved ? '#ECFDF5;color:#059669;' : '#FFFBEB;color:#D97706;') + 'padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;">' + (blog.isApproved ? '✅ Approved' : '⏳ Pending Review') + '</span>' +
+        '<span style="background:rgba(99,102,241,0.15);color:#818CF8;padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;text-transform:uppercase;">' + esc(blog.category || "General") + '</span>' +
+        '<span style="background:' + (blog.isApproved ? 'rgba(16,185,129,0.15);color:#34D399;' : 'rgba(245,158,11,0.15);color:#FBBF24;') + 'padding:4px 14px;border-radius:20px;font-size:0.82rem;font-weight:700;">' + (blog.isApproved ? '✅ Approved' : '⏳ Pending Review') + '</span>' +
         '</div>' +
-        '<button type="button" onclick="closeAdminBlogPreview()" style="background:#F1F5F9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;color:#475569;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>' +
+        '<button type="button" onclick="closeAdminBlogPreview()" style="background:rgba(255,255,255,0.08);border:1px solid var(--border-color, #CBD5E1);width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;color:var(--text-primary, #475569);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>' +
         '</div>' +
         '<div style="padding:32px;flex:1;">' +
-        (fullVideo ? '<video src="' + esc(fullVideo) + '" controls style="width:100%;max-height:360px;border-radius:16px;margin-bottom:24px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,0.08);"></video>' : (fullImage ? '<img src="' + esc(fullImage) + '" alt="preview" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.08);">' : '')) +
-        '<h1 style="font-size:1.85rem;color:#0F172A;font-weight:800;line-height:1.3;margin-bottom:14px;">' + esc(blog.title) + '</h1>' +
-        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #F1F5F9;">' +
+        (fullVideo ? '<video src="' + esc(fullVideo) + '" controls style="width:100%;max-height:360px;border-radius:16px;margin-bottom:24px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,0.2);"></video>' : (fullImage ? '<img src="' + esc(fullImage) + '" alt="preview" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.2);">' : '')) +
+        '<h1 style="font-size:1.85rem;color:var(--text-primary, #0F172A);font-weight:800;line-height:1.3;margin-bottom:14px;">' + esc(blog.title) + '</h1>' +
+        '<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border-color, #F1F5F9);">' +
         '<img src="' + esc(authorAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
-        '<div><strong style="color:#0F172A;font-size:0.95rem;display:block;">' + esc(authorName) + '</strong>' +
-        (pubDate ? '<small style="color:#64748B;font-size:0.82rem;"><i class="fa-regular fa-calendar-days"></i> ' + esc(pubDate) + '</small>' : '') +
+        '<div><strong style="color:var(--text-primary, #0F172A);font-size:0.95rem;display:block;">' + esc(authorName) + '</strong>' +
+        (pubDate ? '<small style="color:var(--text-muted, #64748B);font-size:0.82rem;"><i class="fa-regular fa-calendar-days"></i> ' + esc(pubDate) + '</small>' : '') +
         '</div></div>' +
-        '<div style="color:#334155;font-size:1.05rem;line-height:1.8;white-space:pre-line;word-break:break-word;">' + esc(blog.content) + '</div>' +
+        '<div style="color:var(--text-secondary, #334155);font-size:1.05rem;line-height:1.8;white-space:pre-line;word-break:break-word;">' + esc(blog.content) + '</div>' +
         '</div>' +
-        '<div style="padding:20px 32px;background:#F8FAFC;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;border-radius:0 0 24px 24px;">' +
+        '<div style="padding:20px 32px;background:var(--bg-main, #F8FAFC);border-top:1px solid var(--border-color, #E2E8F0);display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap;border-radius:0 0 24px 24px;">' +
         approveButtons +
-        '<button type="button" style="background:#E2E8F0;color:#334155;border:none;padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;" onclick="closeAdminBlogPreview()">Close</button>' +
+        '<button type="button" style="background:rgba(255,255,255,0.08);color:var(--text-primary, #334155);border:1px solid var(--border-color, #CBD5E1);padding:10px 20px;border-radius:10px;font-weight:600;cursor:pointer;" onclick="closeAdminBlogPreview()">Close</button>' +
         '</div></div>';
 
     overlay.style.display = "flex";
