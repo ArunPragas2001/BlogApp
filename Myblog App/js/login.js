@@ -146,12 +146,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function openForgotModal() {
         if (!forgotModal) return;
-        forgotModal.style.display = "flex";
+        forgotModal.classList.add("active");
+        document.body.style.overflow = "hidden";
         if (forgotStep1) forgotStep1.style.display = "block";
         if (forgotStep2) forgotStep2.style.display = "none";
         if (forgotEmailInput) {
             forgotEmailInput.value = emailInput ? emailInput.value.trim() : "";
-            forgotEmailInput.focus();
+            setTimeout(() => forgotEmailInput.focus(), 100);
         }
         if (forgotStep1Error) forgotStep1Error.style.display = "none";
         if (forgotStep2Error) forgotStep2Error.style.display = "none";
@@ -159,7 +160,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function closeForgotModal() {
         if (!forgotModal) return;
-        forgotModal.style.display = "none";
+        forgotModal.classList.remove("active");
+        document.body.style.overflow = "";
     }
 
     if (forgotPasswordBtn) {
