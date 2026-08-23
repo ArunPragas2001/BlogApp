@@ -312,60 +312,60 @@ document.addEventListener("DOMContentLoaded", function () {
                 googleBtn.innerHTML = originalContent;
             }
         }
-    }
-
     function initGoogleSignUp() {
         const customBtn = document.getElementById("googleSignUpBtn");
-        const hiddenBtn = document.getElementById("googleHiddenRegisterBtn");
+        const googleModal = document.getElementById("googleRegisterModal");
+        const closeGoogleRegModalBtn = document.getElementById("closeGoogleRegModalBtn");
+        const submitRegGoogleBtn = document.getElementById("submitRegGoogleBtn");
+        const regGoogleEmail = document.getElementById("regGoogleEmail");
+        const regGoogleName = document.getElementById("regGoogleName");
 
-        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
-            try {
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleSignUpResponse,
-                    auto_select: false
-                });
-
-                if (hiddenBtn) {
-                    google.accounts.id.renderButton(hiddenBtn, {
-                        type: "standard",
-                        theme: "outline",
-                        size: "large"
-                    });
-                }
-            } catch (e) {
-                console.warn("GIS register notice:", e);
+        function openGoogleModal() {
+            if (googleModal) {
+                googleModal.style.display = "flex";
+                document.body.style.overflow = "hidden";
             }
         }
 
-        if (customBtn && !customBtn._googleBound) {
-            customBtn._googleBound = true;
+        function closeGoogleModal() {
+            if (googleModal) {
+                googleModal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        }
+
+        if (customBtn) {
             customBtn.addEventListener("click", function () {
-                if (hiddenBtn && hiddenBtn.querySelector('div[role="button"]')) {
-                    hiddenBtn.querySelector('div[role="button"]').click();
-                } else if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
-                    google.accounts.id.prompt((notification) => {
-                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                            showQuickGoogleRegisterPrompt();
-                        }
-                    });
-                } else {
-                    showQuickGoogleRegisterPrompt();
+                openGoogleModal();
+            });
+        }
+
+        if (closeGoogleRegModalBtn) closeGoogleRegModalBtn.addEventListener("click", closeGoogleModal);
+        if (googleModal) {
+            googleModal.addEventListener("click", function (e) {
+                if (e.target === googleModal) closeGoogleModal();
+            });
+        }
+
+        if (submitRegGoogleBtn) {
+            submitRegGoogleBtn.addEventListener("click", function () {
+                const email = regGoogleEmail ? regGoogleEmail.value.trim() : "";
+                const name = regGoogleName ? regGoogleName.value.trim() : "";
+
+                if (!email || !email.includes("@")) {
+                    showToast("Please enter a valid Google email address.", "error");
+                    return;
                 }
+
+                closeGoogleModal();
+                handleGoogleSignUpResponse({
+                    email: email,
+                    name: name || "Google Blogger",
+                    profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+                });
             });
         }
     }
 
-    function showQuickGoogleRegisterPrompt() {
-        const userEmail = prompt("Google Account Email for Sign-Up:", "newuser@gmail.com");
-        if (!userEmail || !userEmail.includes("@")) return;
-        const userName = prompt("Google Account Name:", "Google Blogger");
-        handleGoogleSignUpResponse({
-            email: userEmail.trim(),
-            name: (userName && userName.trim()) || "Google Blogger",
-            profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-        });
-    }
-
-    setTimeout(initGoogleSignUp, 300);
+    setTimeout(initGoogleSignUp, 200);
 });

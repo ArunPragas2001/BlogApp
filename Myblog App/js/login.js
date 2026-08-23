@@ -377,60 +377,72 @@ document.addEventListener("DOMContentLoaded", function () {
                 googleBtn.innerHTML = originalContent;
             }
         }
-    }
-
     function initGoogleAuth() {
         const customBtn = document.getElementById("googleSignInBtn");
-        const hiddenBtn = document.getElementById("googleHiddenBtn");
+        const googleModal = document.getElementById("googleAuthModal");
+        const closeGoogleModalBtn = document.getElementById("closeGoogleModalBtn");
+        const quickAccountBtn = document.getElementById("quickGoogleAccountBtn");
+        const submitCustomGoogleBtn = document.getElementById("submitCustomGoogleBtn");
+        const customGoogleEmail = document.getElementById("customGoogleEmail");
+        const customGoogleName = document.getElementById("customGoogleName");
 
-        if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
-            try {
-                google.accounts.id.initialize({
-                    client_id: GOOGLE_CLIENT_ID,
-                    callback: handleGoogleResponse,
-                    auto_select: false
-                });
-
-                if (hiddenBtn) {
-                    google.accounts.id.renderButton(hiddenBtn, {
-                        type: "standard",
-                        theme: "outline",
-                        size: "large"
-                    });
-                }
-            } catch (e) {
-                console.warn("GIS initialization notice:", e);
+        function openGoogleModal() {
+            if (googleModal) {
+                googleModal.style.display = "flex";
+                document.body.style.overflow = "hidden";
             }
         }
 
-        if (customBtn && !customBtn._googleBound) {
-            customBtn._googleBound = true;
+        function closeGoogleModal() {
+            if (googleModal) {
+                googleModal.style.display = "none";
+                document.body.style.overflow = "auto";
+            }
+        }
+
+        if (customBtn) {
             customBtn.addEventListener("click", function () {
-                if (hiddenBtn && hiddenBtn.querySelector('div[role="button"]')) {
-                    hiddenBtn.querySelector('div[role="button"]').click();
-                } else if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
-                    google.accounts.id.prompt((notification) => {
-                        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                            showQuickGooglePrompt();
-                        }
-                    });
-                } else {
-                    showQuickGooglePrompt();
+                openGoogleModal();
+            });
+        }
+
+        if (closeGoogleModalBtn) closeGoogleModalBtn.addEventListener("click", closeGoogleModal);
+        if (googleModal) {
+            googleModal.addEventListener("click", function (e) {
+                if (e.target === googleModal) closeGoogleModal();
+            });
+        }
+
+        if (quickAccountBtn) {
+            quickAccountBtn.addEventListener("click", function () {
+                closeGoogleModal();
+                handleGoogleResponse({
+                    email: "pragasarun1@gmail.com",
+                    name: "Arun Pragas",
+                    profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+                });
+            });
+        }
+
+        if (submitCustomGoogleBtn) {
+            submitCustomGoogleBtn.addEventListener("click", function () {
+                const email = customGoogleEmail ? customGoogleEmail.value.trim() : "";
+                const name = customGoogleName ? customGoogleName.value.trim() : "";
+
+                if (!email || !email.includes("@")) {
+                    showToast("Please enter a valid Google email address.", "error");
+                    return;
                 }
+
+                closeGoogleModal();
+                handleGoogleResponse({
+                    email: email,
+                    name: name || "Google Blogger",
+                    profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
+                });
             });
         }
     }
 
-    function showQuickGooglePrompt() {
-        const userEmail = prompt("Google Account Email for Sign-In:", "user@gmail.com");
-        if (!userEmail || !userEmail.includes("@")) return;
-        const userName = prompt("Google Account Name:", "Google User");
-        handleGoogleResponse({
-            email: userEmail.trim(),
-            name: (userName && userName.trim()) || "Google User",
-            profilePic: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80"
-        });
-    }
-
-    setTimeout(initGoogleAuth, 300);
+    setTimeout(initGoogleAuth, 200);
 });
