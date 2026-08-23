@@ -267,6 +267,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (bioInput && cached.bio) bioInput.value = cached.bio;
         updateAllAvatars(cached.profilePic, cached.name);
         showToast("Using cached profile data (server unreachable).", "warning");
+    } finally {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 
     if (form) {

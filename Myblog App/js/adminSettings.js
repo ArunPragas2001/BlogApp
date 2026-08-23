@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", async function () {
     } catch (err) {
         console.error("Load settings error:", err);
         showToast("Error loading current site settings.", "error");
+    } finally {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 
     if (form) {

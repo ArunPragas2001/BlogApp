@@ -364,6 +364,8 @@ async function displayBlogs() {
     } catch (error) {
         console.error("Fetch dashboard blogs error:", error);
         blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
+    } finally {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 }
 

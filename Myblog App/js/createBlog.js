@@ -432,7 +432,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Update Blog';
             }
+        } finally {
+            if (window.hidePageLoader) window.hidePageLoader();
         }
+    } else {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 
     // ─── Validation Helpers ──────────────────────────────────────────────────

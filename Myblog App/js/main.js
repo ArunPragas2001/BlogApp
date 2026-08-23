@@ -249,6 +249,8 @@ async function renderHomeBlogs(categoryFilter) {
     } catch (err) {
         console.error("Home blogs fetch error:", err);
         container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Please check your connection and try again.</p></div>';
+    } finally {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 }
 
