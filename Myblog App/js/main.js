@@ -119,12 +119,26 @@ function openArticleReader(blogId) {
 
     var overlay = document.getElementById("articleReaderOverlay");
     var img = document.getElementById("articleReaderImg");
+    var vid = document.getElementById("articleReaderVideo");
     var meta = document.getElementById("articleReaderMeta");
     var titleEl = document.getElementById("articleReaderTitle");
     var contentEl = document.getElementById("articleReaderContent");
 
     if (!overlay) return;
 
+    // Handle Video display
+    if (vid) {
+        if (blog.video && blog.video.trim() !== "") {
+            vid.src = resolveImageUrl(blog.video);
+            vid.style.display = "block";
+        } else {
+            vid.pause();
+            vid.src = "";
+            vid.style.display = "none";
+        }
+    }
+
+    // Handle Image display
     if (img) {
         if (blog.image && blog.image.trim() !== "") {
             img.style.opacity = "0";
@@ -159,6 +173,11 @@ function openArticleReader(blogId) {
 
 function closeArticleReader() {
     var overlay = document.getElementById("articleReaderOverlay");
+    var vid = document.getElementById("articleReaderVideo");
+    if (vid) {
+        vid.pause();
+        vid.src = "";
+    }
     if (overlay) overlay.classList.remove("active");
     document.body.style.overflow = "";
 }
@@ -194,6 +213,7 @@ async function renderHomeBlogs(categoryFilter) {
             var blogId = blog._id || blog.id;
             var rawImage = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
             var imageSrc = resolveImageUrl(rawImage);
+            var hasVideo = blog.video && blog.video.trim() !== "";
             var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
             var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
             var authorAvatar = resolveImageUrl(rawAvatar);
@@ -206,6 +226,7 @@ async function renderHomeBlogs(categoryFilter) {
                 '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
                 'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
                 'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                (hasVideo ? '<div style="position:absolute;bottom:10px;right:10px;background:rgba(124,58,237,0.85);color:#fff;font-size:0.75rem;padding:4px 8px;border-radius:6px;font-weight:700;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px);"><i class="fa-solid fa-play"></i> Video</div>' : '') +
                 '</div>' +
                 '<div class="blog-card-content">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +

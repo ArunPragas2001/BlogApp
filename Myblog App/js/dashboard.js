@@ -394,6 +394,7 @@ function openAdminBlogPreview(blogId) {
     var authorAvatar = resolveImageUrl(rawAvatar);
     var pubDate = formatDate(blog.createdAt);
     var fullImage = blog.image && blog.image.trim() !== "" ? resolveImageUrl(blog.image) : "";
+    var fullVideo = blog.video && blog.video.trim() !== "" ? resolveImageUrl(blog.video) : "";
     var currentUser = getCurrentUser();
     var isAdminOrOwner = isAdminOrOwnerUser(currentUser);
 
@@ -418,7 +419,7 @@ function openAdminBlogPreview(blogId) {
         '<button type="button" onclick="closeAdminBlogPreview()" style="background:#F1F5F9;border:none;width:36px;height:36px;border-radius:50%;cursor:pointer;font-size:1.1rem;color:#475569;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-xmark"></i></button>' +
         '</div>' +
         '<div style="padding:32px;flex:1;">' +
-        (fullImage ? '<img src="' + esc(fullImage) + '" alt="preview" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.08);">' : '') +
+        (fullVideo ? '<video src="' + esc(fullVideo) + '" controls style="width:100%;max-height:360px;border-radius:16px;margin-bottom:24px;background:#000;box-shadow:0 6px 20px rgba(0,0,0,0.08);"></video>' : (fullImage ? '<img src="' + esc(fullImage) + '" alt="preview" style="width:100%;max-height:340px;object-fit:cover;border-radius:16px;margin-bottom:24px;box-shadow:0 6px 20px rgba(0,0,0,0.08);">' : '')) +
         '<h1 style="font-size:1.85rem;color:#0F172A;font-weight:800;line-height:1.3;margin-bottom:14px;">' + esc(blog.title) + '</h1>' +
         '<div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid #F1F5F9;">' +
         '<img src="' + esc(authorAvatar) + '" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
@@ -533,8 +534,10 @@ function renderBlogsList() {
             '</div>'
         );
 
+        var hasVideo = blog.video && blog.video.trim() !== "";
+
         return '<div class="dashboard-blog">' +
-            (blogImage ? '<img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;margin-right:12px;" onerror="this.style.display=\'none\'">' : '') +
+            (blogImage ? '<div style="position:relative;flex-shrink:0;margin-right:12px;"><img src="' + esc(blogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;display:block;" onerror="this.style.display=\'none\'">' + (hasVideo ? '<span style="position:absolute;bottom:4px;right:4px;background:rgba(124,58,237,0.9);color:#fff;font-size:0.65rem;padding:2px 5px;border-radius:4px;font-weight:700;"><i class="fa-solid fa-play"></i></span>' : '') + '</div>' : (hasVideo ? '<div style="width:96px;height:72px;border-radius:10px;background:#EDE9FE;color:#7C3AED;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;margin-right:12px;font-size:0.75rem;font-weight:700;"><i class="fa-solid fa-video" style="font-size:1.3rem;margin-bottom:2px;"></i> Video</div>' : '')) +
             '<div class="blog-info" style="flex:1;">' +
             '<h3>' + esc(blog.title) + '</h3>' +
             '<p>' + esc((blog.content || "").substring(0, 100)) + (blog.content && blog.content.length > 100 ? "…" : "") + '</p>' +

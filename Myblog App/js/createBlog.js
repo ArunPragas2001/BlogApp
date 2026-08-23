@@ -2,9 +2,11 @@ var API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
 var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
 var API_UPLOAD_URL = API_BASE_URL + "/api/upload";
 
-// Holds the uploaded/entered image URL
+// Holds the uploaded/entered image and video URLs
 var _currentImageUrl = "";
+var _currentVideoUrl = "";
 var _uploadInProgress = false;
+var _videoUploadInProgress = false;
 
 function resolveImageUrl(url) {
     if (!url || typeof url !== "string") return "";
@@ -99,16 +101,24 @@ document.addEventListener("DOMContentLoaded", async function () {
     var titleInput = document.getElementById("blog-title");
     var categorySelect = document.getElementById("blog-category");
     var statusSelect = document.getElementById("blog-status");
-    var imageUrlInput = document.getElementById("blog-image");          // URL text input
-    var imageUploadInput = document.getElementById("blogImageUpload");  // File input
+    var imageUrlInput = document.getElementById("blog-image");          // Image URL text input
+    var imageUploadInput = document.getElementById("blogImageUpload");  // Image file input
     var imagePreviewContainer = document.getElementById("imagePreviewContainer");
     var imagePreview = document.getElementById("imagePreview");
     var removePhotoBtn = document.getElementById("removePhotoBtn");
+    var uploadProgressEl = document.getElementById("uploadProgress");
+
+    var videoUrlInput = document.getElementById("blog-video");          // Video URL text input
+    var videoUploadInput = document.getElementById("blogVideoUpload");  // Video file input
+    var videoPreviewContainer = document.getElementById("videoPreviewContainer");
+    var videoPreview = document.getElementById("videoPreview");
+    var removeVideoBtn = document.getElementById("removeVideoBtn");
+    var videoUploadProgressEl = document.getElementById("videoUploadProgress");
+
     var contentInput = document.getElementById("blog-content");
     var pageHeading = document.getElementById("pageHeading");
     var pageSubtitle = document.getElementById("pageSubtitle");
     var submitBtn = document.getElementById("submitBtn");
-    var uploadProgressEl = document.getElementById("uploadProgress");
 
     var token = localStorage.getItem("token");
     if (!token) {
@@ -145,7 +155,39 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (imagePreviewContainer) imagePreviewContainer.style.display = "none";
     }
 
-    // ─── URL Input → live preview ────────────────────────────────────────────
+    // ─── Video Preview Helpers ────────────────────────────────────────────────
+    function showVideoPreview(url) {
+        var resolved = resolveImageUrl(url);
+        _currentVideoUrl = resolved;
+        if (!videoPreview || !videoPreviewContainer) return;
+        if (!_currentVideoUrl) {
+            videoPreviewContainer.style.display = "none";
+            return;
+        }
+        videoPreview.onerror = function () {
+            this.onerror = null;
+            videoPreviewContainer.style.display = "none";
+            showToast("Video preview unavailable, but the video URL was saved.", "info");
+        };
+        videoPreview.onloadeddata = function () {
+            videoPreviewContainer.style.display = "block";
+        };
+        videoPreview.src = _currentVideoUrl;
+        videoPreviewContainer.style.display = "block";
+    }
+
+    function clearVideo() {
+        _currentVideoUrl = "";
+        if (videoUrlInput) videoUrlInput.value = "";
+        if (videoUploadInput) videoUploadInput.value = "";
+        if (videoPreview) {
+            videoPreview.pause();
+            videoPreview.src = "";
+        }
+        if (videoPreviewContainer) videoPreviewContainer.style.display = "none";
+    }
+
+    // ─── Image URL Input → live preview ──────────────────────────────────────
     if (imageUrlInput) {
         ["input", "paste", "change"].forEach(function (evt) {
             imageUrlInput.addEventListener(evt, function () {
@@ -162,7 +204,24 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
     }
 
-    // ─── File Upload ─────────────────────────────────────────────────────────
+    // ─── Video URL Input → live preview ──────────────────────────────────────
+    if (videoUrlInput) {
+        ["input", "paste", "change"].forEach(function (evt) {
+            videoUrlInput.addEventListener(evt, function () {
+                clearTimeout(videoUrlInput._debounce);
+                videoUrlInput._debounce = setTimeout(function () {
+                    var val = (videoUrlInput.value || "").trim();
+                    if (val) {
+                        showVideoPreview(val);
+                    } else {
+                        clearVideo();
+                    }
+                }, 300);
+            });
+        });
+    }
+
+    // ─── Image File Upload ───────────────────────────────────────────────────
     if (imageUploadInput) {
         imageUploadInput.addEventListener("change", async function () {
             var file = this.files && this.files[0];
@@ -189,7 +248,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             _uploadInProgress = true;
             if (uploadProgressEl) { uploadProgressEl.style.display = "flex"; }
             if (submitBtn) submitBtn.disabled = true;
-            showToast("Uploading image...", "info");
+            showToast("Uploading image to Cloudinary...", "info");
 
             try {
                 var res = await fetch(API_UPLOAD_URL, {
@@ -200,8 +259,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
                 var data = await res.json();
 
-                if (res.ok && (data.url || data.path)) {
-                    var savedUrl = data.path ? resolveImageUrl(data.path) : resolveImageUrl(data.url);
+                if (res.ok && (data.url || data.path || data.secure_url)) {
+                    var savedUrl = data.secure_url || (data.path ? resolveImageUrl(data.path) : resolveImageUrl(data.url));
                     _currentImageUrl = savedUrl;
                     if (imageUrlInput) imageUrlInput.value = savedUrl;
                     showImagePreview(savedUrl);
@@ -217,16 +276,84 @@ document.addEventListener("DOMContentLoaded", async function () {
             } finally {
                 _uploadInProgress = false;
                 if (uploadProgressEl) { uploadProgressEl.style.display = "none"; }
-                if (submitBtn) submitBtn.disabled = false;
+                if (submitBtn && !_videoUploadInProgress) submitBtn.disabled = false;
             }
         });
     }
 
-    // ─── Remove Photo Button ─────────────────────────────────────────────────
+    // ─── Video File Upload ───────────────────────────────────────────────────
+    if (videoUploadInput) {
+        videoUploadInput.addEventListener("change", async function () {
+            var file = this.files && this.files[0];
+            if (!file) return;
+
+            // Validate video format client-side
+            var allowedExts = /\.(mp4|webm|mov|avi|mkv|m4v|ogv)$/i;
+            if (!allowedExts.test(file.name) && !file.type.startsWith("video/")) {
+                showToast("Unsupported format. Use MP4, WebM, MOV, AVI, or MKV.", "error");
+                this.value = "";
+                return;
+            }
+
+            // Validate video size client-side (100MB)
+            if (file.size > 100 * 1024 * 1024) {
+                showToast("Video must be under 100 MB.", "error");
+                this.value = "";
+                return;
+            }
+
+            var currentToken = localStorage.getItem("token") || token;
+            var formData = new FormData();
+            formData.append("video", file);
+
+            _videoUploadInProgress = true;
+            if (videoUploadProgressEl) { videoUploadProgressEl.style.display = "flex"; }
+            if (submitBtn) submitBtn.disabled = true;
+            showToast("Uploading video to Cloudinary (this may take a moment)...", "info");
+
+            try {
+                var res = await fetch(API_UPLOAD_URL + "/video", {
+                    method: "POST",
+                    headers: { "Authorization": "Bearer " + currentToken },
+                    body: formData
+                });
+
+                var data = await res.json();
+
+                if (res.ok && (data.url || data.secure_url)) {
+                    var savedVideoUrl = data.secure_url || data.url;
+                    _currentVideoUrl = savedVideoUrl;
+                    if (videoUrlInput) videoUrlInput.value = savedVideoUrl;
+                    showVideoPreview(savedVideoUrl);
+                    showToast("✅ Video uploaded successfully!", "success");
+                } else {
+                    showToast(data.message || "Video upload failed. Please try again.", "error");
+                    this.value = "";
+                }
+            } catch (err) {
+                console.error("Video upload error:", err);
+                showToast("Video upload error. Please check your connection and try again.", "error");
+                this.value = "";
+            } finally {
+                _videoUploadInProgress = false;
+                if (videoUploadProgressEl) { videoUploadProgressEl.style.display = "none"; }
+                if (submitBtn && !_uploadInProgress) submitBtn.disabled = false;
+            }
+        });
+    }
+
+    // ─── Remove Photo & Video Buttons ─────────────────────────────────────────
     if (removePhotoBtn) {
         removePhotoBtn.addEventListener("click", function () {
             clearImage();
             showToast("Image removed.", "info");
+        });
+    }
+
+    if (removeVideoBtn) {
+        removeVideoBtn.addEventListener("click", function () {
+            clearVideo();
+            showToast("Video removed.", "info");
         });
     }
 
@@ -289,6 +416,13 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (imageUrlInput) imageUrlInput.value = resolvedImg;
                 setTimeout(function () { showImagePreview(resolvedImg); }, 150);
             }
+
+            if (blog.video && blog.video.trim()) {
+                var resolvedVid = resolveImageUrl(blog.video);
+                _currentVideoUrl = resolvedVid;
+                if (videoUrlInput) videoUrlInput.value = resolvedVid;
+                setTimeout(function () { showVideoPreview(resolvedVid); }, 150);
+            }
         } catch (err) {
             console.error("Error loading blog for edit:", err);
             showToast("Failed to load blog post for editing.", "error");
@@ -327,6 +461,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         var category = categorySelect ? categorySelect.value : "";
         var status = statusSelect ? statusSelect.value : "published";
         var image = _currentImageUrl || (imageUrlInput ? resolveImageUrl(imageUrlInput.value.trim()) : "");
+        var video = _currentVideoUrl || (videoUrlInput ? resolveImageUrl(videoUrlInput.value.trim()) : "");
         var content = contentInput ? contentInput.value.trim() : "";
 
         var valid = true;
@@ -351,9 +486,20 @@ document.addEventListener("DOMContentLoaded", async function () {
             return;
         }
 
+        if (_videoUploadInProgress) {
+            showToast("Please wait for the video upload to finish before saving.", "error");
+            return;
+        }
+
         var pendingFile = imageUploadInput && imageUploadInput.files && imageUploadInput.files[0];
         if (pendingFile && !_currentImageUrl) {
             showToast("Image is still uploading. Please wait a moment and try again.", "error");
+            return;
+        }
+
+        var pendingVideoFile = videoUploadInput && videoUploadInput.files && videoUploadInput.files[0];
+        if (pendingVideoFile && !_currentVideoUrl) {
+            showToast("Video is still uploading. Please wait a moment and try again.", "error");
             return;
         }
 
@@ -378,6 +524,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     category: category,
                     status: status.toLowerCase(),
                     image: image,
+                    video: video,
                     content: content
                 })
             });
