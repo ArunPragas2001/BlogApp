@@ -373,6 +373,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         renderGoogleRegisterButton();
+
+        // Origin Mismatch dynamic helper note
+        const helpText = document.createElement("div");
+        helpText.style.fontSize = "0.75rem";
+        helpText.style.color = "#94A3B8";
+        helpText.style.marginTop = "8px";
+        helpText.style.textAlign = "center";
+        helpText.innerHTML = 'Origin mismatch? Register <code style="color:#4F46E5; font-weight:700;">' + window.location.origin + '</code> in Google Console';
+        container.parentNode.appendChild(helpText);
     }
 
     setTimeout(initGoogleSignUp, 150);

@@ -228,7 +228,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     resetCodeInput.focus();
                 }
 
-                showToast(data.message || "A verification code has been sent to your email. Please check your inbox.", "success", 7000);
+                if (data.emailSent === false) {
+                    showToast("ℹ️ Server email service is in local development mode. Check the backend server console log for your 6-digit code!", "info", 12000);
+                } else {
+                    showToast(data.message || "A verification code has been sent to your email. Please check your inbox.", "success", 7000);
+                }
             } catch (err) {
                 console.error("Forgot password error:", err);
                 if (forgotStep1Error) {
@@ -438,6 +442,15 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         renderGoogleButton();
+
+        // Origin Mismatch dynamic helper note
+        const helpText = document.createElement("div");
+        helpText.style.fontSize = "0.75rem";
+        helpText.style.color = "#94A3B8";
+        helpText.style.marginTop = "8px";
+        helpText.style.textAlign = "center";
+        helpText.innerHTML = 'Origin mismatch? Register <code style="color:#4F46E5; font-weight:700;">' + window.location.origin + '</code> in Google Console';
+        container.parentNode.appendChild(helpText);
     }
 
     setTimeout(initGoogleAuth, 150);

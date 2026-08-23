@@ -196,17 +196,17 @@ export const forgotPassword = async (req, res) => {
 
     let emailSent = false;
     try {
-      await sendPasswordResetEmail(normalizedEmail, resetCode);
-      emailSent = true;
+      emailSent = await sendPasswordResetEmail(normalizedEmail, resetCode);
     } catch (emailError) {
       console.warn("⚠️  Password reset email delivery note:", emailError.message);
       console.log(`ℹ️  Password Reset Code for ${normalizedEmail} is active: ${resetCode}`);
     }
 
     res.json({
+      emailSent,
       message: emailSent
         ? "A 6-digit verification code has been sent to your email. Please check your inbox."
-        : "Verification code generated! Please check your inbox (or backend console if email service is in test mode)."
+        : "Recovery code generated successfully! (No SMTP configured. Please fetch the code from the backend server console log)."
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to process password recovery request. " + error.message });

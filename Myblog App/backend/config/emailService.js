@@ -243,8 +243,9 @@ export const sendPasswordResetEmail = async (email, resetCode) => {
 
     if (info) {
       console.log(`✅ Password reset code email delivered to ${email}:`, info.messageId);
+      return true;
     }
-    return true;
+    return false;
   } catch (error) {
     console.error("Password reset email dispatch error:", error.message);
     throw error;
