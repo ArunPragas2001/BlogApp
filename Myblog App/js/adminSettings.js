@@ -1,4 +1,6 @@
-const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_BASE_URL = (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"))
+    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
+    : "https://blogsphere-wtrv.onrender.com";
 const API_SETTINGS_URL = `${API_BASE_URL}/api/settings`;
 
 document.addEventListener("DOMContentLoaded", async function () {
