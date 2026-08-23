@@ -391,6 +391,16 @@ document.addEventListener("DOMContentLoaded", function () {
             console.warn("Could not fetch Google Client ID from backend:", e);
         }
 
+        if (window.location.protocol === "file:") {
+            container.innerHTML = '<div style="font-size:0.85rem; color:#EA4335; text-align:center; padding:10px 14px; border:1.5px dashed #FCA5A5; border-radius:12px; background:#FEF2F2; line-height:1.4; max-width:340px; margin:0 auto;">' +
+                '<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px; font-size:1rem;"></i>' +
+                '<strong>Local Server Required</strong><br>' +
+                'Google OAuth does not support <code style="background:#FEE2E2; padding:2px 4px; border-radius:4px; font-weight:600;">file:///</code>.<br>' +
+                'Please open: <a href="http://localhost:5000/login.html" style="color:#4F46E5; font-weight:700; text-decoration:underline;">http://localhost:5000/login.html</a>' +
+                '</div>';
+            return;
+        }
+
         if (!clientId) {
             container.innerHTML = '<div style="font-size:0.82rem; color:#94A3B8; text-align:center; padding:8px 12px; border:1px dashed #CBD5E1; border-radius:10px;">' +
                 '<i class="fa-brands fa-google" style="color:#4F46E5; margin-right:5px;"></i>' +
