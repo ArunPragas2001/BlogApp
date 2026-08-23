@@ -233,7 +233,7 @@ async function renderHomeBlogs(categoryFilter) {
             if (hasVideo) {
                 mediaHtml =
                     '<div class="blog-card-image-wrap" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;">' +
-                    '<video controls preload="metadata" style="width:100%;max-height:240px;display:block;background:#000;" poster="' + esc(imageSrc) + '">' +
+                    '<video autoplay muted loop playsinline preload="auto" style="width:100%;max-height:240px;display:block;background:#000;object-fit:cover;" poster="' + esc(imageSrc) + '">' +
                     '<source src="' + esc(videoSrc) + '">' +
                     'Your browser does not support video.' +
                     '</video>' +
