@@ -221,20 +221,36 @@ async function renderHomeBlogs(categoryFilter) {
             var rawImage = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
             var imageSrc = resolveImageUrl(rawImage);
             var hasVideo = blog.video && blog.video.trim() !== "";
+            var videoSrc = hasVideo ? resolveImageUrl(blog.video) : "";
             var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
             var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
             var authorAvatar = resolveImageUrl(rawAvatar);
             var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
             var pubDate = formatDate(blog.createdAt);
 
+            // Build media section: video player shown naturally if video exists, else image thumbnail
+            var mediaHtml;
+            if (hasVideo) {
+                mediaHtml =
+                    '<div class="blog-card-image-wrap" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;">' +
+                    '<video controls preload="metadata" style="width:100%;max-height:240px;display:block;background:#000;" poster="' + esc(imageSrc) + '">' +
+                    '<source src="' + esc(videoSrc) + '">' +
+                    'Your browser does not support video.' +
+                    '</video>' +
+                    '<div style="position:absolute;top:10px;left:10px;background:rgba(99,102,241,0.9);color:#fff;font-size:0.72rem;padding:3px 9px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);pointer-events:none;"><i class="fa-solid fa-video"></i> Video</div>' +
+                    '</div>';
+            } else {
+                mediaHtml =
+                    '<div class="blog-card-image-wrap" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;">' +
+                    '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
+                    '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
+                    'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
+                    'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                    '</div>';
+            }
+
             return '<div class="blog-card">' +
-                '<div class="blog-card-image-wrap" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;">' +
-                '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
-                '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
-                'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
-                'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
-                (hasVideo ? '<div style="position:absolute;bottom:10px;right:10px;background:rgba(124,58,237,0.85);color:#fff;font-size:0.75rem;padding:4px 8px;border-radius:6px;font-weight:700;display:flex;align-items:center;gap:4px;backdrop-filter:blur(4px);"><i class="fa-solid fa-play"></i> Video</div>' : '') +
-                '</div>' +
+                mediaHtml +
                 '<div class="blog-card-content">' +
                 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +
                 '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;">' + esc(blog.category || "General") + '</span>' +
@@ -246,9 +262,7 @@ async function renderHomeBlogs(categoryFilter) {
                 '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
                 '<small style="color:#64748B;font-weight:500;">By ' + esc(authorName) + '</small>' +
                 '</div>' +
-                '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
-                '<i class="fa-solid fa-book-open"></i> Read More' +
-                '</button>' +
+                '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')"><i class="fa-solid fa-book-open"></i> Read More</button>' +
                 '</div></div>';
         }).join("");
     } catch (err) {

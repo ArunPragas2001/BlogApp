@@ -136,13 +136,10 @@
             '<div class="strength-bar-track"><div class="strength-bar-fill" id="' + containerId + '_fill"></div></div>' +
             '<div class="strength-meta-row">' +
             '<span class="strength-label" id="' + containerId + '_label">Password Strength</span>' +
-            '<button type="button" class="btn-suggest-password" id="' + containerId + '_suggestBtn">' +
-            '<i class="fa-solid fa-wand-magic-sparkles"></i> Suggest Strong Password</button>' +
             '</div>';
 
         var fillEl = document.getElementById(containerId + "_fill");
         var labelEl = document.getElementById(containerId + "_label");
-        var suggestBtn = document.getElementById(containerId + "_suggestBtn");
 
         function updateMeter() {
             var val = input.value;
@@ -158,29 +155,6 @@
         }
 
         input.addEventListener("input", updateMeter);
-
-        if (suggestBtn) {
-            suggestBtn.addEventListener("click", function (e) {
-                e.preventDefault();
-                var generated = generateStrongPassword(12);
-                input.value = generated;
-                input.type = "text"; // Show briefly so user can see it
-
-                if (confirmInputId) {
-                    var confirmInput = document.getElementById(confirmInputId);
-                    if (confirmInput) {
-                        confirmInput.value = generated;
-                        confirmInput.type = "text";
-                    }
-                }
-
-                updateMeter();
-
-                if (typeof window.showToast === "function") {
-                    window.showToast("🔑 Strong password generated and filled!", "success", 4000);
-                }
-            });
-        }
     }
 
     // Expose globals
