@@ -358,42 +358,102 @@ export const approveAdminRequest = async (req, res) => {
   }
 };
 
-// ─── Google OAuth Sign-In & Sign-Up ──────────────────────────────────────────
-function parseGoogleJwtPayload(token) {
+// ─── Google OAuth Configuration & Cryptographic ID Token Verification ────────
+import { OAuth2Client } from "google-auth-library";
+
+const googleOAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID || "");
+
+export const getGoogleClientId = async (req, res) => {
+  const clientId = process.env.GOOGLE_CLIENT_ID || "";
+  res.json({ clientId });
+};
+
+async function verifyGoogleIdToken(idToken) {
+  if (!idToken || typeof idToken !== "string") {
+    throw new Error("Invalid or missing Google ID token.");
+  }
+
+  const configuredClientId = process.env.GOOGLE_CLIENT_ID || "";
+
+  // Strategy 1: Verify using google-auth-library
   try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return null;
-    const base64Url = parts[1];
-    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-    const jsonPayload = Buffer.from(base64, "base64").toString("utf8");
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    return null;
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken: idToken,
+      ...(configuredClientId ? { audience: configuredClientId } : {})
+    });
+    const payload = ticket.getPayload();
+    if (payload && payload.email) {
+      return payload;
+    }
+  } catch (libErr) {
+    // Strategy 2: Validate against Google's official tokeninfo API endpoint
+    try {
+      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error_description || "Google token verification failed.");
+      }
+      const tokenInfo = await response.json();
+      
+      // Validate issuer
+      const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
+      if (!validIssuers.includes(tokenInfo.iss)) {
+        throw new Error("Invalid token issuer.");
+      }
+
+      // Validate audience if client ID is configured
+      if (configuredClientId && tokenInfo.aud !== configuredClientId) {
+        throw new Error("Token audience does not match configured Google Client ID.");
+      }
+
+      // Validate email verification status
+      if (tokenInfo.email_verified !== "true" && tokenInfo.email_verified !== true) {
+        throw new Error("Google email address has not been verified.");
+      }
+
+      return tokenInfo;
+    } catch (apiErr) {
+      throw new Error(`Google authentication token invalid: ${libErr.message || apiErr.message}`);
+    }
   }
 }
 
 export const googleAuth = async (req, res) => {
   try {
-    const { credential, email: bodyEmail, name: bodyName, profilePic: bodyPic, googleId: bodyGoogleId } = req.body;
+    const { credential } = req.body;
 
-    let googleData = null;
-
-    if (credential) {
-      googleData = parseGoogleJwtPayload(credential);
+    if (!credential) {
+      return res.status(400).json({
+        message: "Google ID token (credential) is required. Direct email submission is not permitted."
+      });
     }
 
-    const email = (googleData && googleData.email) || bodyEmail;
-    const name = (googleData && (googleData.name || googleData.given_name)) || bodyName || "Google User";
-    const profilePic = (googleData && googleData.picture) || bodyPic || "";
-    const googleId = (googleData && googleData.sub) || bodyGoogleId || "";
+    // Cryptographically verify Google ID Token
+    let verifiedPayload;
+    try {
+      verifiedPayload = await verifyGoogleIdToken(credential);
+    } catch (verifyErr) {
+      console.warn("Google token verification failed:", verifyErr.message);
+      return res.status(401).json({
+        message: `Google authentication verification failed: ${verifyErr.message}`
+      });
+    }
+
+    const { email, name, picture, email_verified } = verifiedPayload;
 
     if (!email) {
-      return res.status(400).json({ message: "Unable to retrieve email from Google account." });
+      return res.status(400).json({ message: "Google account does not provide an email address." });
+    }
+
+    if (email_verified === false || email_verified === "false") {
+      return res.status(400).json({ message: "Google email address is unverified. Please verify your Google account first." });
     }
 
     const normalizedEmail = email.toLowerCase().trim();
+    const displayName = (name && name.trim()) || normalizedEmail.split("@")[0];
+    const profilePic = picture || "";
 
-    // Check if user already exists
+    // Find existing user by verified Google email
     let user = await User.findOne({ email: normalizedEmail });
 
     if (user) {
@@ -401,7 +461,7 @@ export const googleAuth = async (req, res) => {
         return res.status(403).json({ message: "Your account has been deactivated. Please contact support." });
       }
 
-      // Update profile picture if user doesn't have one
+      // Sync profile picture if not set
       if ((!user.profilePic || user.profilePic.trim() === "") && profilePic) {
         user.profilePic = profilePic;
         await user.save();
@@ -420,8 +480,8 @@ export const googleAuth = async (req, res) => {
       });
     }
 
-    // New user auto-registration
-    const randomPassword = crypto.randomBytes(24).toString("hex") + "!A1";
+    // Auto-create new user with cryptographically verified identity
+    const randomPassword = crypto.randomBytes(32).toString("hex") + "!Aa1";
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
@@ -430,7 +490,7 @@ export const googleAuth = async (req, res) => {
     const assignedAdminStatus = isOwner ? "approved" : "none";
 
     user = await User.create({
-      name: name.trim(),
+      name: displayName,
       email: normalizedEmail,
       password: hashedPassword,
       role: assignedRole,
@@ -455,10 +515,10 @@ export const googleAuth = async (req, res) => {
         message: "Google account successfully registered!"
       });
     } else {
-      return res.status(400).json({ message: "Could not create user account from Google profile." });
+      return res.status(400).json({ message: "Could not create user account from verified Google profile." });
     }
   } catch (error) {
-    console.error("Google Auth error:", error);
+    console.error("Google Auth controller error:", error);
     return res.status(500).json({ message: "Server error during Google authentication: " + error.message });
   }
 };
