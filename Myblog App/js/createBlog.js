@@ -320,6 +320,15 @@ document.addEventListener("DOMContentLoaded", async function () {
                     body: formData
                 });
 
+                if (res.status === 404) {
+                    // Fallback to /api/upload
+                    res = await fetch(API_UPLOAD_URL, {
+                        method: "POST",
+                        headers: { "Authorization": "Bearer " + currentToken },
+                        body: formData
+                    });
+                }
+
                 var data = await res.json();
 
                 if (res.ok && (data.url || data.secure_url)) {

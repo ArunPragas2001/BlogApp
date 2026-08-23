@@ -6,62 +6,43 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// ─── Image file validation ────────────────────────────────────────────────
-function checkImageFileType(file, cb) {
-  const blockedMimes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"];
-  const blockedExts = ["heic", "heif"];
+// ─── File Validation ──────────────────────────────────────────────────────
+const blockedImageMimes = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence"];
+const blockedImageExts = ["heic", "heif"];
+const allowedImageExts = /jpg|jpeg|png|webp|gif|svg|avif|bmp/;
+const allowedVideoExts = /mp4|webm|mov|avi|mkv|m4v|ogv/;
+const allowedVideoMimes = [
+  "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo",
+  "video/x-matroska", "video/x-m4v", "video/ogg"
+];
 
+function checkMediaFileType(file, cb) {
   const extName = path.extname(file.originalname).toLowerCase().replace(".", "");
-  if (blockedMimes.includes(file.mimetype) || blockedExts.includes(extName)) {
+
+  if (blockedImageMimes.includes(file.mimetype) || blockedImageExts.includes(extName)) {
     return cb(new Error("HEIC/HEIF photos are not supported. Please use JPG or PNG."));
   }
 
-  const filetypes = /jpg|jpeg|png|webp|gif|svg|avif|bmp/;
-  const extValid = filetypes.test(extName);
-  const mimeValid = file.mimetype.startsWith("image/") && !blockedMimes.includes(file.mimetype);
+  const isImage = allowedImageExts.test(extName) || file.mimetype.startsWith("image/");
+  const isVideo = allowedVideoExts.test(extName) || allowedVideoMimes.includes(file.mimetype) || file.mimetype.startsWith("video/");
 
-  if (extValid || mimeValid) {
+  if (isImage || isVideo) {
     return cb(null, true);
   }
-  cb(new Error("Images only! (jpg, jpeg, png, webp, gif, svg, avif, bmp)"));
+
+  cb(new Error("Unsupported file format. Supported: JPG, PNG, WEBP, GIF, MP4, WEBM, MOV, AVI, MKV."));
 }
 
-// ─── Video file validation ────────────────────────────────────────────────
-function checkVideoFileType(file, cb) {
-  const allowedExts = /mp4|webm|mov|avi|mkv|m4v|ogv/;
-  const allowedMimes = [
-    "video/mp4", "video/webm", "video/quicktime", "video/x-msvideo",
-    "video/x-matroska", "video/x-m4v", "video/ogg"
-  ];
-
-  const extName = path.extname(file.originalname).toLowerCase().replace(".", "");
-  const extValid = allowedExts.test(extName);
-  const mimeValid = allowedMimes.includes(file.mimetype) || file.mimetype.startsWith("video/");
-
-  if (extValid || mimeValid) {
-    return cb(null, true);
-  }
-  cb(new Error("Unsupported video format. Please use MP4, WebM, MOV, AVI, or MKV."));
-}
-
-// ─── Multer configs ───────────────────────────────────────────────────────
-const imageUpload = multer({
+// ─── Unified Multer Config ────────────────────────────────────────────────
+const mediaUpload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB max for videos, checked in handler
   fileFilter(req, file, cb) {
-    checkImageFileType(file, cb);
+    checkMediaFileType(file, cb);
   }
 });
 
-const videoUpload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100 MB
-  fileFilter(req, file, cb) {
-    checkVideoFileType(file, cb);
-  }
-});
-
-// ─── Cloudinary upload helper ─────────────────────────────────────────────
+// ─── Cloudinary Upload Stream ─────────────────────────────────────────────
 function uploadToCloudinary(buffer, options = {}) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
@@ -81,12 +62,51 @@ function uploadToCloudinary(buffer, options = {}) {
   });
 }
 
-// ─── POST /api/upload  — Image Upload ─────────────────────────────────────
+// ─── Handler for Image/Video Upload ───────────────────────────────────────
+async function handleMediaUpload(req, res, forceVideo = false) {
+  const file = req.file;
+  if (!file) {
+    return res.status(400).json({ message: "No media file provided." });
+  }
+
+  const extName = path.extname(file.originalname).toLowerCase().replace(".", "");
+  const isVideo = forceVideo || allowedVideoExts.test(extName) || allowedVideoMimes.includes(file.mimetype) || file.mimetype.startsWith("video/");
+
+  // File size checks
+  if (!isVideo && file.size > 10 * 1024 * 1024) {
+    return res.status(400).json({ message: "Image must be under 10 MB." });
+  }
+  if (isVideo && file.size > 100 * 1024 * 1024) {
+    return res.status(400).json({ message: "Video must be under 100 MB." });
+  }
+
+  try {
+    const result = await uploadToCloudinary(file.buffer, {
+      folder: isVideo ? "blogsphere_videos" : "blogsphere_uploads",
+      resource_type: isVideo ? "video" : "image"
+    });
+
+    res.json({
+      message: `${isVideo ? "Video" : "Image"} uploaded successfully`,
+      url: result.secure_url,
+      secure_url: result.secure_url,
+      public_id: result.public_id,
+      resource_type: isVideo ? "video" : "image",
+      duration: result.duration || null,
+      format: result.format || null
+    });
+  } catch (uploadErr) {
+    console.error("Cloudinary upload error:", uploadErr.message);
+    res.status(500).json({ message: `Failed to upload to Cloudinary: ${uploadErr.message}` });
+  }
+}
+
+// ─── POST /api/upload (Universal - accepts image, video, file, media) ─────
 router.post("/", protect, (req, res) => {
-  imageUpload.single("image")(req, res, async function (err) {
+  mediaUpload.any()(req, res, function (err) {
     if (err instanceof multer.MulterError) {
       if (err.code === "LIMIT_FILE_SIZE") {
-        return res.status(400).json({ message: "Image must be under 10 MB." });
+        return res.status(400).json({ message: "File size exceeds limit (Max: 100 MB)." });
       }
       return res.status(400).json({ message: `Upload error: ${err.message}` });
     }
@@ -94,32 +114,14 @@ router.post("/", protect, (req, res) => {
       return res.status(400).json({ message: err.message });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ message: "No image file provided." });
-    }
-
-    try {
-      const result = await uploadToCloudinary(req.file.buffer, {
-        folder: "blogsphere_uploads",
-        resource_type: "image"
-      });
-
-      res.json({
-        message: "Image uploaded successfully",
-        url: result.secure_url,
-        secure_url: result.secure_url,
-        public_id: result.public_id
-      });
-    } catch (uploadErr) {
-      console.error("Cloudinary image upload error:", uploadErr.message);
-      res.status(500).json({ message: "Failed to upload image to Cloudinary. " + uploadErr.message });
-    }
+    req.file = req.files && req.files.length > 0 ? req.files[0] : null;
+    return handleMediaUpload(req, res, false);
   });
 });
 
-// ─── POST /api/upload/video  — Video Upload ───────────────────────────────
+// ─── POST /api/upload/video (Explicit video route) ────────────────────────
 router.post("/video", protect, (req, res) => {
-  videoUpload.single("video")(req, res, async function (err) {
+  mediaUpload.any()(req, res, function (err) {
     if (err instanceof multer.MulterError) {
       if (err.code === "LIMIT_FILE_SIZE") {
         return res.status(400).json({ message: "Video must be under 100 MB." });
@@ -130,28 +132,8 @@ router.post("/video", protect, (req, res) => {
       return res.status(400).json({ message: err.message });
     }
 
-    if (!req.file) {
-      return res.status(400).json({ message: "No video file provided." });
-    }
-
-    try {
-      const result = await uploadToCloudinary(req.file.buffer, {
-        folder: "blogsphere_videos",
-        resource_type: "video"
-      });
-
-      res.json({
-        message: "Video uploaded successfully",
-        url: result.secure_url,
-        secure_url: result.secure_url,
-        public_id: result.public_id,
-        duration: result.duration || null,
-        format: result.format || null
-      });
-    } catch (uploadErr) {
-      console.error("Cloudinary video upload error:", uploadErr.message);
-      res.status(500).json({ message: "Failed to upload video to Cloudinary. " + uploadErr.message });
-    }
+    req.file = req.files && req.files.length > 0 ? req.files[0] : null;
+    return handleMediaUpload(req, res, true);
   });
 });
 
