@@ -356,3 +356,108 @@ export const approveAdminRequest = async (req, res) => {
     res.status(500).json({ message: "Error processing admin request", error: error.message });
   }
 };
+
+// ─── Google OAuth Sign-In & Sign-Up ──────────────────────────────────────────
+function parseGoogleJwtPayload(token) {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const base64Url = parts[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = Buffer.from(base64, "base64").toString("utf8");
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
+export const googleAuth = async (req, res) => {
+  try {
+    const { credential, email: bodyEmail, name: bodyName, profilePic: bodyPic, googleId: bodyGoogleId } = req.body;
+
+    let googleData = null;
+
+    if (credential) {
+      googleData = parseGoogleJwtPayload(credential);
+    }
+
+    const email = (googleData && googleData.email) || bodyEmail;
+    const name = (googleData && (googleData.name || googleData.given_name)) || bodyName || "Google User";
+    const profilePic = (googleData && googleData.picture) || bodyPic || "";
+    const googleId = (googleData && googleData.sub) || bodyGoogleId || "";
+
+    if (!email) {
+      return res.status(400).json({ message: "Unable to retrieve email from Google account." });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      if (user.isBlocked) {
+        return res.status(403).json({ message: "Your account has been deactivated. Please contact support." });
+      }
+
+      // Update profile picture if user doesn't have one
+      if ((!user.profilePic || user.profilePic.trim() === "") && profilePic) {
+        user.profilePic = profilePic;
+        await user.save();
+      }
+
+      return res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        adminStatus: user.adminStatus,
+        profilePic: user.profilePic,
+        bio: user.bio,
+        token: generateToken(user._id),
+        message: "Google login successful!"
+      });
+    }
+
+    // New user auto-registration
+    const randomPassword = crypto.randomBytes(24).toString("hex") + "!A1";
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
+    const isOwner = normalizedEmail === OWNER_EMAIL;
+    const assignedRole = isOwner ? "owner" : "user";
+    const assignedAdminStatus = isOwner ? "approved" : "none";
+
+    user = await User.create({
+      name: name.trim(),
+      email: normalizedEmail,
+      password: hashedPassword,
+      role: assignedRole,
+      adminStatus: assignedAdminStatus,
+      profilePic: profilePic || undefined
+    });
+
+    if (user) {
+      sendWelcomeRegistrationEmail(user.name, user.email).catch((err) =>
+        console.warn("Welcome email async notification error:", err.message)
+      );
+
+      return res.status(201).json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        adminStatus: user.adminStatus,
+        profilePic: user.profilePic,
+        bio: user.bio,
+        token: generateToken(user._id),
+        message: "Google account successfully registered!"
+      });
+    } else {
+      return res.status(400).json({ message: "Could not create user account from Google profile." });
+    }
+  } catch (error) {
+    console.error("Google Auth error:", error);
+    return res.status(500).json({ message: "Server error during Google authentication: " + error.message });
+  }
+};
