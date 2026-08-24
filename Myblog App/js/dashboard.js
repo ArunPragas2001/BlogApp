@@ -401,6 +401,7 @@ function openAdminBlogPreview(blogId) {
     var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
     var canEditBlog = isAdminOrOwner || isAuthorOfBlog;
 
+    approveButtons += '<button type="button" style="background:#0EA5E9;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share Post</button>';
     if (canEditBlog) {
         approveButtons += '<button type="button" style="background:#4F46E5;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="closeAdminBlogPreview();editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit Post</button>';
     }
@@ -495,6 +496,7 @@ function renderBlogsList() {
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
                     '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View Blog</button>' +
+                    '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
                     '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
                     '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
                     '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
@@ -528,6 +530,7 @@ function renderBlogsList() {
         var actionsHtml = (
             '<div class="blog-actions">' +
             '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+            '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
             (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
             (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
             '</div>'

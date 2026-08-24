@@ -238,14 +238,35 @@ async function renderHomeBlogs(categoryFilter) {
                 '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
                 '<small style="color:#64748B;font-weight:500;">By ' + esc(authorName) + '</small>' +
                 '</div>' +
+                '<div style="display:flex;align-items:center;gap:10px;margin-top:auto;">' +
                 '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
                 '<i class="fa-solid fa-book-open"></i> Read More' +
                 '</button>' +
+                '<button class="share-card-btn" onclick="BlogShare.openModal(\'' + blogId + '\'); event.stopPropagation();" title="Share Article">' +
+                '<i class="fa-solid fa-share-nodes"></i> Share' +
+                '</button>' +
+                '</div>' +
                 '</div></div>';
         }).join("");
+
+        checkDeepLinkArticle();
     } catch (err) {
         console.error("Home blogs fetch error:", err);
         container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Please check your connection and try again.</p></div>';
+    }
+}
+
+function checkDeepLinkArticle() {
+    try {
+        var params = new URLSearchParams(window.location.search);
+        var targetId = params.get("blogId") || params.get("id");
+        if (targetId) {
+            setTimeout(function () {
+                openArticleReader(targetId);
+            }, 300);
+        }
+    } catch (e) {
+        console.warn("Deep link parse error:", e);
     }
 }
 
