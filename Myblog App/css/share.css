@@ -38,6 +38,70 @@ body.dark-mode .share-card-btn:hover {
     border-color: #4338CA;
 }
 
+/* ─── Like Button Styles ────────────────────────────────────────── */
+.like-card-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 15px;
+    background: #FFF1F2;
+    color: #E11D48;
+    border: 1px solid #FECDD3;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.like-card-btn:hover {
+    background: #E11D48;
+    color: #FFFFFF;
+    border-color: #E11D48;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+}
+
+.like-card-btn.liked {
+    background: #E11D48;
+    color: #FFFFFF;
+    border-color: #E11D48;
+}
+
+.like-card-btn.liked i {
+    animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.share-chip.like {
+    background: #FFF1F2;
+    color: #E11D48;
+    border: 1px solid #FECDD3;
+}
+
+.share-chip.like:hover, .share-chip.like.liked {
+    background: #E11D48;
+    color: #FFFFFF;
+    border-color: #E11D48;
+    transform: translateY(-1px);
+}
+
+body.dark-mode .like-card-btn {
+    background: rgba(225, 29, 72, 0.15);
+    color: #FB7185;
+    border-color: rgba(225, 29, 72, 0.3);
+}
+
+body.dark-mode .like-card-btn.liked {
+    background: #E11D48;
+    color: #FFFFFF;
+}
+
+@keyframes heartPop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.4); }
+    100% { transform: scale(1); }
+}
+
 /* Article Reader Toolbar Share Bar */
 .article-share-bar {
     display: flex;

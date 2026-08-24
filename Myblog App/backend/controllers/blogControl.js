@@ -199,3 +199,45 @@ export const deleteBlog = async (req, res) => {
     res.status(500).json({ message: "Error deleting blog post", error: error.message });
   }
 };
+
+export const toggleLikeBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !id.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ message: "Invalid blog id" });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog post not found" });
+    }
+
+    const userIdStr = req.user._id.toString();
+    if (!blog.likes) blog.likes = [];
+
+    const existingIndex = blog.likes.findIndex(
+      (likeId) => likeId.toString() === userIdStr
+    );
+
+    let isLiked = false;
+    if (existingIndex > -1) {
+      blog.likes.splice(existingIndex, 1);
+      isLiked = false;
+    } else {
+      blog.likes.push(req.user._id);
+      isLiked = true;
+    }
+
+    blog.likesCount = blog.likes.length;
+    await blog.save();
+
+    res.json({
+      _id: blog._id,
+      likesCount: blog.likesCount,
+      likes: blog.likes,
+      isLiked
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error toggling like", error: error.message });
+  }
+};

@@ -338,37 +338,82 @@ async function deleteUserDashboard(userId, name) {
 
 async function displayBlogs() {
     var blogContainer = document.getElementById("blogContainer");
-    var adminApprovalSection = document.getElementById("adminApprovalSection");
-    var adminPendingContainer = document.getElementById("adminPendingContainer");
-    var pendingAdminCount = document.getElementById("pendingAdminCount");
     var currentUser = getCurrentUser();
 
     if (!blogContainer) return;
 
-    blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading blogs…</div>';
+    // 1. Instant cached load from localStorage (0ms)
+    try {
+        var localData = localStorage.getItem("cached_dash_blogs");
+        if (localData) {
+            var parsed = JSON.parse(localData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                window.allBlogs = parsed;
+                var myBlogsCache = parsed;
+                if (currentUser && currentUser.role === "user") {
+                    myBlogsCache = parsed.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+                }
+                window.allMyBlogs = myBlogsCache;
+                window.currentFilter = window.currentFilter || 'all';
+                updateStatistics(myBlogsCache);
+                renderBlogsList();
+                if (window.hidePageLoader) window.hidePageLoader();
+            }
+        }
+    } catch (e) {}
 
+    if (!window.allBlogs || window.allBlogs.length === 0) {
+        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading blogs…</div>';
+    }
+
+    // 2. Fetch fresh data with 3.5s timeout + fallback
     try {
         var token = localStorage.getItem("token");
         var headers = token ? { "Authorization": "Bearer " + token } : {};
-        var response = await fetch(API_BLOGS_URL + "?all=true", { headers: headers });
-        if (!response.ok) throw new Error("Failed to fetch blogs");
 
-        var blogs = await response.json();
-        window.allBlogs = blogs;
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 3500);
 
-        var myBlogs = blogs;
-        if (currentUser && currentUser.role === "user") {
-            myBlogs = blogs.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+        var blogs = [];
+        try {
+            var response = await fetch(API_BLOGS_URL + "?all=true", { headers: headers, signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (response.ok) blogs = await response.json();
+        } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            var fallbackUrl = API_BASE_URL.includes("localhost")
+                ? "https://blogsphere-wtrv.onrender.com/api/blogs?all=true"
+                : "http://localhost:5000/api/blogs?all=true";
+            try {
+                var fallbackRes = await fetch(fallbackUrl, { headers: headers });
+                if (fallbackRes.ok) blogs = await fallbackRes.json();
+            } catch (err2) {
+                console.warn("Dashboard fallback fetch error:", err2);
+            }
         }
-        window.allMyBlogs = myBlogs;
-        window.currentFilter = window.currentFilter || 'all';
 
-        updateStatistics(myBlogs);
-        renderBlogsList();
+        if (Array.isArray(blogs) && blogs.length > 0) {
+            window.allBlogs = blogs;
+            try {
+                localStorage.setItem("cached_dash_blogs", JSON.stringify(blogs));
+            } catch (e) {}
+
+            var myBlogs = blogs;
+            if (currentUser && currentUser.role === "user") {
+                myBlogs = blogs.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+            }
+            window.allMyBlogs = myBlogs;
+            window.currentFilter = window.currentFilter || 'all';
+
+            updateStatistics(myBlogs);
+            renderBlogsList();
+        }
 
     } catch (error) {
         console.error("Fetch dashboard blogs error:", error);
-        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
+        if (!window.allBlogs || window.allBlogs.length === 0) {
+            blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
+        }
     } finally {
         if (window.hidePageLoader) window.hidePageLoader();
     }

@@ -42,6 +42,16 @@ const blogSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    likesCount: {
+      type: Number,
+      default: 0
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
