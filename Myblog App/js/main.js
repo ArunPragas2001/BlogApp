@@ -395,7 +395,7 @@ function renderBlogCardsList(blogsList, container) {
         var mediaHtml;
         if (hasVideo) {
             mediaHtml =
-                '<div class="blog-card-image-wrap" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;">' +
+                '<div class="blog-card-image-wrap" ondblclick="handleInstagramDblClick(this, \'' + blogId + '\', event)" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;cursor:pointer;">' +
                 '<video autoplay muted loop playsinline preload="auto" style="width:100%;max-height:240px;display:block;background:#000;object-fit:cover;" poster="' + esc(imageSrc) + '">' +
                 '<source src="' + esc(videoSrc) + '">' +
                 'Your browser does not support video.' +
@@ -404,7 +404,7 @@ function renderBlogCardsList(blogsList, container) {
                 '</div>';
         } else {
             mediaHtml =
-                '<div class="blog-card-image-wrap" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;">' +
+                '<div class="blog-card-image-wrap" ondblclick="handleInstagramDblClick(this, \'' + blogId + '\', event)" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;cursor:pointer;">' +
                 '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
                 '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
                 'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
@@ -425,17 +425,19 @@ function renderBlogCardsList(blogsList, container) {
             '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
             '<small style="color:#64748B;font-weight:500;">By ' + esc(authorName) + '</small>' +
             '</div>' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-top:auto;flex-wrap:wrap;">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid #F1F5F9;">' +
             '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
             '<i class="fa-solid fa-book-open"></i> Read' +
             '</button>' +
-            '<button class="like-card-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
-            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> ' +
+            '<div style="display:flex;align-items:center;gap:6px;">' +
+            '<button class="insta-heart-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
             '<span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span>' +
             '</button>' +
             '<button class="share-card-btn" onclick="BlogShare.openModal(\'' + blogId + '\'); event.stopPropagation();" title="Share Article">' +
             '<i class="fa-solid fa-share-nodes"></i> Share' +
             '</button>' +
+            '</div>' +
             '</div>' +
             '</div></div>';
     }).join("");

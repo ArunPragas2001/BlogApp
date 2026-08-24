@@ -592,7 +592,7 @@ function renderBlogsList() {
         var actionsHtml = (
             '<div class="blog-actions">' +
             '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
-            '<button class="edit-btn like-card-btn ' + (isLiked ? 'liked' : '') + '" style="padding:6px 12px;font-size:0.82rem;" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span></button>' +
+            '<button class="insta-heart-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span></button>' +
             '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
             (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
             (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
