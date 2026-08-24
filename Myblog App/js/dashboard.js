@@ -582,9 +582,17 @@ function renderBlogsList() {
         var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
         var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
 
+        var currentUserObj = getCurrentUser();
+        var userIdStr = currentUserObj ? String(currentUserObj.id || currentUserObj._id) : "";
+        var isLiked = currentUserObj
+            ? (blog.likes && Array.isArray(blog.likes) && blog.likes.some(function(l){ return String(l._id || l.id || l) === userIdStr; }))
+            : (JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]").includes(String(blogId)));
+        var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+
         var actionsHtml = (
             '<div class="blog-actions">' +
             '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+            '<button class="edit-btn like-card-btn ' + (isLiked ? 'liked' : '') + '" style="padding:6px 12px;font-size:0.82rem;" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span></button>' +
             '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
             (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
             (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
@@ -672,4 +680,87 @@ document.addEventListener("DOMContentLoaded", async function () {
     displayOwnerUserManagement();
     displayBlogs();
 });
+
+async function handleToggleLike(blogId, btnEl, event) {
+    if (event) event.stopPropagation();
+
+    var blog = (window.allBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, likesCount: 0, likes: [] };
+
+    var currentUser = getCurrentUser();
+    var userIdStr = currentUser ? String(currentUser.id || currentUser._id) : "";
+    var isLiked = currentUser
+        ? (blog.likes && Array.isArray(blog.likes) && blog.likes.some(function (l) { return String(l._id || l.id || l) === userIdStr; }))
+        : (JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]").includes(String(blogId)));
+
+    var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+    var newIsLiked = !isLiked;
+    var newCount = newIsLiked ? (likesCount + 1) : Math.max(0, likesCount - 1);
+
+    blog.likesCount = newCount;
+    if (currentUser) {
+        if (!blog.likes) blog.likes = [];
+        if (newIsLiked) {
+            if (!blog.likes.some(function (l) { return String(l._id || l.id || l) === userIdStr; })) {
+                blog.likes.push(userIdStr);
+            }
+        } else {
+            blog.likes = blog.likes.filter(function (l) { return String(l._id || l.id || l) !== userIdStr; });
+        }
+    } else {
+        var guestLikes = JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]");
+        if (newIsLiked) {
+            if (!guestLikes.includes(String(blogId))) guestLikes.push(String(blogId));
+        } else {
+            guestLikes = guestLikes.filter(function (id) { return id !== String(blogId); });
+        }
+        localStorage.setItem("guest_liked_blogs", JSON.stringify(guestLikes));
+    }
+
+    var targets = document.querySelectorAll('[data-like-blog-id="' + blogId + '"]');
+    targets.forEach(function (btn) {
+        if (newIsLiked) {
+            btn.classList.add("liked");
+        } else {
+            btn.classList.remove("liked");
+        }
+        var icon = btn.querySelector("i");
+        if (icon) {
+            icon.className = newIsLiked ? "fa-solid fa-heart" : "fa-regular fa-heart";
+        }
+        var countEl = btn.querySelector(".like-count") || btn.querySelector(".like-count-num");
+        if (countEl) {
+            countEl.textContent = newCount > 0 ? newCount : '';
+        }
+    });
+
+    var token = localStorage.getItem("token");
+    if (token) {
+        try {
+            var res = await fetch(API_BASE_URL + "/api/blogs/" + blogId + "/like", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            if (res.ok) {
+                var data = await res.json();
+                blog.likesCount = data.likesCount;
+                blog.likes = data.likes;
+            }
+        } catch (err) {
+            console.warn("Dashboard like API error:", err);
+        }
+    } else {
+        if (typeof showToast === "function") {
+            showToast(newIsLiked ? "❤️ Post liked!" : "Unliked post", "info", 1500);
+        }
+    }
+
+    try {
+        localStorage.setItem("cached_dash_blogs", JSON.stringify(window.allBlogs));
+    } catch (e) {}
+}
+window.handleToggleLike = handleToggleLike;
 

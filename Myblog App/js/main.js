@@ -344,6 +344,31 @@ function updateLikeButtonUI(blogId, isLiked, count) {
         }
     });
 }
+function triggerInstaHeartPop(containerEl) {
+    if (!containerEl) return;
+    var heart = containerEl.querySelector(".insta-big-heart-overlay");
+    if (!heart) {
+        heart = document.createElement("i");
+        heart.className = "fa-solid fa-heart insta-big-heart-overlay";
+        containerEl.appendChild(heart);
+    }
+    heart.classList.remove("animate");
+    void heart.offsetWidth;
+    heart.classList.add("animate");
+}
+window.triggerInstaHeartPop = triggerInstaHeartPop;
+
+function handleInstagramDblClick(containerEl, blogId, event) {
+    triggerInstaHeartPop(containerEl);
+    var blog = (cachedBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, likesCount: 0, likes: [] };
+
+    var isLiked = checkIsBlogLiked(blog);
+    if (!isLiked) {
+        handleToggleLike(blogId, null, event);
+    }
+}
+window.handleInstagramDblClick = handleInstagramDblClick;
 
 function renderBlogCardsList(blogsList, container) {
     if (!container) return;
