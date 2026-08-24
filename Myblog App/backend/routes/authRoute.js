@@ -7,14 +7,18 @@ import {
   getMe,
   updateUserProfile,
   getPendingAdminRequests,
-  approveAdminRequest
+  approveAdminRequest,
+  googleAuth,
+  getGoogleClientId
 } from "../controllers/authControl.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
+router.get("/google-client-id", getGoogleClientId);
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/google", googleAuth);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 

@@ -1,4 +1,11 @@
-const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_BASE_URL = (typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:" ||
+    window.location.hostname === ""
+))
+    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
+    : "https://blogsphere-wtrv.onrender.com";
 const API_PROFILE_URL = `${API_BASE_URL}/api/auth/profile`;
 const API_ME_URL = `${API_BASE_URL}/api/auth/me`;
 const API_UPLOAD_URL = `${API_BASE_URL}/api/upload`;
@@ -265,6 +272,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (bioInput && cached.bio) bioInput.value = cached.bio;
         updateAllAvatars(cached.profilePic, cached.name);
         showToast("Using cached profile data (server unreachable).", "warning");
+    } finally {
+        if (window.hidePageLoader) window.hidePageLoader();
     }
 
     if (form) {

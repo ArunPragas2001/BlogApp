@@ -1,4 +1,11 @@
-const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_BASE_URL = (typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:" ||
+    window.location.hostname === ""
+))
+    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
+    : "https://blogsphere-wtrv.onrender.com";
 const API_URL = `${API_BASE_URL}/api/auth/register`;
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -198,4 +205,175 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         }
     });
+
+    // ─── Terms & Privacy Modal Logic ─────────────────────────────────────────
+    const termsModal = document.getElementById("termsModal");
+    const openTermsLink = document.getElementById("openTermsLink");
+    const closeTermsBtn = document.getElementById("closeTermsBtn");
+    const closeTermsBottomBtn = document.getElementById("closeTermsBottomBtn");
+    const agreeTermsBtn = document.getElementById("agreeTermsBtn");
+
+    function openTermsModal() {
+        if (termsModal) {
+            termsModal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+        }
+    }
+
+    function closeTermsModal() {
+        if (termsModal) {
+            termsModal.style.display = "none";
+            document.body.style.overflow = "auto";
+        }
+    }
+
+    if (openTermsLink) {
+        openTermsLink.addEventListener("click", function (e) {
+            e.preventDefault();
+            openTermsModal();
+        });
+    }
+
+    if (closeTermsBtn) closeTermsBtn.addEventListener("click", closeTermsModal);
+    if (closeTermsBottomBtn) closeTermsBottomBtn.addEventListener("click", closeTermsModal);
+
+    if (agreeTermsBtn) {
+        agreeTermsBtn.addEventListener("click", function () {
+            if (termsCheckbox) {
+                termsCheckbox.checked = true;
+                clearError("termsError");
+            }
+            closeTermsModal();
+            showToast("Terms of Service & Privacy Policy accepted.", "success", 3000);
+        });
+    }
+
+    if (termsModal) {
+        termsModal.addEventListener("click", function (e) {
+            if (e.target === termsModal) closeTermsModal();
+        });
+    }
+
+    // ─── Real Google Identity Services (GIS) Sign-Up Flow ───────────────────
+    async function handleGoogleSignUpCredentialResponse(response) {
+        if (!response || !response.credential) {
+            showToast("Google registration was cancelled or did not return a credential.", "error");
+            return;
+        }
+
+        const wrapper = document.getElementById("googleSignUpBtnWrapper");
+        if (wrapper) {
+            wrapper.style.opacity = "0.6";
+            wrapper.style.pointerEvents = "none";
+        }
+
+        try {
+            // Strictly send the signed Google ID token credential to backend for cryptographic verification
+            const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Google registration verification failed.", "error", 6000);
+                if (wrapper) {
+                    wrapper.style.opacity = "1";
+                    wrapper.style.pointerEvents = "auto";
+                }
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("currentUser", JSON.stringify({
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                adminStatus: data.adminStatus,
+                profilePic: data.profilePic,
+                bio: data.bio
+            }));
+
+            showToast("🎉 Welcome to BlogSphere, " + (data.name || "User") + "!", "success", 3000);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (err) {
+            console.error("Google Sign-Up verification error:", err);
+            showToast("Unable to connect to registration server. Please try again.", "error");
+            if (wrapper) {
+                wrapper.style.opacity = "1";
+                wrapper.style.pointerEvents = "auto";
+            }
+        }
+    }
+
+    async function initGoogleSignUp() {
+        const container = document.getElementById("g_id_signup");
+        if (!container) return;
+
+        let clientId = "";
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google-client-id`);
+            if (res.ok) {
+                const data = await res.json();
+                clientId = data.clientId || "";
+            }
+        } catch (e) {
+            console.warn("Could not fetch Google Client ID from backend:", e);
+        }
+
+        if (window.location.protocol === "file:") {
+            container.innerHTML = '<div style="font-size:0.85rem; color:#EA4335; text-align:center; padding:10px 14px; border:1.5px dashed #FCA5A5; border-radius:12px; background:#FEF2F2; line-height:1.4; max-width:340px; margin:0 auto;">' +
+                '<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px; font-size:1rem;"></i>' +
+                '<strong>Local Server Required</strong><br>' +
+                'Google OAuth does not support <code style="background:#FEE2E2; padding:2px 4px; border-radius:4px; font-weight:600;">file:///</code>.<br>' +
+                'Please open: <a href="http://localhost:5000/register.html" style="color:#4F46E5; font-weight:700; text-decoration:underline;">http://localhost:5000/register.html</a>' +
+                '</div>';
+            return;
+        }
+
+        if (!clientId) {
+            container.innerHTML = '<div style="font-size:0.82rem; color:#94A3B8; text-align:center; padding:8px 12px; border:1px dashed #CBD5E1; border-radius:10px;">' +
+                '<i class="fa-brands fa-google" style="color:#4F46E5; margin-right:5px;"></i>' +
+                '<span>Google Sign-Up ready. Set <code style="color:#4F46E5;">GOOGLE_CLIENT_ID</code> in .env to activate.</span>' +
+                '</div>';
+            return;
+        }
+
+        function renderGoogleRegisterButton() {
+            if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+                try {
+                    google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: handleGoogleSignUpCredentialResponse,
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+
+                    const isDarkMode = document.body.classList.contains("dark-mode");
+                    google.accounts.id.renderButton(container, {
+                        type: "standard",
+                        theme: isDarkMode ? "filled_black" : "outline",
+                        size: "large",
+                        text: "signup_with",
+                        shape: "pill",
+                        logo_alignment: "left",
+                        width: 320
+                    });
+                } catch (err) {
+                    console.error("Google button render error:", err);
+                }
+            } else {
+                setTimeout(renderGoogleRegisterButton, 200);
+            }
+        }
+
+        renderGoogleRegisterButton();
+    }
+
+    setTimeout(initGoogleSignUp, 150);
 });

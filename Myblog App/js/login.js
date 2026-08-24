@@ -1,4 +1,11 @@
-const API_BASE_URL = "https://blogsphere-wtrv.onrender.com";
+const API_BASE_URL = (typeof window !== "undefined" && (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1" ||
+    window.location.protocol === "file:" ||
+    window.location.hostname === ""
+))
+    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
+    : "https://blogsphere-wtrv.onrender.com";
 const API_URL = `${API_BASE_URL}/api/auth/login`;
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -140,11 +147,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function openForgotModal() {
         if (!forgotModal) return;
         forgotModal.style.display = "flex";
+        document.body.style.overflow = "hidden";
         if (forgotStep1) forgotStep1.style.display = "block";
         if (forgotStep2) forgotStep2.style.display = "none";
         if (forgotEmailInput) {
             forgotEmailInput.value = emailInput ? emailInput.value.trim() : "";
-            forgotEmailInput.focus();
+            setTimeout(() => forgotEmailInput.focus(), 80);
         }
         if (forgotStep1Error) forgotStep1Error.style.display = "none";
         if (forgotStep2Error) forgotStep2Error.style.display = "none";
@@ -153,6 +161,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeForgotModal() {
         if (!forgotModal) return;
         forgotModal.style.display = "none";
+        document.body.style.overflow = "";
     }
 
     if (forgotPasswordBtn) {
@@ -221,7 +230,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     resetCodeInput.focus();
                 }
 
-                showToast(data.message || "A verification code has been sent to your email. Please check your inbox.", "success", 7000);
+                if (data.emailSent === false) {
+                    showToast("ℹ️ Server email service is in local development mode. Check the backend server console log for your 6-digit code!", "info", 12000);
+                } else {
+                    showToast(data.message || "A verification code has been sent to your email. Please check your inbox.", "success", 7000);
+                }
             } catch (err) {
                 console.error("Forgot password error:", err);
                 if (forgotStep1Error) {
@@ -311,4 +324,127 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     }
+
+    // ─── Real Google Identity Services (GIS) Sign-In Flow ───────────────────
+    async function handleGoogleCredentialResponse(response) {
+        if (!response || !response.credential) {
+            showToast("Google authentication was cancelled or did not return a credential.", "error");
+            return;
+        }
+
+        const wrapper = document.getElementById("googleSignInBtnWrapper");
+        if (wrapper) {
+            wrapper.style.opacity = "0.6";
+            wrapper.style.pointerEvents = "none";
+        }
+
+        try {
+            // Strictly send the signed Google ID token credential to backend for cryptographic verification
+            const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ credential: response.credential })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                showToast(data.message || "Google authentication verification failed.", "error", 6000);
+                if (wrapper) {
+                    wrapper.style.opacity = "1";
+                    wrapper.style.pointerEvents = "auto";
+                }
+                return;
+            }
+
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("currentUser", JSON.stringify({
+                id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                adminStatus: data.adminStatus,
+                profilePic: data.profilePic,
+                bio: data.bio
+            }));
+
+            showToast("🎉 Welcome, " + (data.name || "User") + "! Logging you in...", "success", 3000);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        } catch (err) {
+            console.error("Google Auth verification error:", err);
+            showToast("Unable to connect to authentication server. Please try again.", "error");
+            if (wrapper) {
+                wrapper.style.opacity = "1";
+                wrapper.style.pointerEvents = "auto";
+            }
+        }
+    }
+
+    async function initGoogleAuth() {
+        const container = document.getElementById("g_id_signin");
+        if (!container) return;
+
+        let clientId = "";
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/google-client-id`);
+            if (res.ok) {
+                const data = await res.json();
+                clientId = data.clientId || "";
+            }
+        } catch (e) {
+            console.warn("Could not fetch Google Client ID from backend:", e);
+        }
+
+        if (window.location.protocol === "file:") {
+            container.innerHTML = '<div style="font-size:0.85rem; color:#EA4335; text-align:center; padding:10px 14px; border:1.5px dashed #FCA5A5; border-radius:12px; background:#FEF2F2; line-height:1.4; max-width:340px; margin:0 auto;">' +
+                '<i class="fa-solid fa-triangle-exclamation" style="margin-right:6px; font-size:1rem;"></i>' +
+                '<strong>Local Server Required</strong><br>' +
+                'Google OAuth does not support <code style="background:#FEE2E2; padding:2px 4px; border-radius:4px; font-weight:600;">file:///</code>.<br>' +
+                'Please open: <a href="http://localhost:5000/login.html" style="color:#4F46E5; font-weight:700; text-decoration:underline;">http://localhost:5000/login.html</a>' +
+                '</div>';
+            return;
+        }
+
+        if (!clientId) {
+            container.innerHTML = '<div style="font-size:0.82rem; color:#94A3B8; text-align:center; padding:8px 12px; border:1px dashed #CBD5E1; border-radius:10px;">' +
+                '<i class="fa-brands fa-google" style="color:#4F46E5; margin-right:5px;"></i>' +
+                '<span>Google Sign-In ready. Set <code style="color:#4F46E5;">GOOGLE_CLIENT_ID</code> in .env to activate.</span>' +
+                '</div>';
+            return;
+        }
+
+        function renderGoogleButton() {
+            if (typeof google !== "undefined" && google.accounts && google.accounts.id) {
+                try {
+                    google.accounts.id.initialize({
+                        client_id: clientId,
+                        callback: handleGoogleCredentialResponse,
+                        auto_select: false,
+                        cancel_on_tap_outside: true
+                    });
+
+                    const isDarkMode = document.body.classList.contains("dark-mode");
+                    google.accounts.id.renderButton(container, {
+                        type: "standard",
+                        theme: isDarkMode ? "filled_black" : "outline",
+                        size: "large",
+                        text: "signin_with",
+                        shape: "pill",
+                        logo_alignment: "left",
+                        width: 320
+                    });
+                } catch (err) {
+                    console.error("Google button render error:", err);
+                }
+            } else {
+                setTimeout(renderGoogleButton, 200);
+            }
+        }
+
+        renderGoogleButton();
+    }
+
+    setTimeout(initGoogleAuth, 150);
 });
