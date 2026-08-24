@@ -6,7 +6,8 @@ import {
   updateBlog,
   approveBlog,
   deleteBlog,
-  toggleLikeBlog
+  toggleLikeBlog,
+  addCommentToBlog
 } from "../controllers/blogControl.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -18,6 +19,7 @@ router.route("/")
 
 router.put("/:id/approve", protect, approveBlog);
 router.put("/:id/like", protect, toggleLikeBlog);
+router.post("/:id/comments", addCommentToBlog);
 
 router.route("/:id")
   .get(getBlogById)

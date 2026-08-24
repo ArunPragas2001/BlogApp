@@ -241,3 +241,45 @@ export const toggleLikeBlog = async (req, res) => {
     res.status(500).json({ message: "Error toggling like", error: error.message });
   }
 };
+
+export const addCommentToBlog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { text, authorName, userAvatar } = req.body;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ message: "Comment text is required" });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ message: "Blog post not found" });
+    }
+
+    const commenterName = req.user ? (req.user.name || req.user.email) : (authorName || "Anonymous Reader");
+    const commenterAvatar = req.user ? (req.user.profilePic || "") : (userAvatar || "");
+
+    const newComment = {
+      user: req.user ? req.user._id : null,
+      userName: commenterName,
+      userAvatar: commenterAvatar,
+      text: text.trim(),
+      createdAt: new Date()
+    };
+
+    if (!blog.comments) blog.comments = [];
+    blog.comments.push(newComment);
+    blog.commentsCount = blog.comments.length;
+
+    await blog.save();
+
+    res.status(201).json({
+      _id: blog._id,
+      comments: blog.comments,
+      commentsCount: blog.commentsCount,
+      newComment
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error adding comment", error: error.message });
+  }
+};

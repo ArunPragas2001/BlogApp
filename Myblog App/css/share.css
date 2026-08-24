@@ -64,7 +64,7 @@ body.dark-mode .insta-action-bar {
     border: none;
     padding: 6px 8px;
     font-size: 1.35rem;
-    color: #475569;
+    color: #0F172A;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -90,7 +90,7 @@ body.dark-mode .insta-action-bar {
 .insta-action-icon-btn.like-btn .like-count {
     font-size: 0.9rem;
     font-weight: 700;
-    color: #475569;
+    color: #0F172A;
 }
 
 .insta-action-icon-btn.like-btn.liked .like-count {
@@ -103,16 +103,163 @@ body.dark-mode .insta-action-bar {
     transform: scale(1.15) rotate(-15deg) translateY(-2px);
 }
 
-body.dark-mode .insta-action-icon-btn {
-    color: #CBD5E1;
+/* Comment Icon Hover */
+.insta-action-icon-btn.comment-btn:hover {
+    color: #0EA5E9;
+    transform: scale(1.18);
 }
 
-body.dark-mode .insta-action-icon-btn.like-btn .like-count {
-    color: #CBD5E1;
+.insta-action-icon-btn .comment-count {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+/* NIGHT MODE / DARK MODE HIGH VISIBILITY */
+body.dark-mode .insta-action-icon-btn {
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .insta-action-icon-btn.like-btn .like-count,
+body.dark-mode .insta-action-icon-btn .comment-count {
+    color: #F8FAFC !important;
+}
+
+body.dark-mode .insta-action-icon-btn.like-btn.liked {
+    color: #FF3040 !important;
 }
 
 body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count {
-    color: #FF3040;
+    color: #FF3040 !important;
+}
+
+/* Comments Section Container */
+.blog-comments-container {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #E2E8F0;
+}
+
+body.dark-mode .blog-comments-container {
+    border-top-color: #334155;
+}
+
+.comments-heading {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+body.dark-mode .comments-heading {
+    color: #F8FAFC;
+}
+
+.comment-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.comment-input-field {
+    flex: 1;
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 20px;
+    padding: 10px 18px;
+    font-size: 0.9rem;
+    color: #0F172A;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+.comment-input-field:focus {
+    border-color: #4F46E5;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+}
+
+body.dark-mode .comment-input-field {
+    background: #0F172A;
+    border-color: #475569;
+    color: #F8FAFC;
+}
+
+body.dark-mode .comment-input-field:focus {
+    border-color: #818CF8;
+    background: #1E293B;
+}
+
+.comment-post-btn {
+    padding: 10px 20px;
+    background: #4F46E5;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.comment-post-btn:hover {
+    background: #4338CA;
+    transform: translateY(-1px);
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.comment-item {
+    display: flex;
+    gap: 10px;
+    background: #F8FAFC;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1px solid #E2E8F0;
+}
+
+body.dark-mode .comment-item {
+    background: #0F172A;
+    border-color: #334155;
+}
+
+.comment-item img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.comment-author-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 2px;
+}
+
+body.dark-mode .comment-author-name {
+    color: #F8FAFC;
+}
+
+.comment-text {
+    font-size: 0.88rem;
+    color: #334155;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+body.dark-mode .comment-text {
+    color: #CBD5E1;
 }
 
 .insta-read-btn {

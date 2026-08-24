@@ -201,7 +201,7 @@ function openArticleReader(blogId) {
     if (titleEl) titleEl.textContent = blog.title || "";
     if (contentEl) contentEl.textContent = blog.content || "";
 
-    // Render Share & Like Toolbar inside Article Reader
+    // Render Share & Like & Comment Toolbar inside Article Reader
     var shareBar = document.getElementById("articleReaderShareBar");
     if (!shareBar && meta && meta.parentNode) {
         shareBar = document.createElement("div");
@@ -212,6 +212,7 @@ function openArticleReader(blogId) {
     if (shareBar) {
         var isLiked = checkIsBlogLiked(blog);
         var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+        var commentsCount = blog.commentsCount || (blog.comments ? blog.comments.length : 0);
         var bTitleEsc = esc(blog.title || "").replace(/'/g, "\\'");
 
         shareBar.innerHTML =
@@ -220,6 +221,10 @@ function openArticleReader(blogId) {
             '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
             '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
             '<span class="like-count-num">' + (likesCount > 0 ? likesCount + ' Likes' : 'Like') + '</span>' +
+            '</button>' +
+            '<button class="insta-action-icon-btn comment-btn" onclick="focusArticleCommentInput();" title="Comment">' +
+            '<i class="fa-regular fa-comment"></i>' +
+            '<span class="comment-count" data-comment-blog-id="' + blogId + '">' + (commentsCount > 0 ? commentsCount : '') + '</span>' +
             '</button>' +
             '<button class="insta-action-icon-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post">' +
             '<i class="fa-regular fa-paper-plane"></i>' +
@@ -233,6 +238,18 @@ function openArticleReader(blogId) {
             '<button class="share-chip copy" onclick="BlogShare.copy(\'' + blogId + '\', this)"><i class="fa-regular fa-copy"></i></button>' +
             '</div>' +
             '</div>';
+    }
+
+    // Render Comments Section inside Article Reader
+    var commentsSection = document.getElementById("articleReaderCommentsSection");
+    if (!commentsSection && contentEl && contentEl.parentNode) {
+        commentsSection = document.createElement("div");
+        commentsSection.id = "articleReaderCommentsSection";
+        commentsSection.className = "blog-comments-container";
+        contentEl.parentNode.appendChild(commentsSection);
+    }
+    if (commentsSection) {
+        renderArticleComments(blog, commentsSection);
     }
 
     overlay.classList.add("active");
