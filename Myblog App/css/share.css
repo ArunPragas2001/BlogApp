@@ -38,56 +38,103 @@ body.dark-mode .share-card-btn:hover {
     border-color: #4338CA;
 }
 
-/* ─── Simple Instagram Heart Button & Double-Tap Popup Styles ─────── */
-.insta-heart-btn {
+/* ─── Instagram Action Bar & Icon Buttons ────────────────────────── */
+.insta-action-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 12px;
+    margin-top: auto;
+    border-top: 1px solid #F1F5F9;
+    width: 100%;
+}
+
+body.dark-mode .insta-action-bar {
+    border-top-color: #334155;
+}
+
+.insta-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.insta-action-icon-btn {
     background: transparent;
     border: none;
-    padding: 6px 10px;
-    font-size: 1.15rem;
-    color: #64748B;
+    padding: 6px 8px;
+    font-size: 1.35rem;
+    color: #475569;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    transition: all 0.2s ease;
-    border-radius: 8px;
+    gap: 6px;
+    border-radius: 50%;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.insta-heart-btn:hover {
+.insta-action-icon-btn.like-btn:hover {
     color: #FF3040;
-    background: rgba(255, 48, 64, 0.08);
-    transform: scale(1.1);
+    transform: scale(1.2);
 }
 
-.insta-heart-btn.liked {
+.insta-action-icon-btn.like-btn.liked {
     color: #FF3040 !important;
 }
 
-.insta-heart-btn.liked i {
+.insta-action-icon-btn.like-btn.liked i {
     color: #FF3040 !important;
     animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.insta-heart-btn .like-count {
-    font-size: 0.88rem;
+.insta-action-icon-btn.like-btn .like-count {
+    font-size: 0.9rem;
     font-weight: 700;
     color: #475569;
 }
 
-.insta-heart-btn.liked .like-count {
+.insta-action-icon-btn.like-btn.liked .like-count {
     color: #FF3040;
 }
 
-body.dark-mode .insta-heart-btn {
-    color: #94A3B8;
+/* Paper Airplane Share Takeoff Effect */
+.insta-action-icon-btn.share-btn:hover {
+    color: #4F46E5;
+    transform: scale(1.15) rotate(-15deg) translateY(-2px);
 }
 
-body.dark-mode .insta-heart-btn .like-count {
+body.dark-mode .insta-action-icon-btn {
     color: #CBD5E1;
 }
 
-body.dark-mode .insta-heart-btn.liked .like-count {
+body.dark-mode .insta-action-icon-btn.like-btn .like-count {
+    color: #CBD5E1;
+}
+
+body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count {
     color: #FF3040;
+}
+
+.insta-read-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 16px;
+    background: linear-gradient(135deg, #4F46E5, #6366F1);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.insta-read-btn:hover {
+    background: linear-gradient(135deg, #4338CA, #4F46E5);
+    transform: translateY(-1.5px);
+    box-shadow: 0 6px 16px rgba(79, 70, 229, 0.35);
 }
 
 /* Instagram Double Click Central Heart Popup */

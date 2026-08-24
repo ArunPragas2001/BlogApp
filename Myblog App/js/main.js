@@ -216,19 +216,21 @@ function openArticleReader(blogId) {
 
         shareBar.innerHTML =
             '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">' +
-            '<div style="display:flex;align-items:center;gap:8px;">' +
-            '<button class="share-chip like ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)">' +
-            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> ' +
+            '<div class="insta-actions-left">' +
+            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
             '<span class="like-count-num">' + (likesCount > 0 ? likesCount + ' Likes' : 'Like') + '</span>' +
+            '</button>' +
+            '<button class="insta-action-icon-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post">' +
+            '<i class="fa-regular fa-paper-plane"></i>' +
             '</button>' +
             '</div>' +
             '<div class="article-share-chips">' +
-            '<span class="article-share-label"><i class="fa-solid fa-share-nodes" style="color:#4F46E5;"></i> Share:</span>' +
+            '<span class="article-share-label">Quick Share:</span>' +
             '<button class="share-chip wa" onclick="BlogShare.whatsapp(\'' + blogId + '\', \'' + bTitleEsc + '\')"><i class="fa-brands fa-whatsapp"></i></button>' +
             '<button class="share-chip insta" onclick="BlogShare.instagram(\'' + blogId + '\', \'' + bTitleEsc + '\')"><i class="fa-brands fa-instagram"></i></button>' +
             '<button class="share-chip fb" onclick="BlogShare.facebook(\'' + blogId + '\')"><i class="fa-brands fa-facebook-f"></i></button>' +
             '<button class="share-chip copy" onclick="BlogShare.copy(\'' + blogId + '\', this)"><i class="fa-regular fa-copy"></i></button>' +
-            '<button class="share-chip more" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-ellipsis"></i> More</button>' +
             '</div>' +
             '</div>';
     }
@@ -425,19 +427,19 @@ function renderBlogCardsList(blogsList, container) {
             '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:26px;height:26px;border-radius:50%;object-fit:cover;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
             '<small style="color:#64748B;font-weight:500;">By ' + esc(authorName) + '</small>' +
             '</div>' +
-            '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:auto;padding-top:10px;border-top:1px solid #F1F5F9;">' +
-            '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
-            '<i class="fa-solid fa-book-open"></i> Read' +
-            '</button>' +
-            '<div style="display:flex;align-items:center;gap:6px;">' +
-            '<button class="insta-heart-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<div class="insta-action-bar">' +
+            '<div class="insta-actions-left">' +
+            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
             '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
             '<span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span>' +
             '</button>' +
-            '<button class="share-card-btn" onclick="BlogShare.openModal(\'' + blogId + '\'); event.stopPropagation();" title="Share Article">' +
-            '<i class="fa-solid fa-share-nodes"></i> Share' +
+            '<button class="insta-action-icon-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\'); event.stopPropagation();" title="Share Post">' +
+            '<i class="fa-regular fa-paper-plane"></i>' +
             '</button>' +
             '</div>' +
+            '<button class="insta-read-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
+            '<i class="fa-solid fa-book-open"></i> Read' +
+            '</button>' +
             '</div>' +
             '</div></div>';
     }).join("");
