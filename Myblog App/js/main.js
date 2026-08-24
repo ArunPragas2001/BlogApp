@@ -271,6 +271,117 @@ window.showTermsModal = showTermsModal;
 window.filterBlogs = filterBlogs;
 window.openArticleReader = openArticleReader;
 
+function renderArticleComments(blog, container) {
+    if (!container || !blog) return;
+    var blogId = String(blog._id || blog.id);
+    var comments = blog.comments || [];
+    var currentUser = getCurrentUser();
+
+    var commentsHtml = comments.map(function (c) {
+        var avatar = resolveImageUrl(c.userAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
+        var cDate = formatDate(c.createdAt) || "Recently";
+        return '<div class="comment-item">' +
+            '<img src="' + esc(avatar) + '" alt="avatar" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<div style="flex:1;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">' +
+            '<strong class="comment-author-name">' + esc(c.userName || "User") + '</strong>' +
+            '<small style="font-size:0.75rem;color:#64748B;">' + esc(cDate) + '</small>' +
+            '</div>' +
+            '<div class="comment-text">' + esc(c.text) + '</div>' +
+            '</div></div>';
+    }).join("");
+
+    container.innerHTML =
+        '<div class="comments-heading"><i class="fa-regular fa-comment" style="color:#4F46E5;"></i> Comments (' + (blog.commentsCount || comments.length) + ')</div>' +
+        '<form onsubmit="handleAddComment(\'' + blogId + '\', this, event)" class="comment-input-wrap">' +
+        '<input type="text" placeholder="' + (currentUser ? 'Add a comment...' : 'Write a comment (as guest)...') + '" class="comment-input-field" required id="readerCommentInputField">' +
+        '<button type="submit" class="comment-post-btn">Post</button>' +
+        '</form>' +
+        '<div class="comments-list" id="readerCommentsList">' +
+        (comments.length > 0 ? commentsHtml : '<p style="color:#64748B;font-size:0.88rem;margin:0;">No comments yet. Be the first to share your thoughts!</p>') +
+        '</div>';
+}
+
+function focusArticleCommentInput() {
+    var inp = document.getElementById("readerCommentInputField");
+    if (inp) {
+        inp.scrollIntoView({ behavior: "smooth", block: "center" });
+        inp.focus();
+    }
+}
+window.focusArticleCommentInput = focusArticleCommentInput;
+
+async function handleAddComment(blogId, formEl, event) {
+    if (event) event.preventDefault();
+    var input = formEl ? formEl.querySelector("input") : null;
+    if (!input || !input.value.trim()) return;
+
+    var text = input.value.trim();
+    var blog = (cachedBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, comments: [], commentsCount: 0 };
+
+    var currentUser = getCurrentUser();
+    var userName = currentUser ? (currentUser.name || currentUser.email) : "Guest Reader";
+    var userAvatar = currentUser ? (currentUser.profilePic || "") : "";
+
+    var newComment = {
+        userName: userName,
+        userAvatar: userAvatar,
+        text: text,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!blog.comments) blog.comments = [];
+    blog.comments.unshift(newComment);
+    blog.commentsCount = blog.comments.length;
+
+    input.value = "";
+
+    var commentsSection = document.getElementById("articleReaderCommentsSection");
+    if (commentsSection) {
+        renderArticleComments(blog, commentsSection);
+    }
+    updateCommentCountUI(blogId, blog.commentsCount);
+
+    if (typeof showToast === "function") {
+        showToast("💬 Comment posted!", "success", 2000);
+    }
+
+    try {
+        var headers = { "Content-Type": "application/json" };
+        var token = localStorage.getItem("token");
+        if (token) headers["Authorization"] = "Bearer " + token;
+
+        var res = await fetch(API_BASE_URL + "/api/blogs/" + blogId + "/comments", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ text: text, authorName: userName, userAvatar: userAvatar })
+        });
+        if (res.ok) {
+            var data = await res.json();
+            if (data.comments) blog.comments = data.comments;
+            if (data.commentsCount !== undefined) blog.commentsCount = data.commentsCount;
+            if (commentsSection) renderArticleComments(blog, commentsSection);
+            updateCommentCountUI(blogId, blog.commentsCount);
+        }
+    } catch (err) {
+        console.warn("Comment API sync error:", err);
+    }
+
+    try {
+        localStorage.setItem("cached_home_blogs", JSON.stringify(cachedBlogs));
+    } catch (e) {}
+}
+window.handleAddComment = handleAddComment;
+
+function updateCommentCountUI(blogId, count) {
+    var targets = document.querySelectorAll('[data-comment-blog-id="' + blogId + '"] .comment-count');
+    targets.forEach(function (el) {
+        el.textContent = count > 0 ? count : '';
+    });
+}
+window.updateCommentCountUI = updateCommentCountUI;
+
 // Like handler for any blog
 async function handleToggleLike(blogId, btnEl, event) {
     if (event) event.stopPropagation();
