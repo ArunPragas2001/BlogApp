@@ -153,6 +153,26 @@ function openArticleReader(blogId) {
     if (titleEl) titleEl.textContent = blog.title || "";
     if (contentEl) contentEl.textContent = blog.content || "";
 
+    var shareBar = document.getElementById("articleReaderShareBar");
+    if (!shareBar && meta && meta.parentNode) {
+        shareBar = document.createElement("div");
+        shareBar.id = "articleReaderShareBar";
+        shareBar.className = "article-share-bar";
+        meta.parentNode.insertBefore(shareBar, meta.nextSibling);
+    }
+    if (shareBar) {
+        var bTitleEsc = esc(blog.title || "").replace(/'/g, "\\'");
+        shareBar.innerHTML =
+            '<span class="article-share-label"><i class="fa-solid fa-share-nodes" style="color:#4F46E5;"></i> Share:</span>' +
+            '<div class="article-share-chips">' +
+            '<button class="share-chip wa" onclick="BlogShare.whatsapp(\'' + blogId + '\', \'' + bTitleEsc + '\')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>' +
+            '<button class="share-chip insta" onclick="BlogShare.instagram(\'' + blogId + '\', \'' + bTitleEsc + '\')"><i class="fa-brands fa-instagram"></i> Instagram</button>' +
+            '<button class="share-chip fb" onclick="BlogShare.facebook(\'' + blogId + '\')"><i class="fa-brands fa-facebook-f"></i> Facebook</button>' +
+            '<button class="share-chip copy" onclick="BlogShare.copy(\'' + blogId + '\', this)"><i class="fa-regular fa-copy"></i> Copy Link</button>' +
+            '<button class="share-chip more" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-ellipsis"></i> More</button>' +
+            '</div>';
+    }
+
     overlay.classList.add("active");
     document.body.style.overflow = "hidden";
 }
