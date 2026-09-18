@@ -268,11 +268,16 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            // Strictly send the signed Google ID token credential to backend for cryptographic verification
+            const requestedRole = (roleSelect && roleSelect.value) ? roleSelect.value : "user";
+
+            // Strictly send the signed Google ID token credential + role to backend
             const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ credential: response.credential })
+                body: JSON.stringify({
+                    credential: response.credential,
+                    requestedRole: requestedRole
+                })
             });
 
             const data = await res.json();

@@ -420,7 +420,7 @@ async function verifyGoogleIdToken(idToken) {
 
 export const googleAuth = async (req, res) => {
   try {
-    const { credential } = req.body;
+    const { credential, requestedRole } = req.body;
 
     if (!credential) {
       return res.status(400).json({
@@ -464,8 +464,14 @@ export const googleAuth = async (req, res) => {
       // Sync profile picture if not set
       if ((!user.profilePic || user.profilePic.trim() === "") && profilePic) {
         user.profilePic = profilePic;
-        await user.save();
       }
+
+      // If user requested admin and they are currently a regular user with no pending request
+      if (requestedRole === "admin" && user.role === "user" && user.adminStatus !== "approved" && user.adminStatus !== "pending") {
+        user.adminStatus = "pending";
+      }
+
+      await user.save();
 
       return res.json({
         _id: user._id,
@@ -486,8 +492,16 @@ export const googleAuth = async (req, res) => {
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
     const isOwner = normalizedEmail === OWNER_EMAIL;
-    const assignedRole = isOwner ? "owner" : "user";
-    const assignedAdminStatus = isOwner ? "approved" : "none";
+    let assignedRole = "user";
+    let assignedAdminStatus = "none";
+
+    if (isOwner) {
+      assignedRole = "owner";
+      assignedAdminStatus = "approved";
+    } else if (requestedRole === "admin") {
+      assignedRole = "user";
+      assignedAdminStatus = "pending";
+    }
 
     user = await User.create({
       name: displayName,
