@@ -76,6 +76,9 @@ const blogSchema = new mongoose.Schema(
   }
 );
 
+blogSchema.index({ isApproved: 1, createdAt: -1 });
+blogSchema.index({ category: 1 });
+
 const Blog = mongoose.model("Blog", blogSchema);
 
 export default Blog;
