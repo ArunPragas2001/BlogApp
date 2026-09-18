@@ -12,6 +12,7 @@ import imageRoutes from "./routes/imageRoute.js";
 import userRoutes from "./routes/userRoute.js";
 import subscriberRoutes from "./routes/subscriberRoute.js";
 import { checkMaintenanceMode } from "./middleware/maintenanceMiddleware.js";
+import SiteConfig from "./models/siteConfig.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,22 @@ const __dirname = path.dirname(__filename);
 dotenv.config();
 
 connectDB();
+
+// Startup migration: ensure blog expiry is disabled (0 = no expiry)
+(async () => {
+  try {
+    const existing = await SiteConfig.findOne();
+    if (existing && existing.blogExpiryDays > 0) {
+      existing.blogExpiryDays = 0;
+      await existing.save();
+      console.log("✅ Blog expiry reset to 0 (disabled). All blogs are now permanent.");
+    } else if (!existing) {
+      await SiteConfig.create({ blogExpiryDays: 0 });
+    }
+  } catch (e) {
+    console.warn("Blog expiry migration note:", e.message);
+  }
+})();
 
 const app = express();
 

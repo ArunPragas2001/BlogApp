@@ -306,7 +306,10 @@ async function displayOwnerUserManagement() {
 
 async function changeUserRoleDashboard(userId, newRole) {
     var token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+        showToast("You must be logged in to change user roles.", "error");
+        return;
+    }
 
     var roleLabel = newRole === "admin" ? "Administrator" : "Normal Blogger";
     showConfirmModal("Change User Role", "Change this user's role to " + roleLabel + "?", async function () {
@@ -321,14 +324,15 @@ async function changeUserRoleDashboard(userId, newRole) {
             });
             var data = await response.json();
             if (!response.ok) {
-                showToast(data.message || "Failed to update role", "error");
+                showToast((data.message || "Failed to update role") + " (HTTP " + response.status + ")", "error", 6000);
+                console.error("Role update failed:", response.status, data);
                 return;
             }
             showToast(data.message || "User role updated successfully!", "success");
             displayOwnerUserManagement();
         } catch (err) {
             console.error("Role update error:", err);
-            showToast("Error updating user role", "error");
+            showToast("Network error updating user role: " + err.message, "error");
         }
     }, false);
 }
@@ -708,6 +712,8 @@ window.toggleBlockUserDashboard = toggleBlockUserDashboard;
 window.deleteUserDashboard = deleteUserDashboard;
 
 document.addEventListener("DOMContentLoaded", async function () {
+    // Clear stale blog cache so fresh data (with likes/comments) is fetched from server
+    try { localStorage.removeItem("cached_dash_blogs"); } catch(e) {}
     setupWelcomeAndAuth();
     await refreshCurrentUser();
     displayOwnerAdminRequests();
