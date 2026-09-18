@@ -271,11 +271,29 @@ window.showTermsModal = showTermsModal;
 window.filterBlogs = filterBlogs;
 window.openArticleReader = openArticleReader;
 
+function insertEmojiIntoComment(emoji) {
+    var inp = document.getElementById("readerCommentInputField");
+    if (!inp) return;
+    var start = inp.selectionStart || inp.value.length;
+    var end = inp.selectionEnd || inp.value.length;
+    var text = inp.value;
+    inp.value = text.substring(0, start) + emoji + text.substring(end);
+    inp.focus();
+    var newPos = start + emoji.length;
+    inp.setSelectionRange(newPos, newPos);
+}
+window.insertEmojiIntoComment = insertEmojiIntoComment;
+
 function renderArticleComments(blog, container) {
     if (!container || !blog) return;
     var blogId = String(blog._id || blog.id);
     var comments = blog.comments || [];
     var currentUser = getCurrentUser();
+
+    var emojisList = ["😊", "❤️", "🔥", "👍", "👏", "🎉", "💡", "🚀", "💯", "✨", "💬", "✍️", "🙌", "😍", "🥳", "🌟", "🎈", "📚"];
+    var emojiChipsHtml = emojisList.map(function(em) {
+        return '<button type="button" class="emoji-chip-btn" onclick="insertEmojiIntoComment(\'' + em + '\')" title="Add ' + em + '" style="background:transparent;border:none;font-size:1.25rem;cursor:pointer;padding:4px 6px;border-radius:8px;transition:transform 0.15s ease, background 0.15s ease;" onmouseover="this.style.transform=\'scale(1.25)\';this.style.background=\'rgba(99,102,241,0.12)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.background=\'transparent\'">' + em + '</button>';
+    }).join("");
 
     var commentsHtml = comments.map(function (c) {
         var avatar = resolveImageUrl(c.userAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
@@ -293,11 +311,17 @@ function renderArticleComments(blog, container) {
 
     container.innerHTML =
         '<div class="comments-heading"><i class="fa-regular fa-comment" style="color:#4F46E5;"></i> Comments (' + (blog.commentsCount || comments.length) + ')</div>' +
-        '<form onsubmit="handleAddComment(\'' + blogId + '\', this, event)" class="comment-input-wrap">' +
-        '<input type="text" placeholder="' + (currentUser ? 'Add a comment...' : 'Write a comment (as guest)...') + '" class="comment-input-field" required id="readerCommentInputField">' +
-        '<button type="submit" class="comment-post-btn">Post</button>' +
+        '<form onsubmit="handleAddComment(\'' + blogId + '\', this, event)" class="comment-input-wrap" style="display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;">' +
+        '<div style="display:flex;gap:8px;width:100%;">' +
+        '<input type="text" placeholder="' + (currentUser ? 'Add a comment...' : 'Write a comment (as guest)...') + '" class="comment-input-field" required id="readerCommentInputField" style="flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid #E2E8F0;font-size:0.95rem;">' +
+        '<button type="submit" class="comment-post-btn" style="padding:10px 22px;border-radius:12px;background:#4F46E5;color:#fff;font-weight:700;border:none;cursor:pointer;">Post</button>' +
+        '</div>' +
+        '<div class="comment-emoji-bar" style="display:flex;align-items:center;gap:4px;overflow-x:auto;padding:6px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;scrollbar-width:none;">' +
+        '<span style="font-size:0.75rem;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px;"><i class="fa-regular fa-face-smile" style="color:#4F46E5;"></i> Emojis:</span>' +
+        emojiChipsHtml +
+        '</div>' +
         '</form>' +
-        '<div class="comments-list" id="readerCommentsList">' +
+        '<div class="comments-list" id="readerCommentsList" style="margin-top:16px;">' +
         (comments.length > 0 ? commentsHtml : '<p style="color:#64748B;font-size:0.88rem;margin:0;">No comments yet. Be the first to share your thoughts!</p>') +
         '</div>';
 }

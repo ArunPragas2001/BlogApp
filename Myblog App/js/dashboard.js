@@ -282,7 +282,12 @@ async function displayOwnerUserManagement() {
 
             var actionsHtml = "";
             if (currentUser.role === "owner") {
+                var roleBtn = user.role === "admin"
+                    ? '<button class="edit-btn" style="background:#6366F1;color:#fff;border-color:#6366F1;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'user\')"><i class="fa-solid fa-user-minus"></i> Demote</button>'
+                    : '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'admin\')"><i class="fa-solid fa-shield-halved"></i> Make Admin</button>';
+
                 actionsHtml = '<div class="blog-actions">' +
+                roleBtn +
                 '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
                 '<button class="delete-btn" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
                 '</div>';
@@ -297,6 +302,35 @@ async function displayOwnerUserManagement() {
     } catch (err) {
         console.error("Owner user management error:", err);
     }
+}
+
+async function changeUserRoleDashboard(userId, newRole) {
+    var token = localStorage.getItem("token");
+    if (!token) return;
+
+    var roleLabel = newRole === "admin" ? "Administrator" : "Normal Blogger";
+    showConfirmModal("Change User Role", "Change this user's role to " + roleLabel + "?", async function () {
+        try {
+            var response = await fetch(API_USERS_URL + "/" + userId + "/role", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+            var data = await response.json();
+            if (!response.ok) {
+                showToast(data.message || "Failed to update role", "error");
+                return;
+            }
+            showToast(data.message || "User role updated successfully!", "success");
+            displayOwnerUserManagement();
+        } catch (err) {
+            console.error("Role update error:", err);
+            showToast("Error updating user role", "error");
+        }
+    }, false);
 }
 
 async function toggleBlockUserDashboard(userId) {
@@ -763,4 +797,5 @@ async function handleToggleLike(blogId, btnEl, event) {
     } catch (e) {}
 }
 window.handleToggleLike = handleToggleLike;
+window.changeUserRoleDashboard = changeUserRoleDashboard;
 
