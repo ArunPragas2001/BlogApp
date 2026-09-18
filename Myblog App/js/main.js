@@ -138,7 +138,19 @@ function checkIsBlogLiked(blog) {
     return guestLikes.includes(blogId);
 }
 
-function openArticleReader(blogId) {
+async function openArticleReader(blogId) {
+    // Always fetch fresh blog data from server to get latest likes and comments
+    try {
+        var freshRes = await fetch(API_BASE_URL + "/api/blogs/" + blogId);
+        if (freshRes.ok) {
+            var freshBlog = await freshRes.json();
+            // Update in cachedBlogs
+            var idx = cachedBlogs.findIndex(function(b) { return String(b._id || b.id) === String(blogId); });
+            if (idx > -1) cachedBlogs[idx] = freshBlog;
+            else cachedBlogs.push(freshBlog);
+        }
+    } catch (e) { /* ignore, use cached */ }
+
     var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
     if (!blog) return;
 
@@ -696,6 +708,8 @@ function filterBlogs(cat) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    // Clear stale blog cache so fresh data (with likes/comments) is loaded from server
+    try { localStorage.removeItem("cached_home_blogs"); } catch(e) {}
     updateNav();
     loadSiteSettings();
     renderHomeBlogs();
