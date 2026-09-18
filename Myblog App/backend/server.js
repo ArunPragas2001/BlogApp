@@ -43,8 +43,6 @@ app.use("/api/images", imageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
-app.use("/uploads", express.static(uploadDir, { maxAge: "1d" }));
-
 // Serve frontend static files with caching
 const frontendDir = path.join(__dirname, "..");
 app.use(express.static(frontendDir, { maxAge: "1h" }));
