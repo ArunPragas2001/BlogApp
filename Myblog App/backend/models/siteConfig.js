@@ -36,7 +36,7 @@ const siteConfigSchema = new mongoose.Schema(
     },
     blogExpiryDays: {
       type: Number,
-      default: 30
+      default: 0
     }
   },
   {
