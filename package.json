@@ -1,5 +1,12 @@
 {
+  "name": "blog-app-root",
+  "version": "1.0.0",
+  "scripts": {
+    "postinstall": "npm --prefix \"Myblog App/backend\" install",
+    "build": "npm --prefix \"Myblog App/backend\" install",
+    "start": "node \"Myblog App/backend/server.js\""
+  },
   "dependencies": {
-    "mongoose": "^9.9.2"
+    "mongoose": "^8.3.1"
   }
 }
