@@ -43,13 +43,11 @@ app.use("/api/images", imageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
-const uploadDir = path.join(__dirname, "uploads");
+app.use("/uploads", express.static(uploadDir, { maxAge: "1d" }));
 
-app.use("/uploads", express.static(uploadDir));
-
-// Serve frontend static files
+// Serve frontend static files with caching
 const frontendDir = path.join(__dirname, "..");
-app.use(express.static(frontendDir));
+app.use(express.static(frontendDir, { maxAge: "1h" }));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "BlogSphere API is running" });
