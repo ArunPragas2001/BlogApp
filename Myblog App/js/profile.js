@@ -443,6 +443,7 @@ function openShareModal(options) {
     var urlInput = document.getElementById("shareDirectUrlInput");
     var linkX = document.getElementById("shareLinkX");
     var linkWa = document.getElementById("shareLinkWhatsApp");
+    var linkTg = document.getElementById("shareLinkTelegram");
     var linkFb = document.getElementById("shareLinkFacebook");
     var linkLi = document.getElementById("shareLinkLinkedIn");
 
@@ -468,6 +469,7 @@ function openShareModal(options) {
 
     if (linkX) linkX.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText) + "&url=" + encodeURIComponent(shareUrl);
     if (linkWa) linkWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText + "\n" + shareUrl);
+    if (linkTg) linkTg.href = "https://t.me/share/url?url=" + encodeURIComponent(shareUrl) + "&text=" + encodeURIComponent(shareText);
     if (linkFb) linkFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl);
     if (linkLi) linkLi.href = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(shareUrl);
 
