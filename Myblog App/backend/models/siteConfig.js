@@ -18,6 +18,10 @@ const siteConfigSchema = new mongoose.Schema(
       type: String,
       default: "https://instagram.com"
     },
+    twitterUrl: {
+      type: String,
+      default: "https://x.com"
+    },
     facebookUrl: {
       type: String,
       default: "https://facebook.com"

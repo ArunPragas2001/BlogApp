@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     const emailInput = document.getElementById("companyEmail");
     const phoneInput = document.getElementById("companyPhone");
     const addressInput = document.getElementById("companyAddress");
+    const twitterInput = document.getElementById("twitterUrl");
     const instaInput = document.getElementById("instagramUrl");
     const fbInput = document.getElementById("facebookUrl");
     const waInput = document.getElementById("whatsappNumber");
@@ -34,6 +35,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             if (emailInput) emailInput.value = config.companyEmail || "";
             if (phoneInput) phoneInput.value = config.companyPhone || "";
             if (addressInput) addressInput.value = config.companyAddress || "";
+            if (twitterInput) twitterInput.value = config.twitterUrl || config.xUrl || "";
             if (instaInput) instaInput.value = config.instagramUrl || "";
             if (fbInput) fbInput.value = config.facebookUrl || "";
             if (waInput) waInput.value = config.whatsappNumber || "";
@@ -57,6 +59,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 companyEmail: emailInput ? emailInput.value.trim() : "",
                 companyPhone: phoneInput ? phoneInput.value.trim() : "",
                 companyAddress: addressInput ? addressInput.value.trim() : "",
+                twitterUrl: twitterInput ? twitterInput.value.trim() : "",
                 instagramUrl: instaInput ? instaInput.value.trim() : "",
                 facebookUrl: fbInput ? fbInput.value.trim() : "",
                 whatsappNumber: waInput ? waInput.value.trim() : "",

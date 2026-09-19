@@ -45,6 +45,10 @@ export const getAllBlogs = async (req, res) => {
       query.category = new RegExp(`^${req.query.category}$`, "i");
     }
 
+    if (req.query.author) {
+      query.author = req.query.author;
+    }
+
     if (req.query.userOnly === "true" && req.user) {
       query.author = req.user._id;
     } else if (req.query.all !== "true") {

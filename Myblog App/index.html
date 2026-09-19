@@ -7,7 +7,7 @@
     <title>BlogSphere | Share Your Voice</title>
     <meta name="description" content="BlogSphere - A modern blogging platform for curious minds and creative writers.">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/navigationHelpers.css">
@@ -102,12 +102,20 @@
         }
         .article-author-chip {
             display: flex; align-items: center; gap: 7px;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(99,102,241,0.08);
+            transition: background 0.2s;
+        }
+        .article-author-chip:hover {
+            background: rgba(99,102,241,0.2);
         }
         .article-author-chip img {
             width: 26px; height: 26px; border-radius: 50%; object-fit: cover;
         }
-        .article-author-chip span { font-size: 0.85rem; color: #64748B; font-weight: 500; }
-        body.dark-mode .article-author-chip span { color: #94A3B8; }
+        .article-author-chip span { font-size: 0.85rem; color: #4F46E5; font-weight: 600; }
+        body.dark-mode .article-author-chip span { color: #818CF8; }
 
         .article-reader-title {
             font-size: 1.75rem; font-weight: 700;
@@ -145,29 +153,330 @@
         }
         body.dark-mode .blog-card-preview { color: #94A3B8; }
 
-        .section-header { text-align: center; margin-bottom: 48px; }
+        .section-header { text-align: center; margin-bottom: 32px; }
         .section-header h2 { font-size: 2rem; font-weight: 700; color: #0F172A; margin-bottom: 8px; }
         body.dark-mode .section-header h2 { color: #F1F5F9; }
         .section-header p { color: #64748B; font-size: 1.05rem; }
 
         .section-container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
 
-        .featured-section { background: #EEF2FF; padding: 80px 8%; }
+        .featured-section { background: #EEF2FF; padding: 60px 8% 80px; }
         body.dark-mode .featured-section { background: #1A2540; }
 
         .categories-section { background: #FFFFFF; padding: 80px 8%; }
         body.dark-mode .categories-section { background: #1E293B; }
 
         .read-more-btn {
-            align-self: flex-start;
-            padding: 10px 22px;
+            padding: 10px 18px;
             background: #4F46E5;
             color: white; border-radius: 10px;
-            font-weight: 600; font-size: 0.9rem;
+            font-weight: 600; font-size: 0.88rem;
             cursor: pointer; transition: all 0.25s;
             border: none; display: inline-flex; align-items: center; gap: 8px;
         }
         .read-more-btn:hover { background: #4338CA; transform: translateY(-2px); }
+
+        .share-card-btn {
+            padding: 10px 14px;
+            background: #F1F5F9;
+            color: #475569;
+            border-radius: 10px;
+            font-weight: 600; font-size: 0.88rem;
+            cursor: pointer; transition: all 0.25s;
+            border: 1px solid #E2E8F0;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .share-card-btn:hover {
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-color: #C7D2FE;
+            transform: translateY(-2px);
+        }
+        body.dark-mode .share-card-btn {
+            background: #334155;
+            color: #CBD5E1;
+            border-color: #475569;
+        }
+        body.dark-mode .share-card-btn:hover {
+            background: #4338CA;
+            color: #FFF;
+        }
+
+        /* Author Profile Hero Banner */
+        .author-hero-banner {
+            background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #312E81 100%);
+            border: 1px solid rgba(99,102,241,0.3);
+            border-radius: 24px;
+            padding: 36px 40px;
+            color: #FFF;
+            margin-bottom: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+            box-shadow: 0 20px 50px rgba(15,23,42,0.25);
+            animation: fadeInAuthor 0.4s ease-out;
+        }
+        @keyframes fadeInAuthor {
+            from { opacity: 0; transform: translateY(-12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .author-hero-left {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+        .author-hero-avatar {
+            width: 84px;
+            height: 84px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #6366F1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,0.3);
+            flex-shrink: 0;
+        }
+        .author-hero-details h1 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: #FFF;
+            margin: 0 0 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .author-hero-details p {
+            font-size: 0.98rem;
+            color: #CBD5E1;
+            margin: 0 0 10px 0;
+            max-width: 580px;
+            line-height: 1.5;
+        }
+        .author-hero-badges {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .author-pill {
+            background: rgba(99,102,241,0.25);
+            border: 1px solid rgba(99,102,241,0.4);
+            color: #E0E7FF;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .author-hero-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-author-share {
+            background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%);
+            color: #FFF;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 20px rgba(79,70,229,0.4);
+            transition: all 0.25s;
+        }
+        .btn-author-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(79,70,229,0.5);
+        }
+        .btn-author-all {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #FFF;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn-author-all:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* Share Modal Dialog */
+        .share-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.78);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+            animation: fadeInOverlay 0.25s ease;
+        }
+        .share-modal-overlay.active { display: flex; }
+        @keyframes fadeInOverlay {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .share-modal-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 32px;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            border: 1px solid rgba(99,102,241,0.25);
+            animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes popModal {
+            from { transform: scale(0.9) translateY(20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        body.dark-mode .share-modal-card {
+            background: #1E293B;
+            color: #F1F5F9;
+            border-color: #334155;
+        }
+        .share-modal-close {
+            position: absolute; top: 18px; right: 18px;
+            background: #F1F5F9; border: none;
+            color: #64748B; width: 36px; height: 36px;
+            border-radius: 50%; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .share-modal-close:hover { background: #EF4444; color: #FFF; }
+        body.dark-mode .share-modal-close { background: #334155; color: #94A3B8; }
+
+        .share-social-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 22px 0 24px;
+        }
+        .share-social-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 14px 8px;
+            text-decoration: none;
+            color: #1E293B;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+        .share-social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        body.dark-mode .share-social-btn {
+            background: #0F172A;
+            border-color: #334155;
+            color: #E2E8F0;
+        }
+        .share-social-btn.btn-x-social {
+            background: #000000;
+            color: #FFFFFF;
+            border-color: #333333;
+        }
+        .share-social-btn.btn-x-social:hover {
+            background: #181818;
+            border-color: #666666;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        .share-social-btn.btn-wa-social {
+            color: #25D366;
+        }
+        .share-social-btn.btn-wa-social:hover {
+            background: #DCF8C6;
+            border-color: #25D366;
+        }
+        .share-social-btn.btn-fb-social {
+            color: #1877F2;
+        }
+        .share-social-btn.btn-fb-social:hover {
+            background: #E7F3FF;
+            border-color: #1877F2;
+        }
+        .share-social-btn.btn-li-social {
+            color: #0A66C2;
+        }
+        .share-social-btn.btn-li-social:hover {
+            background: #E8F3FF;
+            border-color: #0A66C2;
+        }
+        .share-social-icon {
+            font-size: 1.5rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+        }
+        .x-svg-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .share-link-box {
+            display: flex;
+            align-items: center;
+            background: #F1F5F9;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 4px 6px 4px 14px;
+            margin-top: 14px;
+        }
+        body.dark-mode .share-link-box {
+            background: #0F172A;
+            border-color: #334155;
+        }
+        .share-link-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            font-size: 0.88rem;
+            color: #334155;
+            outline: none;
+            text-overflow: ellipsis;
+        }
+        body.dark-mode .share-link-input { color: #E2E8F0; }
+        .btn-copy-share {
+            background: #4F46E5;
+            color: #FFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-copy-share:hover { background: #4338CA; }
 
         .categories-grid {
             display: grid;
@@ -236,7 +545,7 @@
         </nav>
     </header>
 
-    <section class="hero">
+    <section class="hero" id="heroSection">
         <div class="hero-content">
             <span class="hero-tag">✨ Welcome to BlogSphere</span>
             <h1 class="hero-title">Share Your Stories, Ideas & Insights With The World</h1>
@@ -266,9 +575,12 @@
 
     <section class="featured-section" id="featured">
         <div class="section-container">
-            <div class="section-header">
-                <h2>Latest Articles</h2>
-                <p>Fresh stories published by our vibrant community</p>
+            <!-- Author Profile Hero Container (Shown when viewing an author's articles) -->
+            <div id="authorProfileBanner" style="display:none;"></div>
+
+            <div class="section-header" id="featuredSectionHeader">
+                <h2 id="featuredSectionTitle">Latest Articles</h2>
+                <p id="featuredSectionSubtitle">Fresh stories published by our vibrant community</p>
             </div>
             <div class="featured-grid" id="featuredBlogsContainer">
                 <div style="grid-column:1/-1; text-align:center; padding:40px; color:#64748B;">
@@ -299,10 +611,11 @@
                     <span class="logo-text">Blog<span class="logo-highlight">Sphere</span></span>
                 </a>
                 <p style="margin-top:10px; max-width:280px;">A modern blogging platform for curious minds and creative writers.</p>
-                <div style="display:flex; gap:14px; margin-top:18px;">
-                    <a href="#" id="footerInsta" target="_blank" style="color:#E1306C; font-size:1.6rem;"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="#" id="footerFb" target="_blank" style="color:#1877F2; font-size:1.6rem;"><i class="fa-brands fa-facebook"></i></a>
-                    <a href="#" id="footerWa" target="_blank" style="color:#25D366; font-size:1.6rem;"><i class="fa-brands fa-whatsapp"></i></a>
+                <div style="display:flex; gap:12px; margin-top:18px; align-items:center;">
+                    <a href="#" id="footerX" target="_blank" title="Follow us on X" style="color:#FFF; font-size:1.3rem; display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.12); transition:all 0.2s;"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" id="footerInsta" target="_blank" title="Instagram" style="color:#E1306C; font-size:1.6rem;"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" id="footerFb" target="_blank" title="Facebook" style="color:#1877F2; font-size:1.6rem;"><i class="fa-brands fa-facebook"></i></a>
+                    <a href="#" id="footerWa" target="_blank" title="WhatsApp" style="color:#25D366; font-size:1.6rem;"><i class="fa-brands fa-whatsapp"></i></a>
                 </div>
             </div>
             <div class="footer-col">
@@ -336,6 +649,7 @@
         </div>
     </footer>
 
+    <!-- Article Reader Modal -->
     <div class="article-reader-overlay" id="articleReaderOverlay" style="position:fixed;">
         <div class="article-reader-card" id="articleReaderCard">
             <div style="position:sticky; top:0; z-index:2; background:transparent; display:flex; justify-content:flex-end; padding:14px 18px 0;">
@@ -347,6 +661,66 @@
                 <div class="article-reader-meta" id="articleReaderMeta"></div>
                 <h2 class="article-reader-title" id="articleReaderTitle"></h2>
                 <div class="article-reader-content" id="articleReaderContent"></div>
+                
+                <div style="margin-top:28px; padding-top:20px; border-top:1px solid #E2E8F0; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;" id="articleReaderShareRow">
+                    <span style="font-size:0.88rem; font-weight:700; color:#64748B;"><i class="fa-solid fa-share-nodes" style="color:#4F46E5; margin-right:6px;"></i> Share this story:</span>
+                    <div style="display:flex; gap:10px;" id="articleReaderShareButtons"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Share Dialog Modal with Modern X Logo & Fallbacks -->
+    <div class="share-modal-overlay" id="globalShareModal">
+        <div class="share-modal-card">
+            <button type="button" class="share-modal-close" onclick="closeShareModal()" aria-label="Close share dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 id="shareModalTitle" style="margin:0; font-size:1.25rem; font-weight:700; color:#0F172A;">Share to Fans & Friends</h3>
+            </div>
+            <p id="shareModalSubtitle" style="margin:0 0 16px 0; font-size:0.88rem; color:#64748B;">Share via social platforms or copy direct link.</p>
+
+            <div class="share-social-grid">
+                <!-- X (Twitter) with modern official SVG and FontAwesome 6.5.2 support -->
+                <a href="#" id="shareLinkX" target="_blank" class="share-social-btn btn-x-social" title="Share on X">
+                    <div class="share-social-icon">
+                        <i class="fa-brands fa-x-twitter" style="font-size:1.4rem;"></i>
+                    </div>
+                    <span>Post on X</span>
+                </a>
+                <!-- WhatsApp -->
+                <a href="#" id="shareLinkWhatsApp" target="_blank" class="share-social-btn btn-wa-social" title="Share on WhatsApp">
+                    <div class="share-social-icon">
+                        <i class="fa-brands fa-whatsapp" style="font-size:1.45rem;"></i>
+                    </div>
+                    <span>WhatsApp</span>
+                </a>
+                <!-- Facebook -->
+                <a href="#" id="shareLinkFacebook" target="_blank" class="share-social-btn btn-fb-social" title="Share on Facebook">
+                    <div class="share-social-icon">
+                        <i class="fa-brands fa-facebook" style="font-size:1.45rem;"></i>
+                    </div>
+                    <span>Facebook</span>
+                </a>
+                <!-- LinkedIn -->
+                <a href="#" id="shareLinkLinkedIn" target="_blank" class="share-social-btn btn-li-social" title="Share on LinkedIn">
+                    <div class="share-social-icon">
+                        <i class="fa-brands fa-linkedin" style="font-size:1.45rem;"></i>
+                    </div>
+                    <span>LinkedIn</span>
+                </a>
+            </div>
+
+            <label style="font-size:0.82rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Direct Shareable Link</label>
+            <div class="share-link-box">
+                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly>
+                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
             </div>
         </div>
     </div>

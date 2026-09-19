@@ -28,6 +28,8 @@ export const updateSiteConfig = async (req, res) => {
       companyPhone,
       companyAddress,
       instagramUrl,
+      twitterUrl,
+      xUrl,
       facebookUrl,
       whatsappNumber,
       termsOfService,
@@ -39,6 +41,8 @@ export const updateSiteConfig = async (req, res) => {
     if (companyPhone !== undefined) config.companyPhone = companyPhone;
     if (companyAddress !== undefined) config.companyAddress = companyAddress;
     if (instagramUrl !== undefined) config.instagramUrl = instagramUrl;
+    if (twitterUrl !== undefined) config.twitterUrl = twitterUrl;
+    if (xUrl !== undefined) config.twitterUrl = xUrl;
     if (facebookUrl !== undefined) config.facebookUrl = facebookUrl;
     if (whatsappNumber !== undefined) config.whatsappNumber = whatsappNumber;
     if (termsOfService !== undefined) config.termsOfService = termsOfService;
