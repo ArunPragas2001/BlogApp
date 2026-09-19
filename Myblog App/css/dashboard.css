@@ -463,6 +463,22 @@ a {
     box-shadow: 0 4px 14px rgba(220, 38, 38, 0.2);
 }
 
+/* Warn / Block Button */
+.dash-icon-btn.warn:hover {
+    background: #FFFBEB;
+    color: #D97706;
+    border-color: #FDE68A;
+    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.2);
+}
+
+/* Demote Button (treated like reject styling) */
+.dash-icon-btn.demote:hover {
+    background: #EEF2FF;
+    color: #6366F1;
+    border-color: #C7D2FE;
+    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.2);
+}
+
 /* Dark Mode Action Buttons */
 body.dark-mode .dash-icon-btn {
     background: #1E293B;

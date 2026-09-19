@@ -336,14 +336,20 @@ function renderOwnerUserList(users) {
 
         var actionsHtml = "";
         if (currentUser && currentUser.role === "owner" && !isOwner) {
-            var roleBtn = isAdmin
-                ? '<button class="edit-btn" style="background:#6366F1;color:#fff;border-color:#6366F1;padding:6px 12px;font-size:0.8rem;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'user\')"><i class="fa-solid fa-user-minus"></i> Demote</button>'
-                : '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;padding:6px 12px;font-size:0.8rem;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'admin\')"><i class="fa-solid fa-shield-halved"></i> Make Admin</button>';
-
+            var roleBtnIcon = isAdmin ? "fa-user-minus" : "fa-shield-halved";
+            var roleBtnClass = isAdmin ? "reject" : "approve";
+            var roleBtnTitle = isAdmin ? "Demote to Blogger" : "Promote to Admin";
+            var roleNewRole = isAdmin ? "user" : "admin";
+            var roleBtn = '<button class="dash-icon-btn ' + roleBtnClass + '" title="' + roleBtnTitle + '" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'' + roleNewRole + '\')">' +
+                '<i class="fa-solid ' + roleBtnIcon + '"></i></button>';
+            var blockClass = user.isBlocked ? "approve" : "warn";
+            var blockTitle = user.isBlocked ? "Unblock User" : "Block User";
             actionsHtml = '<div class="blog-actions" style="gap:8px;">' +
                 roleBtn +
-                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';padding:6px 12px;font-size:0.8rem;" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
-                '<button class="delete-btn" style="padding:6px 12px;font-size:0.8rem;" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
+                '<button class="dash-icon-btn ' + blockClass + '" title="' + blockTitle + '" onclick="toggleBlockUserDashboard(\'' + user._id + '\')">' +
+                '<i class="fa-solid ' + blockBtnIcon + '"></i></button>' +
+                '<button class="dash-icon-btn delete" title="Remove User" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')">' +
+                '<i class="fa-solid fa-trash-can"></i></button>' +
                 '</div>';
         }
 
@@ -732,11 +738,11 @@ function renderBlogsList() {
                     (rawBlogImage ? '<img src="' + esc(rawBlogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;margin-right:12px;" onerror="this.style.display=\'none\'">' : '') +
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
-                    '<button class="dash-action-btn view" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
-                    '<button class="dash-action-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
-                    '<button class="dash-action-btn edit" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
-                    '<button class="dash-action-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
-                    '<button class="dash-action-btn delete" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
+  '<button class="dash-icon-btn view" title="Preview Post" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i></button>' +
+                    '<button class="dash-icon-btn share" title="Share Post" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i></button>' +
+                    '<button class="dash-icon-btn edit" title="Edit Post" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i></button>' +
+                    '<button class="dash-icon-btn approve" title="Approve Post" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i></button>' +
+                    '<button class="dash-icon-btn reject" title="Reject Post" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i></button>' +
                     '</div></div>';
             }).join("");
         }
@@ -773,11 +779,18 @@ function renderBlogsList() {
 
         var actionsHtml = (
             '<div class="blog-actions">' +
-            '<button class="dash-action-btn view" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
-            '<button class="dash-action-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? (likesCount + ' Likes') : 'Like') + '</span></button>' +
-            '<button class="dash-action-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
-            (canEditDelete ? '<button class="dash-action-btn edit" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
-            (canEditDelete ? '<button class="dash-action-btn delete" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
+            '<button class="dash-icon-btn view" title="Preview Post" onclick="openAdminBlogPreview(\'' + blogId + '\')">' +
+            '<i class="fa-solid fa-eye"></i></button>' +
+            '<button class="dash-icon-btn like ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
+            (likesCount > 0 ? '<span class="like-count">' + likesCount + '</span>' : '') +
+            '</button>' +
+            '<button class="dash-icon-btn share" title="Share Post" onclick="BlogShare.openModal(\'' + blogId + '\')">' +
+            '<i class="fa-solid fa-share-nodes"></i></button>' +
+            (canEditDelete ? '<button class="dash-icon-btn edit" title="Edit Post" onclick="editBlog(\'' + blogId + '\')">' +
+            '<i class="fa-solid fa-pen"></i></button>' : '') +
+            (canEditDelete ? '<button class="dash-icon-btn delete" title="Delete Post" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')">' +
+            '<i class="fa-solid fa-trash"></i></button>' : '') +
             '</div>'
         );
 
