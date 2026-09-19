@@ -7,7 +7,7 @@
     <title>Login - BlogSphere</title>
     <link rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/navigationHelpers.css">
@@ -62,10 +62,26 @@
 
                 <button type="submit" class="btn-submit">Login</button>
 
-                <div class="auth-divider" style="display:flex; align-items:center; margin:20px 0; color:#94A3B8; font-size:0.85rem;">
+                <div class="auth-divider" style="display:flex; align-items:center; margin:20px 0 14px; color:#94A3B8; font-size:0.85rem;">
                     <div style="flex:1; height:1px; background:#E2E8F0;" class="divider-line"></div>
                     <span style="padding:0 14px; font-weight:500;">or continue with</span>
                     <div style="flex:1; height:1px; background:#E2E8F0;" class="divider-line"></div>
+                </div>
+
+                <div class="google-role-selector" style="margin-bottom:12px; width:100%;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-size:0.8rem; font-weight:600; color:#64748B;"><i class="fa-solid fa-user-shield" style="color:#4F46E5;"></i> Role for Google Sign-In:</span>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; padding:7px 10px; border:1.5px solid #E2E8F0; border-radius:10px; cursor:pointer; background:#F8FAFC;" class="role-radio-label">
+                            <input type="radio" name="googleLoginRole" value="user" checked style="accent-color:#4F46E5;">
+                            <span style="font-weight:600; color:#0F172A;">✍️ Blogger</span>
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; font-size:0.82rem; padding:7px 10px; border:1.5px solid #E2E8F0; border-radius:10px; cursor:pointer; background:#F8FAFC;" class="role-radio-label">
+                            <input type="radio" name="googleLoginRole" value="admin" style="accent-color:#4F46E5;">
+                            <span style="font-weight:600; color:#0F172A;">🛡️ Admin</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- Official Google Identity Services Button Container -->

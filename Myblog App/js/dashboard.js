@@ -247,10 +247,13 @@ async function handleApproveAdminUser(userId, approve) {
     }
 }
 
+// ─── Platform User Management for Owner ──────────────────────────────────────
+window.rawOwnerUsers = [];
+
 async function displayOwnerUserManagement() {
     var currentUser = getCurrentUser();
     var section = document.getElementById("ownerUserManagementSection");
-    var container = document.getElementById("ownerUserManagementContainer");
+    var totalBadge = document.getElementById("ownerUserTotalBadge");
 
     if (!currentUser || (currentUser.role !== "owner" && currentUser.role !== "admin")) {
         if (section) section.style.display = "none";
@@ -262,41 +265,217 @@ async function displayOwnerUserManagement() {
         var res = await fetch(API_USERS_URL, { headers: { "Authorization": "Bearer " + token } });
         if (!res.ok) return;
         var users = await res.json();
+        window.rawOwnerUsers = Array.isArray(users) ? users : [];
 
         if (section) section.style.display = "block";
-        if (!container) return;
+        if (totalBadge) totalBadge.textContent = window.rawOwnerUsers.length + " User" + (window.rawOwnerUsers.length !== 1 ? "s" : "");
 
-        if (users.length === 0) {
-            container.innerHTML = '<p style="color:#475569;margin:0;">No users found.</p>';
-            return;
-        }
-
-        container.innerHTML = users.map(function (user) {
-            var badgeColor = user.role === "admin" ? "#10B981" : "#4F46E5";
-            var blockBtnText = user.isBlocked ? "Unblock" : "Block";
-            var blockBtnColor = user.isBlocked ? "#10B981" : "#F59E0B";
-            var blockBtnIcon = user.isBlocked ? "fa-unlock" : "fa-lock";
-
-            var rawAvatar = user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-            var userAvatar = resolveImageUrl(rawAvatar);
-
-            var actionsHtml = "";
-            if (currentUser.role === "owner") {
-                actionsHtml = '<div class="blog-actions">' +
-                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
-                '<button class="delete-btn" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
-                '</div>';
-            }
-
-            return '<div class="dashboard-blog" style="border-left:5px solid ' + badgeColor + ';">' +
-                '<img src="' + esc(userAvatar) + '" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
-                '<div class="blog-info" style="flex:1;"><h3>' + esc(user.name) + '</h3><p>Email: <strong>' + esc(user.email) + '</strong> — Role: <span style="font-weight:700;color:' + badgeColor + ';">' + esc(user.role.toUpperCase()) + '</span>' + (user.isBlocked ? ' <span style="color:#EF4444;font-weight:700;">(BLOCKED)</span>' : '') + '</p></div>' +
-                actionsHtml +
-                '</div>';
-        }).join("");
+        renderOwnerUserList(window.rawOwnerUsers);
     } catch (err) {
         console.error("Owner user management error:", err);
     }
+}
+
+function toggleOwnerUserManagement() {
+    var body = document.getElementById("ownerUserManagementBody");
+    var textEl = document.getElementById("toggleUserMgmtText");
+    var iconEl = document.getElementById("toggleUserMgmtIcon");
+
+    if (!body) return;
+
+    var isHidden = body.style.display === "none" || body.style.display === "";
+    if (isHidden) {
+        body.style.display = "block";
+        if (textEl) textEl.textContent = "Hide Users";
+        if (iconEl) iconEl.className = "fa-solid fa-chevron-up";
+        // Refresh render in case
+        renderOwnerUserList(window.rawOwnerUsers);
+    } else {
+        body.style.display = "none";
+        if (textEl) textEl.textContent = "View Users";
+        if (iconEl) iconEl.className = "fa-solid fa-chevron-down";
+    }
+}
+
+function filterOwnerUsers(query) {
+    if (!window.rawOwnerUsers) return;
+    var q = (query || "").trim().toLowerCase();
+    if (!q) {
+        renderOwnerUserList(window.rawOwnerUsers);
+        return;
+    }
+    var filtered = window.rawOwnerUsers.filter(function (u) {
+        var name = (u.name || "").toLowerCase();
+        var email = (u.email || "").toLowerCase();
+        var role = (u.role || "").toLowerCase();
+        return name.includes(q) || email.includes(q) || role.includes(q);
+    });
+    renderOwnerUserList(filtered);
+}
+
+function renderOwnerUserList(users) {
+    var container = document.getElementById("ownerUserManagementContainer");
+    var currentUser = getCurrentUser();
+    if (!container) return;
+
+    if (!users || users.length === 0) {
+        container.innerHTML = '<div style="text-align:center;padding:30px;color:#64748B;"><p style="margin:0;">No users found matching your search.</p></div>';
+        return;
+    }
+
+    container.innerHTML = users.map(function (user) {
+        var isOwner = user.role === "owner";
+        var isAdmin = user.role === "admin";
+        var badgeColor = isOwner ? "#312E81" : (isAdmin ? "#10B981" : "#4F46E5");
+        var blockBtnText = user.isBlocked ? "Unblock" : "Block";
+        var blockBtnColor = user.isBlocked ? "#10B981" : "#F59E0B";
+        var blockBtnIcon = user.isBlocked ? "fa-unlock" : "fa-lock";
+
+        var rawAvatar = user.profilePic || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+        var userAvatar = resolveImageUrl(rawAvatar);
+
+        var actionsHtml = "";
+        if (currentUser && currentUser.role === "owner" && !isOwner) {
+            var roleBtn = isAdmin
+                ? '<button class="edit-btn" style="background:#6366F1;color:#fff;border-color:#6366F1;padding:6px 12px;font-size:0.8rem;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'user\')"><i class="fa-solid fa-user-minus"></i> Demote</button>'
+                : '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;padding:6px 12px;font-size:0.8rem;" onclick="changeUserRoleDashboard(\'' + user._id + '\', \'admin\')"><i class="fa-solid fa-shield-halved"></i> Make Admin</button>';
+
+            actionsHtml = '<div class="blog-actions" style="gap:8px;">' +
+                roleBtn +
+                '<button class="edit-btn" style="background:' + blockBtnColor + ';color:#fff;border-color:' + blockBtnColor + ';padding:6px 12px;font-size:0.8rem;" onclick="toggleBlockUserDashboard(\'' + user._id + '\')"><i class="fa-solid ' + blockBtnIcon + '"></i> ' + blockBtnText + '</button>' +
+                '<button class="delete-btn" style="padding:6px 12px;font-size:0.8rem;" onclick="deleteUserDashboard(\'' + user._id + '\', \'' + esc(user.name) + '\')"><i class="fa-solid fa-trash-can"></i> Remove</button>' +
+                '</div>';
+        }
+
+        return '<div class="dashboard-blog" style="border-left:5px solid ' + badgeColor + '; padding:14px 18px; margin-bottom:12px; background:#FFFFFF; border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,0.03);">' +
+            '<img src="' + esc(userAvatar) + '" alt="Avatar" style="width:38px;height:38px;border-radius:50%;object-fit:cover;margin-right:12px;flex-shrink:0;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<div class="blog-info" style="flex:1;">' +
+            '<h3 style="font-size:1rem;margin-bottom:2px;">' + esc(user.name) + (isOwner ? ' <span style="font-size:0.75rem;background:#312E81;color:#C7D2FE;padding:2px 8px;border-radius:12px;">Owner</span>' : '') + '</h3>' +
+            '<p style="font-size:0.82rem;color:#64748B;margin:0;">Email: <strong>' + esc(user.email) + '</strong> · Role: <span style="font-weight:700;color:' + badgeColor + ';">' + esc(user.role.toUpperCase()) + '</span>' + (user.isBlocked ? ' <span style="color:#EF4444;font-weight:700;">(BLOCKED)</span>' : '') + '</p>' +
+            '</div>' +
+            actionsHtml +
+            '</div>';
+    }).join("");
+}
+
+// ─── Share Modal Functions for Dashboard ─────────────────────────────────────
+function openShareModal(options) {
+    var modal = document.getElementById("globalShareModal");
+    var titleEl = document.getElementById("shareModalTitle");
+    var subEl = document.getElementById("shareModalSubtitle");
+    var urlInput = document.getElementById("shareDirectUrlInput");
+    var linkX = document.getElementById("shareLinkX");
+    var linkWa = document.getElementById("shareLinkWhatsApp");
+    var linkFb = document.getElementById("shareLinkFacebook");
+    var linkLi = document.getElementById("shareLinkLinkedIn");
+
+    if (!modal) return;
+
+    options = options || {};
+    var type = options.type || "author";
+    var title = options.title || "BlogSphere Articles";
+    var authorName = options.authorName || "Author";
+    var shareUrl = options.url || window.location.href;
+
+    if (shareUrl.startsWith("/") || shareUrl.startsWith("index.html") || !shareUrl.startsWith("http")) {
+        shareUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, "/")) + shareUrl.replace(/^\//, "");
+    }
+
+    if (titleEl) titleEl.textContent = type === "author" ? "Share Author Profile" : "Share Article";
+    if (subEl) subEl.textContent = type === "author" ? "Share " + authorName + "'s published articles with fans & friends." : "Share \"" + title + "\" with friends.";
+    if (urlInput) urlInput.value = shareUrl;
+
+    var shareText = type === "author"
+        ? "Check out all my published articles on BlogSphere! ✍️✨"
+        : "Read \"" + title + "\" by " + authorName + " on BlogSphere! 📖✨";
+
+    if (linkX) linkX.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText) + "&url=" + encodeURIComponent(shareUrl);
+    if (linkWa) linkWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText + "\n" + shareUrl);
+    if (linkFb) linkFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl);
+    if (linkLi) linkLi.href = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(shareUrl);
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
+
+function closeShareModal() {
+    var modal = document.getElementById("globalShareModal");
+    if (modal) {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+    }
+    document.body.style.overflow = "";
+}
+
+function copyShareModalLink() {
+    var urlInput = document.getElementById("shareDirectUrlInput");
+    if (!urlInput || !urlInput.value) return;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(urlInput.value).then(function () {
+            showToast("🔗 Link copied to clipboard!", "success");
+        }).catch(function () {
+            urlInput.select();
+            document.execCommand("copy");
+            showToast("🔗 Link copied to clipboard!", "success");
+        });
+    } else {
+        urlInput.select();
+        document.execCommand("copy");
+        showToast("🔗 Link copied to clipboard!", "success");
+    }
+}
+
+function shareMyAuthorProfile() {
+    var user = getCurrentUser();
+    if (!user) {
+        showToast("Please log in first.", "error");
+        return;
+    }
+    var authorId = user.id || user._id;
+    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+    var shareUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId) + "&authorName=" + encodeURIComponent(user.name);
+
+    openShareModal({
+        type: "author",
+        title: user.name + "'s Published Articles",
+        authorName: user.name,
+        url: shareUrl
+    });
+}
+
+async function changeUserRoleDashboard(userId, newRole) {
+    var token = localStorage.getItem("token");
+    if (!token) {
+        showToast("You must be logged in to change user roles.", "error");
+        return;
+    }
+
+    var roleLabel = newRole === "admin" ? "Administrator" : "Normal Blogger";
+    showConfirmModal("Change User Role", "Change this user's role to " + roleLabel + "?", async function () {
+        try {
+            var response = await fetch(API_USERS_URL + "/" + userId + "/role", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+            var data = await response.json();
+            if (!response.ok) {
+                showToast((data.message || "Failed to update role") + " (HTTP " + response.status + ")", "error", 6000);
+                console.error("Role update failed:", response.status, data);
+                return;
+            }
+            showToast(data.message || "User role updated successfully!", "success");
+            displayOwnerUserManagement();
+        } catch (err) {
+            console.error("Role update error:", err);
+            showToast("Network error updating user role: " + err.message, "error");
+        }
+    }, false);
 }
 
 async function toggleBlockUserDashboard(userId) {
@@ -338,37 +517,82 @@ async function deleteUserDashboard(userId, name) {
 
 async function displayBlogs() {
     var blogContainer = document.getElementById("blogContainer");
-    var adminApprovalSection = document.getElementById("adminApprovalSection");
-    var adminPendingContainer = document.getElementById("adminPendingContainer");
-    var pendingAdminCount = document.getElementById("pendingAdminCount");
     var currentUser = getCurrentUser();
 
     if (!blogContainer) return;
 
-    blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading blogs…</div>';
+    // 1. Instant cached load from localStorage (0ms)
+    try {
+        var localData = localStorage.getItem("cached_dash_blogs");
+        if (localData) {
+            var parsed = JSON.parse(localData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                window.allBlogs = parsed;
+                var myBlogsCache = parsed;
+                if (currentUser && currentUser.role === "user") {
+                    myBlogsCache = parsed.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+                }
+                window.allMyBlogs = myBlogsCache;
+                window.currentFilter = window.currentFilter || 'all';
+                updateStatistics(myBlogsCache);
+                renderBlogsList();
+                if (window.hidePageLoader) window.hidePageLoader();
+            }
+        }
+    } catch (e) {}
 
+    if (!window.allBlogs || window.allBlogs.length === 0) {
+        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading blogs…</div>';
+    }
+
+    // 2. Fetch fresh data with 3.5s timeout + fallback
     try {
         var token = localStorage.getItem("token");
         var headers = token ? { "Authorization": "Bearer " + token } : {};
-        var response = await fetch(API_BLOGS_URL + "?all=true", { headers: headers });
-        if (!response.ok) throw new Error("Failed to fetch blogs");
 
-        var blogs = await response.json();
-        window.allBlogs = blogs;
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 3500);
 
-        var myBlogs = blogs;
-        if (currentUser && currentUser.role === "user") {
-            myBlogs = blogs.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+        var blogs = [];
+        try {
+            var response = await fetch(API_BLOGS_URL + "?all=true", { headers: headers, signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (response.ok) blogs = await response.json();
+        } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            var fallbackUrl = API_BASE_URL.includes("localhost")
+                ? "https://blogsphere-wtrv.onrender.com/api/blogs?all=true"
+                : "http://localhost:5000/api/blogs?all=true";
+            try {
+                var fallbackRes = await fetch(fallbackUrl, { headers: headers });
+                if (fallbackRes.ok) blogs = await fallbackRes.json();
+            } catch (err2) {
+                console.warn("Dashboard fallback fetch error:", err2);
+            }
         }
-        window.allMyBlogs = myBlogs;
-        window.currentFilter = window.currentFilter || 'all';
 
-        updateStatistics(myBlogs);
-        renderBlogsList();
+        if (Array.isArray(blogs) && blogs.length > 0) {
+            window.allBlogs = blogs;
+            try {
+                localStorage.setItem("cached_dash_blogs", JSON.stringify(blogs));
+            } catch (e) {}
+
+            var myBlogs = blogs;
+            if (currentUser && currentUser.role === "user") {
+                myBlogs = blogs.filter(function (b) { return isAuthorMatch(b.author, currentUser); });
+            }
+            window.allMyBlogs = myBlogs;
+            window.currentFilter = window.currentFilter || 'all';
+
+            updateStatistics(myBlogs);
+            renderBlogsList();
+        }
 
     } catch (error) {
         console.error("Fetch dashboard blogs error:", error);
-        blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
+        if (!window.allBlogs || window.allBlogs.length === 0) {
+            blogContainer.innerHTML = '<div style="text-align:center;padding:40px;color:#EF4444;"><p>Could not load blogs. Please check your connection and try again.</p></div>';
+        }
     } finally {
         if (window.hidePageLoader) window.hidePageLoader();
     }
@@ -411,6 +635,7 @@ function openAdminBlogPreview(blogId) {
     var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
     var canEditBlog = isAdminOrOwner || isAuthorOfBlog;
 
+    approveButtons += '<button type="button" style="background:#0EA5E9;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share Post</button>';
     if (canEditBlog) {
         approveButtons += '<button type="button" style="background:#4F46E5;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="closeAdminBlogPreview();editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit Post</button>';
     }
@@ -505,6 +730,7 @@ function renderBlogsList() {
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
                     '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View Blog</button>' +
+                    '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
                     '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
                     '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
                     '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
@@ -535,9 +761,18 @@ function renderBlogsList() {
         var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
         var canEditDelete = isAdminOrOwner || isAuthorOfBlog;
 
+        var currentUserObj = getCurrentUser();
+        var userIdStr = currentUserObj ? String(currentUserObj.id || currentUserObj._id) : "";
+        var isLiked = currentUserObj
+            ? (blog.likes && Array.isArray(blog.likes) && blog.likes.some(function(l){ return String(l._id || l.id || l) === userIdStr; }))
+            : (JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]").includes(String(blogId)));
+        var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+
         var actionsHtml = (
             '<div class="blog-actions">' +
             '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span></button>' +
+            '<button class="insta-action-icon-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post"><i class="fa-regular fa-paper-plane"></i></button>' +
             (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
             (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
             '</div>'
@@ -616,12 +851,117 @@ window.handleApproveBlog = handleApproveBlog;
 window.handleApproveAdminUser = handleApproveAdminUser;
 window.toggleBlockUserDashboard = toggleBlockUserDashboard;
 window.deleteUserDashboard = deleteUserDashboard;
+window.toggleOwnerUserManagement = toggleOwnerUserManagement;
+window.filterOwnerUsers = filterOwnerUsers;
+window.shareMyAuthorProfile = shareMyAuthorProfile;
+window.openShareModal = openShareModal;
+window.closeShareModal = closeShareModal;
+window.copyShareModalLink = copyShareModalLink;
+window.handleToggleLike = handleToggleLike;
+window.changeUserRoleDashboard = changeUserRoleDashboard;
 
 document.addEventListener("DOMContentLoaded", async function () {
+    try { localStorage.removeItem("cached_dash_blogs"); } catch(e) {}
     setupWelcomeAndAuth();
     await refreshCurrentUser();
     displayOwnerAdminRequests();
     displayOwnerUserManagement();
     displayBlogs();
+
+    var shareModalOverlay = document.getElementById("globalShareModal");
+    if (shareModalOverlay) {
+        shareModalOverlay.addEventListener("click", function (e) {
+            if (e.target === shareModalOverlay) closeShareModal();
+        });
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            closeShareModal();
+            closeAdminBlogPreview();
+        }
+    });
 });
+
+async function handleToggleLike(blogId, btnEl, event) {
+    if (event) event.stopPropagation();
+
+    var blog = (window.allBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, likesCount: 0, likes: [] };
+
+    var currentUser = getCurrentUser();
+    var userIdStr = currentUser ? String(currentUser.id || currentUser._id) : "";
+    var isLiked = currentUser
+        ? (blog.likes && Array.isArray(blog.likes) && blog.likes.some(function (l) { return String(l._id || l.id || l) === userIdStr; }))
+        : (JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]").includes(String(blogId)));
+
+    var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+    var newIsLiked = !isLiked;
+    var newCount = newIsLiked ? (likesCount + 1) : Math.max(0, likesCount - 1);
+
+    blog.likesCount = newCount;
+    if (currentUser) {
+        if (!blog.likes) blog.likes = [];
+        if (newIsLiked) {
+            if (!blog.likes.some(function (l) { return String(l._id || l.id || l) === userIdStr; })) {
+                blog.likes.push(userIdStr);
+            }
+        } else {
+            blog.likes = blog.likes.filter(function (l) { return String(l._id || l.id || l) !== userIdStr; });
+        }
+    } else {
+        var guestLikes = JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]");
+        if (newIsLiked) {
+            if (!guestLikes.includes(String(blogId))) guestLikes.push(String(blogId));
+        } else {
+            guestLikes = guestLikes.filter(function (id) { return id !== String(blogId); });
+        }
+        localStorage.setItem("guest_liked_blogs", JSON.stringify(guestLikes));
+    }
+
+    var targets = document.querySelectorAll('[data-like-blog-id="' + blogId + '"]');
+    targets.forEach(function (btn) {
+        if (newIsLiked) {
+            btn.classList.add("liked");
+        } else {
+            btn.classList.remove("liked");
+        }
+        var icon = btn.querySelector("i");
+        if (icon) {
+            icon.className = newIsLiked ? "fa-solid fa-heart" : "fa-regular fa-heart";
+        }
+        var countEl = btn.querySelector(".like-count") || btn.querySelector(".like-count-num");
+        if (countEl) {
+            countEl.textContent = newCount > 0 ? newCount : '';
+        }
+    });
+
+    var token = localStorage.getItem("token");
+    if (token) {
+        try {
+            var res = await fetch(API_BASE_URL + "/api/blogs/" + blogId + "/like", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            if (res.ok) {
+                var data = await res.json();
+                blog.likesCount = data.likesCount;
+                blog.likes = data.likes;
+            }
+        } catch (err) {
+            console.warn("Dashboard like API error:", err);
+        }
+    } else {
+        if (typeof showToast === "function") {
+            showToast(newIsLiked ? "❤️ Post liked!" : "Unliked post", "info", 1500);
+        }
+    }
+
+    try {
+        localStorage.setItem("cached_dash_blogs", JSON.stringify(window.allBlogs));
+    } catch (e) {}
+}
 

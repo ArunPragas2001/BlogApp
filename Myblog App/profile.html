@@ -6,11 +6,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - BlogSphere</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/navigationHelpers.css">
     <link rel="stylesheet" href="css/profile.css">
+    <style>
+        .btn-share-profile-card {
+            background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%);
+            color: #FFF;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(79,70,229,0.3);
+            transition: all 0.25s;
+        }
+        .btn-share-profile-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(79,70,229,0.4);
+        }
+
+        /* Share Modal */
+        .share-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.78);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .share-modal-overlay.active { display: flex; }
+        .share-modal-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 32px;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            border: 1px solid rgba(99,102,241,0.25);
+            animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        body.dark-mode .share-modal-card {
+            background: #1E293B;
+            color: #F1F5F9;
+            border-color: #334155;
+        }
+        .share-modal-close {
+            position: absolute; top: 18px; right: 18px;
+            background: #F1F5F9; border: none;
+            color: #64748B; width: 36px; height: 36px;
+            border-radius: 50%; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .share-modal-close:hover { background: #EF4444; color: #FFF; }
+        body.dark-mode .share-modal-close { background: #334155; color: #94A3B8; }
+        .share-social-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 22px 0 24px;
+        }
+        .share-social-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 14px 8px;
+            text-decoration: none;
+            color: #1E293B;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+        .share-social-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .share-social-btn.btn-x-social { background: #000000; color: #FFFFFF; border-color: #333333; }
+        .share-social-btn.btn-x-social:hover { background: #181818; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .share-social-btn.btn-wa-social { color: #25D366; }
+        .share-social-btn.btn-wa-social:hover { background: #DCF8C6; border-color: #25D366; }
+        .share-social-btn.btn-fb-social { color: #1877F2; }
+        .share-social-btn.btn-fb-social:hover { background: #E7F3FF; border-color: #1877F2; }
+        .share-social-btn.btn-li-social { color: #0A66C2; }
+        .share-social-btn.btn-li-social:hover { background: #E8F3FF; border-color: #0A66C2; }
+        .share-link-box {
+            display: flex;
+            align-items: center;
+            background: #F1F5F9;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 4px 6px 4px 14px;
+            margin-top: 14px;
+        }
+        body.dark-mode .share-link-box { background: #0F172A; border-color: #334155; }
+        .share-link-input { flex: 1; background: transparent; border: none; font-size: 0.88rem; color: #334155; outline: none; }
+        body.dark-mode .share-link-input { color: #E2E8F0; }
+        .btn-copy-share {
+            background: #4F46E5; color: #FFF; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-copy-share:hover { background: #4338CA; }
+    </style>
 </head>
 
 <body>
@@ -56,7 +164,11 @@
             <div class="user-bio-badge" id="sidebarBio">
                 Blogger & Content Creator
             </div>
-            <small style="color: #94A3B8; display: block;">Member of BlogSphere Community</small>
+            <small style="color: #94A3B8; display: block; margin-bottom:12px;">Member of BlogSphere Community</small>
+
+            <button type="button" class="btn-share-profile-card" onclick="shareProfilePage()">
+                <i class="fa-solid fa-share-nodes"></i> Share My Public Articles
+            </button>
         </aside>
 
         <main class="profile-form-card">
@@ -149,6 +261,53 @@
                 </label>
                 <button type="button" onclick="closeAvatarZoomModal()" style="background:#F1F5F9; color:#475569; border:none; padding:10px 20px; border-radius:10px; font-weight:600; font-size:0.9rem; cursor:pointer;">
                     Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Share Dialog Modal with Modern X Logo -->
+    <div class="share-modal-overlay" id="globalShareModal">
+        <div class="share-modal-card">
+            <button type="button" class="share-modal-close" onclick="closeShareModal()" aria-label="Close share dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 id="shareModalTitle" style="margin:0; font-size:1.25rem; font-weight:700; color:#0F172A;">Share to Fans & Followers</h3>
+            </div>
+            <p id="shareModalSubtitle" style="margin:0 0 16px 0; font-size:0.88rem; color:#64748B;">Share via social platforms or copy direct link.</p>
+
+            <div class="share-social-grid">
+                <!-- X (Twitter) -->
+                <a href="#" id="shareLinkX" target="_blank" class="share-social-btn btn-x-social" title="Share on X">
+                    <div class="share-social-icon"><i class="fa-brands fa-x-twitter" style="font-size:1.4rem;"></i></div>
+                    <span>Post on X</span>
+                </a>
+                <!-- WhatsApp -->
+                <a href="#" id="shareLinkWhatsApp" target="_blank" class="share-social-btn btn-wa-social" title="Share on WhatsApp">
+                    <div class="share-social-icon"><i class="fa-brands fa-whatsapp" style="font-size:1.45rem;"></i></div>
+                    <span>WhatsApp</span>
+                </a>
+                <!-- Facebook -->
+                <a href="#" id="shareLinkFacebook" target="_blank" class="share-social-btn btn-fb-social" title="Share on Facebook">
+                    <div class="share-social-icon"><i class="fa-brands fa-facebook" style="font-size:1.45rem;"></i></div>
+                    <span>Facebook</span>
+                </a>
+                <!-- LinkedIn -->
+                <a href="#" id="shareLinkLinkedIn" target="_blank" class="share-social-btn btn-li-social" title="Share on LinkedIn">
+                    <div class="share-social-icon"><i class="fa-brands fa-linkedin" style="font-size:1.45rem;"></i></div>
+                    <span>LinkedIn</span>
+                </a>
+            </div>
+
+            <label style="font-size:0.82rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Direct Shareable Link</label>
+            <div class="share-link-box">
+                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly>
+                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()">
+                    <i class="fa-regular fa-copy"></i> Copy
                 </button>
             </div>
         </div>

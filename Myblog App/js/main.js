@@ -193,7 +193,8 @@ function closeShareModal() {
         modal.classList.remove("active");
         modal.style.display = "none";
     }
-    if (!document.getElementById("articleReaderOverlay")?.classList.contains("active")) {
+    var overlay = document.getElementById("articleReaderOverlay");
+    if (!overlay || !overlay.classList.contains("active")) {
         document.body.style.overflow = "";
     }
 }
@@ -225,7 +226,7 @@ function fallbackCopy(inputEl) {
 }
 
 function shareBlogArticle(blogId) {
-    var blog = cachedBlogs.find(function (b) { return (b._id || b.id) === blogId; });
+    var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
     if (!blog) return;
 
     var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
@@ -243,6 +244,7 @@ function shareBlogArticle(blogId) {
 function shareAuthorProfile(authorId, authorName, authorBio) {
     var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
     var authorUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId);
+    if (authorName) authorUrl += "&authorName=" + encodeURIComponent(authorName);
 
     openShareModal({
         type: "author",
@@ -252,43 +254,361 @@ function shareAuthorProfile(authorId, authorName, authorBio) {
     });
 }
 
+// BlogShare helper object for inline chips
+var BlogShare = {
+    openModal: function(blogId) {
+        shareBlogArticle(blogId);
+    },
+    whatsapp: function(blogId, title) {
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
+        var text = (title ? ("Read \"" + title + "\" on BlogSphere: ") : "Read this story on BlogSphere: ") + url;
+        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), "_blank");
+    },
+    instagram: function(blogId, title) {
+        shareBlogArticle(blogId);
+    },
+    facebook: function(blogId) {
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
+        window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url), "_blank");
+    },
+    copy: function(blogId, btnEl) {
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url).then(function() {
+                showToast("🔗 Article link copied to clipboard!", "success");
+            }).catch(function() {
+                shareBlogArticle(blogId);
+            });
+        } else {
+            shareBlogArticle(blogId);
+        }
+    }
+};
+
+// ─── Likes & Comments System ─────────────────────────────────────────────────
+function checkIsBlogLiked(blog) {
+    if (!blog) return false;
+    var currentUser = getCurrentUser();
+    var blogId = String(blog._id || blog.id);
+
+    if (currentUser) {
+        var userId = String(currentUser.id || currentUser._id);
+        if (blog.likes && Array.isArray(blog.likes)) {
+            return blog.likes.some(function (l) {
+                return String(l._id || l.id || l) === userId;
+            });
+        }
+    }
+    var guestLikes = JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]");
+    return guestLikes.includes(blogId);
+}
+
+async function handleToggleLike(blogId, btnEl, event) {
+    if (event) event.stopPropagation();
+
+    var blog = (cachedBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, likesCount: 0, likes: [] };
+
+    var currentUser = getCurrentUser();
+    var isLiked = checkIsBlogLiked(blog);
+
+    var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+    var newIsLiked = !isLiked;
+    var newCount = newIsLiked ? (likesCount + 1) : Math.max(0, likesCount - 1);
+
+    // Update in-memory model
+    blog.likesCount = newCount;
+    if (currentUser) {
+        if (!blog.likes) blog.likes = [];
+        var userId = String(currentUser.id || currentUser._id);
+        if (newIsLiked) {
+            if (!blog.likes.some(function (l) { return String(l._id || l.id || l) === userId; })) {
+                blog.likes.push(userId);
+            }
+        } else {
+            blog.likes = blog.likes.filter(function (l) { return String(l._id || l.id || l) !== userId; });
+        }
+    } else {
+        var guestLikes = JSON.parse(localStorage.getItem("guest_liked_blogs") || "[]");
+        if (newIsLiked) {
+            if (!guestLikes.includes(String(blogId))) guestLikes.push(String(blogId));
+        } else {
+            guestLikes = guestLikes.filter(function (id) { return id !== String(blogId); });
+        }
+        localStorage.setItem("guest_liked_blogs", JSON.stringify(guestLikes));
+    }
+
+    // Sync button state visually across page immediately
+    updateLikeButtonUI(blogId, newIsLiked, newCount);
+
+    var token = localStorage.getItem("token");
+    if (token) {
+        try {
+            var res = await fetch(API_BASE_URL + "/api/blogs/" + blogId + "/like", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                }
+            });
+            if (res.ok) {
+                var data = await res.json();
+                blog.likesCount = data.likesCount;
+                blog.likes = data.likes;
+                updateLikeButtonUI(blogId, data.isLiked, data.likesCount);
+            }
+        } catch (err) {
+            console.warn("Like API error:", err);
+        }
+    } else {
+        if (typeof showToast === "function") {
+            showToast(newIsLiked ? "❤️ Post liked!" : "Unliked post", "info", 1500);
+        }
+    }
+
+    try {
+        localStorage.setItem("cached_home_blogs", JSON.stringify(cachedBlogs));
+    } catch (e) {}
+}
+
+function updateLikeButtonUI(blogId, isLiked, count) {
+    var targets = document.querySelectorAll('[data-like-blog-id="' + blogId + '"]');
+    targets.forEach(function (btn) {
+        if (isLiked) {
+            btn.classList.add("liked");
+        } else {
+            btn.classList.remove("liked");
+        }
+        var icon = btn.querySelector("i");
+        if (icon) {
+            icon.className = isLiked ? "fa-solid fa-heart" : "fa-regular fa-heart";
+        }
+        var countEl = btn.querySelector(".like-count") || btn.querySelector(".like-count-num");
+        if (countEl) {
+            if (countEl.classList.contains("like-count-num")) {
+                countEl.textContent = count > 0 ? (count + ' Likes') : 'Like';
+            } else {
+                countEl.textContent = count > 0 ? count : '';
+            }
+        }
+    });
+}
+
+function triggerInstaHeartPop(containerEl) {
+    if (!containerEl) return;
+    var heart = containerEl.querySelector(".insta-big-heart-overlay");
+    if (!heart) {
+        heart = document.createElement("i");
+        heart.className = "fa-solid fa-heart insta-big-heart-overlay";
+        containerEl.appendChild(heart);
+    }
+    heart.classList.remove("animate");
+    void heart.offsetWidth;
+    heart.classList.add("animate");
+}
+
+function handleInstagramDblClick(containerEl, blogId, event) {
+    triggerInstaHeartPop(containerEl);
+    var blog = (cachedBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, likesCount: 0, likes: [] };
+
+    var isLiked = checkIsBlogLiked(blog);
+    if (!isLiked) {
+        handleToggleLike(blogId, null, event);
+    }
+}
+
+function insertEmojiIntoComment(emoji) {
+    var inp = document.getElementById("readerCommentInputField");
+    if (!inp) return;
+    var start = inp.selectionStart || inp.value.length;
+    var end = inp.selectionEnd || inp.value.length;
+    var text = inp.value;
+    inp.value = text.substring(0, start) + emoji + text.substring(end);
+    inp.focus();
+    var newPos = start + emoji.length;
+    inp.setSelectionRange(newPos, newPos);
+}
+
+function renderArticleComments(blog, container) {
+    if (!container || !blog) return;
+    var blogId = String(blog._id || blog.id);
+    var comments = blog.comments || [];
+    var currentUser = getCurrentUser();
+
+    var emojisList = ["😊", "❤️", "🔥", "👍", "👏", "🎉", "💡", "🚀", "💯", "✨", "💬", "✍️", "🙌", "😍", "🥳", "🌟", "🎈", "📚"];
+    var emojiChipsHtml = emojisList.map(function(em) {
+        return '<button type="button" class="emoji-chip-btn" onclick="insertEmojiIntoComment(\'' + em + '\')" title="Add ' + em + '" style="background:transparent;border:none;font-size:1.25rem;cursor:pointer;padding:4px 6px;border-radius:8px;transition:transform 0.15s ease, background 0.15s ease;" onmouseover="this.style.transform=\'scale(1.25)\';this.style.background=\'rgba(99,102,241,0.12)\'" onmouseout="this.style.transform=\'scale(1)\';this.style.background=\'transparent\'">' + em + '</button>';
+    }).join("");
+
+    var commentsHtml = comments.map(function (c) {
+        var avatar = resolveImageUrl(c.userAvatar || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80");
+        var cDate = formatDate(c.createdAt) || "Recently";
+        return '<div class="comment-item">' +
+            '<img src="' + esc(avatar) + '" alt="avatar" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<div style="flex:1;">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px;">' +
+            '<strong class="comment-author-name">' + esc(c.userName || "User") + '</strong>' +
+            '<small style="font-size:0.75rem;color:#64748B;">' + esc(cDate) + '</small>' +
+            '</div>' +
+            '<div class="comment-text">' + esc(c.text) + '</div>' +
+            '</div></div>';
+    }).join("");
+
+    container.innerHTML =
+        '<div class="comments-heading"><i class="fa-regular fa-comment" style="color:#4F46E5;"></i> Comments (' + (blog.commentsCount || comments.length) + ')</div>' +
+        '<form onsubmit="handleAddComment(\'' + blogId + '\', this, event)" class="comment-input-wrap" style="display:flex;flex-direction:column;gap:8px;width:100%;box-sizing:border-box;">' +
+        '<div style="display:flex;gap:8px;width:100%;">' +
+        '<input type="text" placeholder="' + (currentUser ? 'Add a comment...' : 'Write a comment (as guest)...') + '" class="comment-input-field" required id="readerCommentInputField" style="flex:1;padding:12px 16px;border-radius:12px;border:1.5px solid #E2E8F0;font-size:0.95rem;">' +
+        '<button type="submit" class="comment-post-btn" style="padding:10px 22px;border-radius:12px;background:#4F46E5;color:#fff;font-weight:700;border:none;cursor:pointer;">Post</button>' +
+        '</div>' +
+        '<div class="comment-emoji-bar" style="display:flex;align-items:center;gap:4px;overflow-x:auto;padding:6px 10px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;scrollbar-width:none;">' +
+        '<span style="font-size:0.75rem;font-weight:700;color:#64748B;white-space:nowrap;margin-right:4px;"><i class="fa-regular fa-face-smile" style="color:#4F46E5;"></i> Emojis:</span>' +
+        emojiChipsHtml +
+        '</div>' +
+        '</form>' +
+        '<div class="comments-list" id="readerCommentsList" style="margin-top:16px;">' +
+        (comments.length > 0 ? commentsHtml : '<p style="color:#64748B;font-size:0.88rem;margin:0;">No comments yet. Be the first to share your thoughts!</p>') +
+        '</div>';
+}
+
+function focusArticleCommentInput() {
+    var inp = document.getElementById("readerCommentInputField");
+    if (inp) {
+        inp.scrollIntoView({ behavior: "smooth", block: "center" });
+        inp.focus();
+    }
+}
+
+async function handleAddComment(blogId, formEl, event) {
+    if (event) event.preventDefault();
+    var input = formEl ? formEl.querySelector("input") : null;
+    if (!input || !input.value.trim()) return;
+
+    var text = input.value.trim();
+    var blog = (cachedBlogs || []).find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) blog = { _id: blogId, comments: [], commentsCount: 0 };
+
+    var currentUser = getCurrentUser();
+    var userName = currentUser ? (currentUser.name || currentUser.email) : "Guest Reader";
+    var userAvatar = currentUser ? (currentUser.profilePic || "") : "";
+
+    var newComment = {
+        userName: userName,
+        userAvatar: userAvatar,
+        text: text,
+        createdAt: new Date().toISOString()
+    };
+
+    if (!blog.comments) blog.comments = [];
+    blog.comments.unshift(newComment);
+    blog.commentsCount = blog.comments.length;
+
+    input.value = "";
+
+    var commentsSection = document.getElementById("articleReaderCommentsSection");
+    if (commentsSection) {
+        renderArticleComments(blog, commentsSection);
+    }
+    updateCommentCountUI(blogId, blog.commentsCount);
+
+    if (typeof showToast === "function") {
+        showToast("💬 Comment posted!", "success", 2000);
+    }
+
+    try {
+        var headers = { "Content-Type": "application/json" };
+        var token = localStorage.getItem("token");
+        if (token) headers["Authorization"] = "Bearer " + token;
+
+        var res = await fetch(API_BASE_URL + "/api/blogs/" + blogId + "/comments", {
+            method: "POST",
+            headers: headers,
+            body: JSON.stringify({ text: text, authorName: userName, userAvatar: userAvatar })
+        });
+        if (res.ok) {
+            var data = await res.json();
+            if (data.comments) blog.comments = data.comments;
+            if (data.commentsCount !== undefined) blog.commentsCount = data.commentsCount;
+            if (commentsSection) renderArticleComments(blog, commentsSection);
+            updateCommentCountUI(blogId, blog.commentsCount);
+        }
+    } catch (err) {
+        console.warn("Comment API sync error:", err);
+    }
+
+    try {
+        localStorage.setItem("cached_home_blogs", JSON.stringify(cachedBlogs));
+    } catch (e) {}
+}
+
+function updateCommentCountUI(blogId, count) {
+    var targets = document.querySelectorAll('[data-comment-blog-id="' + blogId + '"]');
+    targets.forEach(function (el) {
+        var countEl = el.querySelector(".comment-count") || el;
+        if (countEl) countEl.textContent = count > 0 ? count : '';
+    });
+}
+
 // ─── Article Reader ──────────────────────────────────────────────────────────
-function openArticleReader(blogId) {
-    var blog = cachedBlogs.find(function (b) { return (b._id || b.id) === blogId; });
+async function openArticleReader(blogId) {
+    // Fetch fresh blog details if possible
+    try {
+        var freshRes = await fetch(API_BASE_URL + "/api/blogs/" + blogId);
+        if (freshRes.ok) {
+            var freshBlog = await freshRes.json();
+            var idx = cachedBlogs.findIndex(function(b) { return String(b._id || b.id) === String(blogId); });
+            if (idx > -1) cachedBlogs[idx] = freshBlog;
+            else cachedBlogs.push(freshBlog);
+        }
+    } catch (e) { /* use cached */ }
+
+    var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
     if (!blog) return;
 
     var overlay = document.getElementById("articleReaderOverlay");
     var img = document.getElementById("articleReaderImg");
-    var vid = document.getElementById("articleReaderVideo");
     var meta = document.getElementById("articleReaderMeta");
     var titleEl = document.getElementById("articleReaderTitle");
     var contentEl = document.getElementById("articleReaderContent");
-    var shareBtns = document.getElementById("articleReaderShareButtons");
 
     if (!overlay) return;
 
-    // Handle Video display
-    if (vid) {
-        if (blog.video && blog.video.trim() !== "") {
-            vid.src = resolveImageUrl(blog.video);
-            vid.style.display = "block";
-        } else {
-            vid.pause();
-            vid.src = "";
-            vid.style.display = "none";
-        }
-    }
+    // Check if blog has video
+    var hasVideo = blog.video && blog.video.trim() !== "";
+    var videoSrc = hasVideo ? resolveImageUrl(blog.video) : "";
 
-    // Handle Image display
-    if (img) {
-        if (blog.image && blog.image.trim() !== "") {
-            img.style.opacity = "0";
-            img.onload = function () { this.style.opacity = "1"; };
-            img.onerror = function () { this.style.opacity = "1"; this.style.display = "none"; };
-            img.src = resolveImageUrl(blog.image);
-            img.style.display = "block";
-        } else {
-            img.style.display = "none";
+    var cardBody = document.querySelector(".article-reader-body");
+    var videoContainer = document.getElementById("articleReaderVideoContainer");
+
+    if (hasVideo) {
+        if (img) img.style.display = "none";
+        if (!videoContainer && cardBody) {
+            videoContainer = document.createElement("div");
+            videoContainer.id = "articleReaderVideoContainer";
+            videoContainer.style.cssText = "width:100%;margin-bottom:24px;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 8px 24px rgba(0,0,0,0.2);";
+            cardBody.parentNode.insertBefore(videoContainer, cardBody);
+        }
+        if (videoContainer) {
+            videoContainer.style.display = "block";
+            videoContainer.innerHTML =
+                '<video id="articleReaderVideo" src="' + esc(videoSrc) + '" controls autoplay muted loop playsinline style="width:100%;max-height:380px;display:block;background:#000;border-radius:16px 16px 0 0;"></video>';
+        }
+    } else {
+        if (videoContainer) videoContainer.style.display = "none";
+        if (img) {
+            if (blog.image && blog.image.trim() !== "") {
+                img.style.opacity = "0";
+                img.onload = function () { this.style.opacity = "1"; };
+                img.onerror = function () { this.style.opacity = "1"; this.style.display = "none"; };
+                img.src = resolveImageUrl(blog.image);
+                img.style.display = "block";
+            } else {
+                img.style.display = "none";
+            }
         }
     }
 
@@ -310,16 +630,55 @@ function openArticleReader(blogId) {
     if (titleEl) titleEl.textContent = blog.title || "";
     if (contentEl) contentEl.textContent = blog.content || "";
 
-    if (shareBtns) {
-        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-        var shareUrl = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
-        var tweetText = "Read \"" + (blog.title || "Blog") + "\" by " + authorName + " on BlogSphere! 📖✨";
+    // Render Share & Like & Comment Toolbar inside Article Reader
+    var shareBar = document.getElementById("articleReaderShareBar");
+    if (!shareBar && meta && meta.parentNode) {
+        shareBar = document.createElement("div");
+        shareBar.id = "articleReaderShareBar";
+        shareBar.className = "article-share-bar";
+        meta.parentNode.insertBefore(shareBar, meta.nextSibling);
+    }
+    if (shareBar) {
+        var isLiked = checkIsBlogLiked(blog);
+        var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+        var commentsCount = blog.commentsCount || (blog.comments ? blog.comments.length : 0);
+        var bTitleEsc = esc(blog.title || "").replace(/'/g, "\\'");
 
-        shareBtns.innerHTML =
-            '<a href="https://twitter.com/intent/tweet?text=' + encodeURIComponent(tweetText) + '&url=' + encodeURIComponent(shareUrl) + '" target="_blank" style="background:#000;color:#fff;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:0.95rem;" title="Share on X"><i class="fa-brands fa-x-twitter"></i></a>' +
-            '<a href="https://api.whatsapp.com/send?text=' + encodeURIComponent(tweetText + "\n" + shareUrl) + '" target="_blank" style="background:#25D366;color:#fff;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:1.05rem;" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>' +
-            '<a href="https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl) + '" target="_blank" style="background:#1877F2;color:#fff;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;font-size:1.05rem;" title="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>' +
-            '<button type="button" onclick="shareBlogArticle(\'' + blogId + '\')" style="background:#EEF2FF;color:#4F46E5;border:1px solid #C7D2FE;padding:6px 14px;border-radius:20px;font-weight:600;font-size:0.82rem;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-share-nodes"></i> More Options</button>';
+        shareBar.innerHTML =
+            '<div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:12px;flex-wrap:wrap;">' +
+            '<div class="insta-actions-left">' +
+            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
+            '<span class="like-count-num">' + (likesCount > 0 ? likesCount + ' Likes' : 'Like') + '</span>' +
+            '</button>' +
+            '<button class="insta-action-icon-btn comment-btn" onclick="focusArticleCommentInput();" title="Comment">' +
+            '<i class="fa-regular fa-comment"></i>' +
+            '<span class="comment-count" data-comment-blog-id="' + blogId + '">' + (commentsCount > 0 ? commentsCount : '') + '</span>' +
+            '</button>' +
+            '<button class="insta-action-icon-btn share-btn" onclick="shareBlogArticle(\'' + blogId + '\')" title="Share Post">' +
+            '<i class="fa-solid fa-share-nodes"></i>' +
+            '</button>' +
+            '</div>' +
+            '<div class="article-share-chips">' +
+            '<span class="article-share-label">Quick Share:</span>' +
+            '<a class="share-chip x-tw" href="https://twitter.com/intent/tweet?text=' + encodeURIComponent('Read "' + (blog.title || 'Blog') + '" on BlogSphere 📖✨') + '&url=' + encodeURIComponent(window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/') + 'index.html?article=' + encodeURIComponent(blogId)) + '" target="_blank" title="Share on X" style="background:#000;color:#fff;width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;"><i class="fa-brands fa-x-twitter" style="font-size:0.85rem;"></i></a>' +
+            '<button class="share-chip wa" onclick="BlogShare.whatsapp(\'' + blogId + '\', \'' + bTitleEsc + '\')"><i class="fa-brands fa-whatsapp"></i></button>' +
+            '<button class="share-chip fb" onclick="BlogShare.facebook(\'' + blogId + '\')"><i class="fa-brands fa-facebook-f"></i></button>' +
+            '<button class="share-chip copy" onclick="BlogShare.copy(\'' + blogId + '\', this)"><i class="fa-regular fa-copy"></i></button>' +
+            '</div>' +
+            '</div>';
+    }
+
+    // Render Comments Section inside Article Reader
+    var commentsSection = document.getElementById("articleReaderCommentsSection");
+    if (!commentsSection && contentEl && contentEl.parentNode) {
+        commentsSection = document.createElement("div");
+        commentsSection.id = "articleReaderCommentsSection";
+        commentsSection.className = "blog-comments-container";
+        contentEl.parentNode.appendChild(commentsSection);
+    }
+    if (commentsSection) {
+        renderArticleComments(blog, commentsSection);
     }
 
     overlay.classList.add("active");
@@ -363,6 +722,86 @@ function clearAuthorFilter() {
     renderHomeBlogs(activeCategoryFilter, null);
 }
 
+function renderBlogCardsList(blogsList, container) {
+    if (!container) return;
+
+    if (!blogsList || blogsList.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:#64748B;">' +
+            '<div style="font-size:2.8rem;color:#94A3B8;margin-bottom:12px;"><i class="fa-regular fa-newspaper"></i></div>' +
+            '<h3 style="color:#0F172A;font-size:1.3rem;margin-bottom:6px;">No articles found</h3>' +
+            '<p style="margin-bottom:18px;">No published stories match the selected criteria.</p>' +
+            (activeAuthorFilter ? '<button type="button" class="read-more-btn" onclick="clearAuthorFilter()"><i class="fa-solid fa-arrow-left"></i> View All Articles</button>' : '<a href="createBlog.html" class="read-more-btn"><i class="fa-solid fa-pen-nib"></i> Write One Now</a>') +
+            '</div>';
+        return;
+    }
+
+    container.innerHTML = blogsList.map(function (blog) {
+        var blogId = blog._id || blog.id;
+        var rawImage = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
+        var imageSrc = resolveImageUrl(rawImage);
+        var hasVideo = blog.video && blog.video.trim() !== "";
+        var videoSrc = hasVideo ? resolveImageUrl(blog.video) : "";
+        var authorId = blog.author ? (blog.author._id || blog.author.id || "") : "";
+        var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
+        var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var authorAvatar = resolveImageUrl(rawAvatar);
+        var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
+        var pubDate = formatDate(blog.createdAt);
+        var isLiked = checkIsBlogLiked(blog);
+        var likesCount = blog.likesCount || (blog.likes ? blog.likes.length : 0);
+
+        var mediaHtml;
+        if (hasVideo) {
+            mediaHtml =
+                '<div class="blog-card-image-wrap" ondblclick="handleInstagramDblClick(this, \'' + blogId + '\', event)" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;cursor:pointer;">' +
+                '<video autoplay muted loop playsinline preload="auto" style="width:100%;max-height:240px;display:block;background:#000;object-fit:cover;" poster="' + esc(imageSrc) + '">' +
+                '<source src="' + esc(videoSrc) + '">' +
+                'Your browser does not support video.' +
+                '</video>' +
+                '<div style="position:absolute;top:10px;left:10px;background:rgba(99,102,241,0.9);color:#fff;font-size:0.72rem;padding:3px 9px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);pointer-events:none;"><i class="fa-solid fa-video"></i> Video</div>' +
+                '</div>';
+        } else {
+            mediaHtml =
+                '<div class="blog-card-image-wrap" ondblclick="handleInstagramDblClick(this, \'' + blogId + '\', event)" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;cursor:pointer;">' +
+                '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
+                '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
+                'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
+                'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
+                '</div>';
+        }
+
+        return '<div class="blog-card">' +
+            mediaHtml +
+            '<div class="blog-card-content">' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +
+            '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;">' + esc(blog.category || "General") + '</span>' +
+            (pubDate ? '<span style="font-size:0.78rem;color:#64748B;font-weight:500;"><i class="fa-regular fa-calendar-days" style="margin-right:4px;"></i>' + esc(pubDate) + '</span>' : '') +
+            '</div>' +
+            '<h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:8px;line-height:1.3;cursor:pointer;" onclick="openArticleReader(\'' + blogId + '\')">' + esc(blog.title) + '</h3>' +
+            '<p class="blog-card-preview">' + esc(preview) + '</p>' +
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;" onclick="viewAuthorArticles(\'' + esc(authorId) + '\', \'' + esc(authorName) + '\')" title="Click to view all stories by ' + esc(authorName) + '">' +
+            '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid #6366F1;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<small style="color:#4F46E5;font-weight:600;">By ' + esc(authorName) + ' <i class="fa-solid fa-arrow-right" style="font-size:0.7rem;margin-left:3px;opacity:0.7;"></i></small>' +
+            '</div>' +
+            '<div class="insta-action-bar">' +
+            '<div class="insta-actions-left">' +
+            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post">' +
+            '<i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i>' +
+            '<span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span>' +
+            '</button>' +
+            '<button class="insta-action-icon-btn share-btn" onclick="shareBlogArticle(\'' + blogId + '\'); event.stopPropagation();" title="Share Post">' +
+            '<i class="fa-solid fa-share-nodes"></i>' +
+            '</button>' +
+            '</div>' +
+            '<button class="insta-read-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
+            '<i class="fa-solid fa-book-open"></i> Read' +
+            '</button>' +
+            '</div>' +
+            '</div></div>';
+    }).join("");
+}
+
+// Stale-While-Revalidate blog loading with Author Filter and Category Filter support
 async function renderHomeBlogs(categoryFilter, authorFilter) {
     var container = document.getElementById("featuredBlogsContainer");
     var authorBanner = document.getElementById("authorProfileBanner");
@@ -374,152 +813,150 @@ async function renderHomeBlogs(categoryFilter, authorFilter) {
     if (categoryFilter !== undefined) activeCategoryFilter = categoryFilter;
     if (authorFilter !== undefined) activeAuthorFilter = authorFilter;
 
-    container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading stories…</div>';
-
+    // 1. Instant cache load if available
     try {
-        var response = await fetch(API_BLOGS_URL);
+        var localData = localStorage.getItem("cached_home_blogs");
+        if (localData) {
+            var parsed = JSON.parse(localData);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                cachedBlogs = parsed;
+                var filtered = filterBlogsList(cachedBlogs);
+                updateAuthorBannerUI(cachedBlogs);
+                renderBlogCardsList(filtered, container);
+                if (window.hidePageLoader) window.hidePageLoader();
+            }
+        }
+    } catch (e) {}
+
+    if (cachedBlogs.length === 0) {
+        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#64748B;"><i class="fa-solid fa-spinner fa-spin"></i> Loading stories...</div>';
+    }
+
+    // 2. Fresh fetch from server
+    try {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 4000);
+
         var blogs = [];
-        if (response.ok) blogs = await response.json();
-        cachedBlogs = blogs;
-
-        var displayList = blogs;
-
-        // Filter by author if active
-        if (activeAuthorFilter) {
-            displayList = displayList.filter(function (b) {
-                if (!b.author) return false;
-                var aId = b.author._id || b.author.id || b.author;
-                var aName = b.author.name || b.author.email || "";
-                return String(aId) === String(activeAuthorFilter) || 
-                       String(aName).toLowerCase() === String(activeAuthorFilter).toLowerCase();
-            });
-        }
-
-        // Filter by category if active
-        if (activeCategoryFilter && activeCategoryFilter.toLowerCase() !== "all") {
-            displayList = displayList.filter(function (b) {
-                return b.category && b.category.toLowerCase() === activeCategoryFilter.toLowerCase();
-            });
-        }
-
-        // Render Author Profile Banner if filtering by author
-        if (activeAuthorFilter && authorBanner) {
-            var primaryAuthor = (displayList.length > 0 && displayList[0].author) ? displayList[0].author : null;
-            var authorName = "Author";
-            var authorAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
-            var authorBio = "Prolific writer and contributor to the BlogSphere creator community.";
-
-            if (primaryAuthor) {
-                authorName = primaryAuthor.name || primaryAuthor.email || "Author";
-                if (primaryAuthor.profilePic) authorAvatar = resolveImageUrl(primaryAuthor.profilePic);
-                if (primaryAuthor.bio) authorBio = primaryAuthor.bio;
-            } else {
-                var urlParams = new URLSearchParams(window.location.search);
-                var paramName = urlParams.get("authorName");
-                if (paramName) authorName = paramName;
+        try {
+            var response = await fetch(API_BLOGS_URL, { signal: controller.signal });
+            clearTimeout(timeoutId);
+            if (response.ok) blogs = await response.json();
+        } catch (fetchErr) {
+            clearTimeout(timeoutId);
+            var fallbackUrl = API_BASE_URL.includes("localhost")
+                ? "https://blogsphere-wtrv.onrender.com/api/blogs"
+                : "http://localhost:5000/api/blogs";
+            try {
+                var fallbackRes = await fetch(fallbackUrl);
+                if (fallbackRes.ok) blogs = await fallbackRes.json();
+            } catch (err2) {
+                console.warn("Fallback fetch error:", err2);
             }
-
-            var authorCount = displayList.length;
-
-            authorBanner.style.display = "block";
-            authorBanner.innerHTML =
-                '<div class="author-hero-banner">' +
-                '<div class="author-hero-left">' +
-                '<img src="' + esc(authorAvatar) + '" alt="' + esc(authorName) + '" class="author-hero-avatar" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
-                '<div class="author-hero-details">' +
-                '<h1>' + esc(authorName) + ' <span style="font-size:1.2rem;">✍️</span></h1>' +
-                '<p>' + esc(authorBio) + '</p>' +
-                '<div class="author-hero-badges">' +
-                '<span class="author-pill"><i class="fa-solid fa-newspaper"></i> ' + authorCount + ' Published ' + (authorCount === 1 ? 'Article' : 'Articles') + '</span>' +
-                '<span class="author-pill" style="background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.4);color:#A7F3D0;"><i class="fa-solid fa-circle-check"></i> Verified Creator</span>' +
-                '</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="author-hero-actions">' +
-                '<button type="button" class="btn-author-share" onclick="shareAuthorProfile(\'' + esc(activeAuthorFilter) + '\', \'' + esc(authorName) + '\', \'' + esc(authorBio) + '\')">' +
-                '<i class="fa-solid fa-share-nodes"></i> Share Author Page' +
-                '</button>' +
-                '<button type="button" class="btn-author-all" onclick="clearAuthorFilter()">' +
-                '<i class="fa-solid fa-arrow-left"></i> View All Stories' +
-                '</button>' +
-                '</div>' +
-                '</div>';
-
-            if (sectionTitle) sectionTitle.textContent = "Articles by " + authorName;
-            if (sectionSub) sectionSub.textContent = "Explore all " + authorCount + " stories published by " + authorName;
-        } else if (authorBanner) {
-            authorBanner.style.display = "none";
-            if (sectionTitle) sectionTitle.textContent = "Latest Articles";
-            if (sectionSub) sectionSub.textContent = "Fresh stories published by our vibrant community";
         }
 
-        if (displayList.length === 0) {
-            container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:50px 20px;color:#64748B;">' +
-                '<div style="font-size:2.8rem;color:#94A3B8;margin-bottom:12px;"><i class="fa-regular fa-newspaper"></i></div>' +
-                '<h3 style="color:#0F172A;font-size:1.3rem;margin-bottom:6px;">No articles found</h3>' +
-                '<p style="margin-bottom:18px;">No published stories match the selected criteria.</p>' +
-                (activeAuthorFilter ? '<button type="button" class="read-more-btn" onclick="clearAuthorFilter()"><i class="fa-solid fa-arrow-left"></i> View All Articles</button>' : '<a href="createBlog.html" class="read-more-btn"><i class="fa-solid fa-pen-nib"></i> Write One Now</a>') +
-                '</div>';
-            return;
+        if (Array.isArray(blogs) && blogs.length > 0) {
+            cachedBlogs = blogs;
+            try {
+                localStorage.setItem("cached_home_blogs", JSON.stringify(blogs));
+            } catch (e) {}
+
+            var displayList = filterBlogsList(blogs);
+            updateAuthorBannerUI(blogs);
+            renderBlogCardsList(displayList, container);
         }
-
-        container.innerHTML = displayList.map(function (blog) {
-            var blogId = blog._id || blog.id;
-            var rawImage = blog.image && blog.image.trim() !== "" ? blog.image : "https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80";
-            var imageSrc = resolveImageUrl(rawImage);
-            var hasVideo = blog.video && blog.video.trim() !== "";
-            var videoSrc = hasVideo ? resolveImageUrl(blog.video) : "";
-            var authorId = blog.author ? (blog.author._id || blog.author.id || "") : "";
-            var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Anonymous";
-            var rawAvatar = (blog.author && blog.author.profilePic) ? blog.author.profilePic : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
-            var authorAvatar = resolveImageUrl(rawAvatar);
-            var preview = (blog.content || "").substring(0, 120) + ((blog.content || "").length > 120 ? "…" : "");
-            var pubDate = formatDate(blog.createdAt);
-
-            var mediaHtml;
-            if (hasVideo) {
-                mediaHtml =
-                    '<div class="blog-card-image-wrap" style="position:relative;width:100%;background:#0F172A;overflow:hidden;border-radius:16px 16px 0 0;">' +
-                    '<video autoplay muted loop playsinline preload="auto" style="width:100%;max-height:240px;display:block;background:#000;object-fit:cover;" poster="' + esc(imageSrc) + '">' +
-                    '<source src="' + esc(videoSrc) + '">' +
-                    'Your browser does not support video.' +
-                    '</video>' +
-                    '<div style="position:absolute;top:10px;left:10px;background:rgba(99,102,241,0.9);color:#fff;font-size:0.72rem;padding:3px 9px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:5px;backdrop-filter:blur(4px);pointer-events:none;"><i class="fa-solid fa-video"></i> Video</div>' +
-                    '</div>';
-            } else {
-                mediaHtml =
-                    '<div class="blog-card-image-wrap" style="position:relative;width:100%;height:210px;background:#E2E8F0;overflow:hidden;">' +
-                    '<div class="blog-img-loader" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#64748B;font-size:1.4rem;"><i class="fa-solid fa-spinner fa-spin"></i></div>' +
-                    '<img src="' + esc(imageSrc) + '" alt="' + esc(blog.title) + '" loading="lazy" style="width:100%;height:210px;object-fit:cover;opacity:0;transition:opacity 0.3s ease;" ' +
-                    'onload="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';" ' +
-                    'onerror="this.style.opacity=1;var l=this.previousElementSibling;if(l)l.style.display=\'none\';this.src=\'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=600&q=80\'">' +
-                    '</div>';
-            }
-
-            return '<div class="blog-card">' +
-                mediaHtml +
-                '<div class="blog-card-content">' +
-                '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;">' +
-                '<span style="font-size:0.78rem;font-weight:700;color:#4F46E5;text-transform:uppercase;letter-spacing:0.5px;">' + esc(blog.category || "General") + '</span>' +
-                (pubDate ? '<span style="font-size:0.78rem;color:#64748B;font-weight:500;"><i class="fa-regular fa-calendar-days" style="margin-right:4px;"></i>' + esc(pubDate) + '</span>' : '') +
-                '</div>' +
-                '<h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:8px;line-height:1.3;cursor:pointer;" onclick="openArticleReader(\'' + blogId + '\')">' + esc(blog.title) + '</h3>' +
-                '<p class="blog-card-preview">' + esc(preview) + '</p>' +
-                '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;" onclick="viewAuthorArticles(\'' + esc(authorId) + '\', \'' + esc(authorName) + '\')" title="Click to view all stories by ' + esc(authorName) + '">' +
-                '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid #6366F1;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
-                '<small style="color:#4F46E5;font-weight:600;">By ' + esc(authorName) + ' <i class="fa-solid fa-arrow-right" style="font-size:0.7rem;margin-left:3px;opacity:0.7;"></i></small>' +
-                '</div>' +
-                '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">' +
-                '<button class="read-more-btn" onclick="openArticleReader(\'' + blogId + '\')"><i class="fa-solid fa-book-open"></i> Read</button>' +
-                '<button class="share-card-btn" onclick="shareBlogArticle(\'' + blogId + '\')" title="Share this blog post"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
-                '</div>' +
-                '</div></div>';
-        }).join("");
     } catch (err) {
         console.error("Home blogs fetch error:", err);
-        container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Please check your connection and try again.</p></div>';
+        if (cachedBlogs.length === 0) {
+            container.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#EF4444;"><p>Could not load stories. Please check your connection and try again.</p></div>';
+        }
     } finally {
         if (window.hidePageLoader) window.hidePageLoader();
+    }
+}
+
+function filterBlogsList(blogs) {
+    var list = blogs;
+    if (activeAuthorFilter) {
+        list = list.filter(function (b) {
+            if (!b.author) return false;
+            var aId = b.author._id || b.author.id || b.author;
+            var aName = b.author.name || b.author.email || "";
+            return String(aId) === String(activeAuthorFilter) || 
+                   String(aName).toLowerCase() === String(activeAuthorFilter).toLowerCase();
+        });
+    }
+    if (activeCategoryFilter && activeCategoryFilter.toLowerCase() !== "all") {
+        list = list.filter(function (b) {
+            return b.category && b.category.toLowerCase() === activeCategoryFilter.toLowerCase();
+        });
+    }
+    return list;
+}
+
+function updateAuthorBannerUI(allBlogs) {
+    var authorBanner = document.getElementById("authorProfileBanner");
+    var sectionTitle = document.getElementById("featuredSectionTitle");
+    var sectionSub = document.getElementById("featuredSectionSubtitle");
+
+    if (!authorBanner) return;
+
+    if (activeAuthorFilter) {
+        var authorBlogs = allBlogs.filter(function (b) {
+            if (!b.author) return false;
+            var aId = b.author._id || b.author.id || b.author;
+            var aName = b.author.name || b.author.email || "";
+            return String(aId) === String(activeAuthorFilter) || 
+                   String(aName).toLowerCase() === String(activeAuthorFilter).toLowerCase();
+        });
+
+        var primaryAuthor = (authorBlogs.length > 0 && authorBlogs[0].author) ? authorBlogs[0].author : null;
+        var authorName = "Author";
+        var authorAvatar = "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80";
+        var authorBio = "Prolific writer and contributor to the BlogSphere creator community.";
+
+        if (primaryAuthor) {
+            authorName = primaryAuthor.name || primaryAuthor.email || "Author";
+            if (primaryAuthor.profilePic) authorAvatar = resolveImageUrl(primaryAuthor.profilePic);
+            if (primaryAuthor.bio) authorBio = primaryAuthor.bio;
+        } else {
+            var urlParams = new URLSearchParams(window.location.search);
+            var paramName = urlParams.get("authorName");
+            if (paramName) authorName = paramName;
+        }
+
+        var authorCount = authorBlogs.length;
+
+        authorBanner.style.display = "block";
+        authorBanner.innerHTML =
+            '<div class="author-hero-banner">' +
+            '<div class="author-hero-left">' +
+            '<img src="' + esc(authorAvatar) + '" alt="' + esc(authorName) + '" class="author-hero-avatar" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
+            '<div class="author-hero-details">' +
+            '<h1>' + esc(authorName) + ' <span style="font-size:1.2rem;">✍️</span></h1>' +
+            '<p>' + esc(authorBio) + '</p>' +
+            '<div class="author-hero-badges">' +
+            '<span class="author-pill"><i class="fa-solid fa-newspaper"></i> ' + authorCount + ' Published ' + (authorCount === 1 ? 'Article' : 'Articles') + '</span>' +
+            '<span class="author-pill" style="background:rgba(16,185,129,0.25);border-color:rgba(16,185,129,0.4);color:#A7F3D0;"><i class="fa-solid fa-circle-check"></i> Verified Creator</span>' +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="author-hero-actions">' +
+            '<button type="button" class="btn-author-share" onclick="shareAuthorProfile(\'' + esc(activeAuthorFilter) + '\', \'' + esc(authorName) + '\', \'' + esc(authorBio) + '\')">' +
+            '<i class="fa-solid fa-share-nodes"></i> Share Author Page' +
+            '</button>' +
+            '<button type="button" class="btn-author-all" onclick="clearAuthorFilter()">' +
+            '<i class="fa-solid fa-arrow-left"></i> View All Stories' +
+            '</button>' +
+            '</div>' +
+            '</div>';
+
+        if (sectionTitle) sectionTitle.textContent = "Articles by " + authorName;
+        if (sectionSub) sectionSub.textContent = "Explore all " + authorCount + " stories published by " + authorName;
+    } else {
+        authorBanner.style.display = "none";
+        if (sectionTitle) sectionTitle.textContent = "Latest Articles";
+        if (sectionSub) sectionSub.textContent = "Fresh stories published by our vibrant community";
     }
 }
 
@@ -530,13 +967,14 @@ function filterBlogs(cat) {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
+    try { localStorage.removeItem("cached_home_blogs"); } catch(e) {}
     updateNav();
     loadSiteSettings();
 
     // Check URL parameters on load for ?author= or ?article=
     var urlParams = new URLSearchParams(window.location.search);
     var authorParam = urlParams.get("author") || urlParams.get("authorId");
-    var articleParam = urlParams.get("article") || urlParams.get("id");
+    var articleParam = urlParams.get("article") || urlParams.get("id") || urlParams.get("blogId");
 
     if (authorParam) {
         activeAuthorFilter = authorParam;
@@ -578,43 +1016,31 @@ document.addEventListener("DOMContentLoaded", function () {
     if (newsletterForm) {
         newsletterForm.addEventListener("submit", async function (e) {
             e.preventDefault();
-            var input = newsletterForm.querySelector("input[type='email']");
-            var submitBtn = newsletterForm.querySelector("button[type='submit']");
-            if (!input || !input.value) return;
-
-            var email = input.value.trim();
-            var originalBtnHtml = submitBtn ? submitBtn.innerHTML : "Subscribe";
+            var input = this.querySelector("input[type='email']");
+            if (!input || !input.value.trim()) return;
 
             try {
-                if (submitBtn) {
-                    submitBtn.disabled = true;
-                    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Subscribing...';
-                }
-                showToast("Subscribing...", "info");
                 var res = await fetch(API_BASE_URL + "/api/subscribers/subscribe", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email: email })
+                    body: JSON.stringify({ email: input.value.trim() })
                 });
                 var data = await res.json();
                 if (res.ok) {
-                    showToast(data.message || "Thank you for subscribing!", "success", 4000);
+                    showToast(data.message || "🎉 Subscribed successfully!", "success");
                     input.value = "";
                 } else {
-                    showToast(data.message || "Subscription failed", "error");
+                    showToast(data.message || "Could not subscribe.", "error");
                 }
             } catch (err) {
-                showToast("Error connecting to server. Please try again.", "error");
-            } finally {
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
-                }
+                console.error("Newsletter error:", err);
+                showToast("Subscription failed. Please check connection.", "error");
             }
         });
     }
 });
 
+// Window exports
 window.showTermsModal = showTermsModal;
 window.filterBlogs = filterBlogs;
 window.openArticleReader = openArticleReader;
@@ -627,4 +1053,10 @@ window.shareBlogArticle = shareBlogArticle;
 window.shareAuthorProfile = shareAuthorProfile;
 window.viewAuthorArticles = viewAuthorArticles;
 window.clearAuthorFilter = clearAuthorFilter;
-
+window.handleToggleLike = handleToggleLike;
+window.handleInstagramDblClick = handleInstagramDblClick;
+window.triggerInstaHeartPop = triggerInstaHeartPop;
+window.insertEmojiIntoComment = insertEmojiIntoComment;
+window.handleAddComment = handleAddComment;
+window.focusArticleCommentInput = focusArticleCommentInput;
+window.BlogShare = BlogShare;

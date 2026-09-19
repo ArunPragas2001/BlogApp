@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | BlogSphere</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
     <link rel="stylesheet" href="css/darkmode.css">
     <link rel="stylesheet" href="css/navigationHelpers.css">
@@ -45,6 +45,172 @@
         .welcome-text h1 { font-size:1.9rem; font-weight:700; color:#FFF; margin-bottom:6px; }
         .welcome-text p { font-size:0.95rem; color:#94A3B8; }
         .welcome-actions { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+
+        .btn-share-profile {
+            background: linear-gradient(135deg, #06B6D4 0%, #3B82F6 100%);
+            color: #FFF;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 6px 18px rgba(6,182,212,0.35);
+            transition: all 0.25s;
+        }
+        .btn-share-profile:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(6,182,212,0.45);
+        }
+
+        /* Platform User Management Collapsible Panel */
+        .user-mgmt-header-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .toggle-users-btn {
+            background: #0F172A;
+            color: #FFF;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+        }
+        .toggle-users-btn:hover {
+            background: #1E293B;
+            transform: translateY(-2px);
+        }
+        .user-mgmt-body {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #CBD5E1;
+            animation: fadeInBody 0.3s ease-out;
+        }
+        @keyframes fadeInBody {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user-search-bar {
+            display: flex;
+            align-items: center;
+            background: #FFFFFF;
+            border: 1.5px solid #CBD5E1;
+            border-radius: 12px;
+            padding: 8px 16px;
+            margin-bottom: 16px;
+            gap: 10px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+        }
+        .user-search-bar input {
+            border: none;
+            outline: none;
+            flex: 1;
+            font-size: 0.92rem;
+            color: #0F172A;
+        }
+        .user-mgmt-scroll-container {
+            max-height: 440px;
+            overflow-y: auto;
+            padding-right: 6px;
+            scrollbar-width: thin;
+        }
+
+        /* Share Modal */
+        .share-modal-overlay {
+            position: fixed; inset: 0;
+            background: rgba(15,23,42,0.78);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: none; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .share-modal-overlay.active { display: flex; }
+        .share-modal-card {
+            background: #FFFFFF;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            padding: 30px 32px;
+            position: relative;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.4);
+            border: 1px solid rgba(99,102,241,0.25);
+            animation: popModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        body.dark-mode .share-modal-card {
+            background: #1E293B;
+            color: #F1F5F9;
+            border-color: #334155;
+        }
+        .share-modal-close {
+            position: absolute; top: 18px; right: 18px;
+            background: #F1F5F9; border: none;
+            color: #64748B; width: 36px; height: 36px;
+            border-radius: 50%; font-size: 1.1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .share-modal-close:hover { background: #EF4444; color: #FFF; }
+        body.dark-mode .share-modal-close { background: #334155; color: #94A3B8; }
+        .share-social-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 22px 0 24px;
+        }
+        .share-social-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 14px 8px;
+            text-decoration: none;
+            color: #1E293B;
+            font-size: 0.78rem;
+            font-weight: 700;
+            transition: all 0.25s;
+            cursor: pointer;
+        }
+        .share-social-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        .share-social-btn.btn-x-social { background: #000000; color: #FFFFFF; border-color: #333333; }
+        .share-social-btn.btn-x-social:hover { background: #181818; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .share-social-btn.btn-wa-social { color: #25D366; }
+        .share-social-btn.btn-wa-social:hover { background: #DCF8C6; border-color: #25D366; }
+        .share-social-btn.btn-fb-social { color: #1877F2; }
+        .share-social-btn.btn-fb-social:hover { background: #E7F3FF; border-color: #1877F2; }
+        .share-social-btn.btn-li-social { color: #0A66C2; }
+        .share-social-btn.btn-li-social:hover { background: #E8F3FF; border-color: #0A66C2; }
+        .share-link-box {
+            display: flex;
+            align-items: center;
+            background: #F1F5F9;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 4px 6px 4px 14px;
+            margin-top: 14px;
+        }
+        body.dark-mode .share-link-box { background: #0F172A; border-color: #334155; }
+        .share-link-input { flex: 1; background: transparent; border: none; font-size: 0.88rem; color: #334155; outline: none; }
+        body.dark-mode .share-link-input { color: #E2E8F0; }
+        .btn-copy-share {
+            background: #4F46E5; color: #FFF; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-copy-share:hover { background: #4338CA; }
     </style>
 </head>
 
@@ -83,6 +249,9 @@
                 </div>
             </div>
             <div class="welcome-actions">
+                <button type="button" class="btn-share-profile" onclick="shareMyAuthorProfile()" title="Share all your published articles with fans">
+                    <i class="fa-solid fa-share-nodes"></i> Share My Public Articles
+                </button>
                 <a href="adminSettings.html" id="adminSettingsBtn" class="create-btn" style="background:#475569;display:none;">
                     <i class="fa-solid fa-sliders"></i> Site Settings
                 </a>
@@ -118,14 +287,30 @@
             <div id="ownerAdminReqContainer" class="blogs-list"></div>
         </section>
 
-        <section id="ownerUserManagementSection" style="display:none; margin-bottom:0; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:20px; padding:28px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+        <!-- Redesigned Collapsible Owner User Management Section -->
+        <section id="ownerUserManagementSection" style="display:none; margin-bottom:0; background:#F8FAFC; border:1px solid #CBD5E1; border-radius:20px; padding:24px 28px;">
+            <div class="user-mgmt-header-box">
                 <div>
                     <h2 style="color:#0F172A;margin:0 0 4px 0; font-size:1.2rem;"><i class="fa-solid fa-users"></i> Platform User Management</h2>
-                    <p style="color:#475569;margin:0;font-size:0.9rem;">Block, unblock, or remove users from the system.</p>
+                    <p style="color:#475569;margin:0;font-size:0.9rem;">View, search, block, or manage platform registered members.</p>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="badge" style="background:#0F172A;color:#FFF;font-weight:700;padding:6px 14px;border-radius:20px;font-size:0.85rem;" id="ownerUserTotalBadge">0 Users</span>
+                    <button type="button" id="toggleUserMgmtBtn" class="toggle-users-btn" onclick="toggleOwnerUserManagement()">
+                        <i class="fa-solid fa-chevron-down" id="toggleUserMgmtIcon"></i> <span id="toggleUserMgmtText">View Users</span>
+                    </button>
                 </div>
             </div>
-            <div id="ownerUserManagementContainer" class="blogs-list"></div>
+
+            <!-- Collapsible Body (Hidden by default to keep dashboard compact) -->
+            <div id="ownerUserManagementBody" class="user-mgmt-body" style="display:none;">
+                <div class="user-search-bar">
+                    <i class="fa-solid fa-magnifying-glass" style="color:#64748B;"></i>
+                    <input type="text" id="ownerUserSearchInput" placeholder="Filter users by name, email, or role..." oninput="filterOwnerUsers(this.value)">
+                    <button type="button" onclick="document.getElementById('ownerUserSearchInput').value=''; filterOwnerUsers('');" style="background:none; border:none; color:#94A3B8; cursor:pointer;" title="Clear search"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div id="ownerUserManagementContainer" class="user-mgmt-scroll-container blogs-list"></div>
+            </div>
         </section>
 
         <section id="adminApprovalSection" style="display:none; margin-bottom:0; background:#FFFBEB; border:1px solid #FCD34D; border-radius:20px; padding:28px;">
@@ -140,11 +325,14 @@
         </section>
 
         <section class="my-blogs">
-            <div class="section-heading">
+            <div class="section-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>
                     <h2 id="myBlogsTitle">My Blogs</h2>
-                    <p>Manage your posts and check approval status.</p>
+                    <p>Manage your posts, share with fans, and check approval status.</p>
                 </div>
+                <button type="button" class="btn-share-profile" onclick="shareMyAuthorProfile()" style="padding:8px 16px; font-size:0.85rem;">
+                    <i class="fa-solid fa-share-nodes"></i> Share My Profile
+                </button>
             </div>
             <div class="blogs-list" id="blogContainer"></div>
         </section>
@@ -153,6 +341,53 @@
     <footer>
         <p>&copy; 2026 BlogSphere. All Rights Reserved.</p>
     </footer>
+
+    <!-- Global Share Dialog Modal with Modern X Logo -->
+    <div class="share-modal-overlay" id="globalShareModal">
+        <div class="share-modal-card">
+            <button type="button" class="share-modal-close" onclick="closeShareModal()" aria-label="Close share dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <div style="width:36px; height:36px; border-radius:10px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 id="shareModalTitle" style="margin:0; font-size:1.25rem; font-weight:700; color:#0F172A;">Share to Fans & Followers</h3>
+            </div>
+            <p id="shareModalSubtitle" style="margin:0 0 16px 0; font-size:0.88rem; color:#64748B;">Share via social platforms or copy direct link.</p>
+
+            <div class="share-social-grid">
+                <!-- X (Twitter) -->
+                <a href="#" id="shareLinkX" target="_blank" class="share-social-btn btn-x-social" title="Share on X">
+                    <div class="share-social-icon"><i class="fa-brands fa-x-twitter" style="font-size:1.4rem;"></i></div>
+                    <span>Post on X</span>
+                </a>
+                <!-- WhatsApp -->
+                <a href="#" id="shareLinkWhatsApp" target="_blank" class="share-social-btn btn-wa-social" title="Share on WhatsApp">
+                    <div class="share-social-icon"><i class="fa-brands fa-whatsapp" style="font-size:1.45rem;"></i></div>
+                    <span>WhatsApp</span>
+                </a>
+                <!-- Facebook -->
+                <a href="#" id="shareLinkFacebook" target="_blank" class="share-social-btn btn-fb-social" title="Share on Facebook">
+                    <div class="share-social-icon"><i class="fa-brands fa-facebook" style="font-size:1.45rem;"></i></div>
+                    <span>Facebook</span>
+                </a>
+                <!-- LinkedIn -->
+                <a href="#" id="shareLinkLinkedIn" target="_blank" class="share-social-btn btn-li-social" title="Share on LinkedIn">
+                    <div class="share-social-icon"><i class="fa-brands fa-linkedin" style="font-size:1.45rem;"></i></div>
+                    <span>LinkedIn</span>
+                </a>
+            </div>
+
+            <label style="font-size:0.82rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Direct Shareable Link</label>
+            <div class="share-link-box">
+                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly>
+                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script src="js/toast.js"></script>
     <script src="js/theme.js"></script>

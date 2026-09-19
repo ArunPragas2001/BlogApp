@@ -281,6 +281,25 @@ body.dark-mode #ownerUserManagementSection p {
     color: #CBD5E1 !important;
 }
 
+body.dark-mode #ownerUserManagementSection .user-mgmt-body {
+    border-top-color: #334155 !important;
+}
+
+body.dark-mode #ownerUserManagementSection .user-search-bar {
+    background: #0F172A !important;
+    border-color: #334155 !important;
+}
+
+body.dark-mode #ownerUserManagementSection .user-search-bar input {
+    background: transparent !important;
+    color: #F1F5F9 !important;
+}
+
+body.dark-mode #ownerUserManagementSection .toggle-users-btn {
+    background: #4F46E5 !important;
+    color: #FFF !important;
+}
+
 body.dark-mode #ownerUserManagementSection .dashboard-blog {
     background: #253047 !important;
     border-color: #334155 !important;

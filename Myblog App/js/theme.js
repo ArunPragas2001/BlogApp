@@ -35,9 +35,6 @@
             var nowDark = document.body.classList.contains("dark-mode");
             localStorage.setItem("theme", nowDark ? "dark" : "light");
             this.innerHTML = nowDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
-            if (window.showToast) {
-                window.showToast(nowDark ? "🌙 Night Mode" : "☀️ Bright Mode", "info", 2000);
-            }
         });
 
         if (navbar) {

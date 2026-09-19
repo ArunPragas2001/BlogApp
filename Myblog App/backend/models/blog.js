@@ -42,6 +42,29 @@ const blogSchema = new mongoose.Schema(
       type: String,
       default: ""
     },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ],
+    likesCount: {
+      type: Number,
+      default: 0
+    },
+    comments: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        userName: { type: String, required: true },
+        userAvatar: { type: String, default: "" },
+        text: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+      }
+    ],
+    commentsCount: {
+      type: Number,
+      default: 0
+    },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -52,6 +75,9 @@ const blogSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+blogSchema.index({ isApproved: 1, createdAt: -1 });
+blogSchema.index({ category: 1 });
 
 const Blog = mongoose.model("Blog", blogSchema);
 

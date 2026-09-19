@@ -435,9 +435,121 @@ function closeAvatarZoomModal() {
     if (modal) modal.style.display = "none";
 }
 
+// ─── Share Modal Functions for Profile Page ──────────────────────────────────
+function openShareModal(options) {
+    var modal = document.getElementById("globalShareModal");
+    var titleEl = document.getElementById("shareModalTitle");
+    var subEl = document.getElementById("shareModalSubtitle");
+    var urlInput = document.getElementById("shareDirectUrlInput");
+    var linkX = document.getElementById("shareLinkX");
+    var linkWa = document.getElementById("shareLinkWhatsApp");
+    var linkFb = document.getElementById("shareLinkFacebook");
+    var linkLi = document.getElementById("shareLinkLinkedIn");
+
+    if (!modal) return;
+
+    options = options || {};
+    var type = options.type || "author";
+    var title = options.title || "BlogSphere Articles";
+    var authorName = options.authorName || "Author";
+    var shareUrl = options.url || window.location.href;
+
+    if (shareUrl.startsWith("/") || shareUrl.startsWith("index.html") || !shareUrl.startsWith("http")) {
+        shareUrl = window.location.origin + (window.location.pathname.replace(/\/[^/]*$/, "/")) + shareUrl.replace(/^\//, "");
+    }
+
+    if (titleEl) titleEl.textContent = type === "author" ? "Share Author Profile" : "Share Article";
+    if (subEl) subEl.textContent = type === "author" ? "Share " + authorName + "'s published articles with fans & friends." : "Share \"" + title + "\" with friends.";
+    if (urlInput) urlInput.value = shareUrl;
+
+    var shareText = type === "author"
+        ? "Check out all my published articles on BlogSphere! ✍️✨"
+        : "Read \"" + title + "\" by " + authorName + " on BlogSphere! 📖✨";
+
+    if (linkX) linkX.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText) + "&url=" + encodeURIComponent(shareUrl);
+    if (linkWa) linkWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText + "\n" + shareUrl);
+    if (linkFb) linkFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl);
+    if (linkLi) linkLi.href = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(shareUrl);
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    document.body.style.overflow = "hidden";
+}
+
+function closeShareModal() {
+    var modal = document.getElementById("globalShareModal");
+    if (modal) {
+        modal.classList.remove("active");
+        modal.style.display = "none";
+    }
+    document.body.style.overflow = "";
+}
+
+function copyShareModalLink() {
+    var urlInput = document.getElementById("shareDirectUrlInput");
+    if (!urlInput || !urlInput.value) return;
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(urlInput.value).then(function () {
+            showToast("🔗 Link copied to clipboard!", "success");
+        }).catch(function () {
+            urlInput.select();
+            document.execCommand("copy");
+            showToast("🔗 Link copied to clipboard!", "success");
+        });
+    } else {
+        urlInput.select();
+        document.execCommand("copy");
+        showToast("🔗 Link copied to clipboard!", "success");
+    }
+}
+
+function shareProfilePage() {
+    var currentUser = {};
+    try { currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}"); } catch(e) {}
+    var authorId = currentUser.id || currentUser._id;
+    var authorName = currentUser.name || "Author";
+
+    if (!authorId) {
+        showToast("Please log in first.", "error");
+        return;
+    }
+
+    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+    var shareUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId) + "&authorName=" + encodeURIComponent(authorName);
+
+    openShareModal({
+        type: "author",
+        title: authorName + "'s Published Articles",
+        authorName: authorName,
+        url: shareUrl
+    });
+}
+
+// Global modal overlay click & ESC
+document.addEventListener("DOMContentLoaded", function () {
+    var shareModalOverlay = document.getElementById("globalShareModal");
+    if (shareModalOverlay) {
+        shareModalOverlay.addEventListener("click", function (e) {
+            if (e.target === shareModalOverlay) closeShareModal();
+        });
+    }
+
+    document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") {
+            closeShareModal();
+            closeAvatarZoomModal();
+        }
+    });
+});
+
 window.openAvatarZoomModal = openAvatarZoomModal;
 window.closeAvatarZoomModal = closeAvatarZoomModal;
 window.selectSampleAvatar = selectSampleAvatar;
 window.resolveImageUrl = resolveImageUrl;
+window.shareProfilePage = shareProfilePage;
+window.openShareModal = openShareModal;
+window.closeShareModal = closeShareModal;
+window.copyShareModalLink = copyShareModalLink;
 
 
