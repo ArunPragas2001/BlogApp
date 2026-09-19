@@ -770,8 +770,8 @@ function renderBlogCardsList(blogsList, container) {
             '<i class="fa-solid fa-paper-plane"></i>' +
             '</button>' +
             '</div>' +
-            '<button class="insta-read-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
-            '<i class="fa-solid fa-book-open"></i> Read' +
+            '<button class="insta-action-icon-btn read-btn" onclick="openArticleReader(\'' + blogId + '\')" title="Read Article">' +
+            '<i class="fa-solid fa-book-open"></i>' +
             '</button>' +
             '</div>' +
             '</div></div>';
