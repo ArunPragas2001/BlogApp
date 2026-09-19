@@ -218,8 +218,8 @@ async function displayOwnerAdminRequests() {
             return '<div class="dashboard-blog" style="border-left:5px solid #6366F1;">' +
                 '<div class="blog-info"><h3>' + esc(user.name) + '</h3><p>Email: <strong>' + esc(user.email) + '</strong> — Awaiting Owner approval</p></div>' +
                 '<div class="blog-actions">' +
-                '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveAdminUser(\'' + user._id + '\',true)"><i class="fa-solid fa-user-check"></i> Approve</button>' +
-                '<button class="delete-btn" onclick="handleApproveAdminUser(\'' + user._id + '\',false)"><i class="fa-solid fa-user-xmark"></i> Reject</button>' +
+                '<button class="dash-icon-btn approve" title="Approve Admin" onclick="handleApproveAdminUser(\'' + user._id + '\',true)"><i class="fa-solid fa-user-check"></i></button>' +
+                '<button class="dash-icon-btn reject" title="Reject Request" onclick="handleApproveAdminUser(\'' + user._id + '\',false)"><i class="fa-solid fa-user-xmark"></i></button>' +
                 '</div></div>';
         }).join("");
     } catch (err) {
