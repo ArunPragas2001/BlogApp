@@ -354,176 +354,158 @@ a {
 }
 
 /* ==========================================================================
-   Modern Minimalist Icon-Only Action Buttons (Tooltips, Sleek Micro-Interactions)
+   Social-Style Circular Ring Icon Buttons  (matches reference image)
    ========================================================================== */
 .dash-icon-btn {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: #F8FAFC;
-    color: #475569;
-    border: 1px solid #E2E8F0;
+    background: #ffffff;
+    color: #1e293b;
+    border: 2.5px solid #1e293b;
     cursor: pointer;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     position: relative;
-    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-decoration: none;
     outline: none;
+    flex-shrink: 0;
     -webkit-font-smoothing: antialiased;
 }
 
 .dash-icon-btn i {
     transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    line-height: 1;
 }
 
 .dash-icon-btn:hover {
-    transform: translateY(-2px) scale(1.08);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+    transform: scale(1.12);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-/* View Button */
+.dash-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* ── Per-action hover colours ─────────────────────────────────────────────── */
+
+/* View — indigo */
 .dash-icon-btn.view:hover {
-    background: #EEF2FF;
-    color: #4F46E5;
-    border-color: #C7D2FE;
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2);
+    background: #4F46E5;
+    border-color: #4F46E5;
+    color: #ffffff;
 }
 
-/* Like Button & Counter */
+/* Like Button */
 .dash-icon-btn.like {
     width: auto;
-    min-width: 38px;
-    padding: 0 10px;
-    border-radius: 20px;
-    gap: 5px;
+    min-width: 42px;
+    padding: 0 12px;
+    border-radius: 999px;        /* pill when count is shown */
+    gap: 6px;
+    font-size: 0.95rem;
 }
 .dash-icon-btn.like .like-count {
     font-size: 0.82rem;
     font-weight: 700;
 }
 .dash-icon-btn.like:hover {
-    background: #FFF1F2;
-    color: #EF4444;
-    border-color: #FECDD3;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+    background: #EF4444;
+    border-color: #EF4444;
+    color: #ffffff;
 }
 .dash-icon-btn.like.liked {
     background: #FFF1F2;
+    border-color: #EF4444;
     color: #EF4444;
-    border-color: #FDA4AF;
+}
+.dash-icon-btn.like.liked:hover {
+    background: #EF4444;
+    color: #ffffff;
 }
 .dash-icon-btn.like.liked i {
-    color: #EF4444;
     animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Share Button */
+/* Share — emerald */
 .dash-icon-btn.share:hover {
-    background: #F0FDF4;
-    color: #16A34A;
-    border-color: #BBF7D0;
-    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
+    background: #059669;
+    border-color: #059669;
+    color: #ffffff;
 }
 .dash-icon-btn.share:hover i {
-    transform: rotate(-15deg) scale(1.15);
+    transform: rotate(-12deg) scale(1.1);
 }
 
-/* Edit Button */
+/* Edit — violet */
 .dash-icon-btn.edit:hover {
-    background: #F5F3FF;
-    color: #7C3AED;
-    border-color: #DDD6FE;
-    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2);
+    background: #7C3AED;
+    border-color: #7C3AED;
+    color: #ffffff;
 }
 
-/* Delete Button */
+/* Delete — rose */
 .dash-icon-btn.delete:hover {
-    background: #FEF2F2;
-    color: #EF4444;
-    border-color: #FECACA;
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
+    background: #EF4444;
+    border-color: #EF4444;
+    color: #ffffff;
 }
 
-/* Approve Button */
+/* Approve — green */
 .dash-icon-btn.approve:hover {
-    background: #ECFDF5;
-    color: #059669;
-    border-color: #A7F3D0;
-    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);
+    background: #10B981;
+    border-color: #10B981;
+    color: #ffffff;
 }
 
-/* Reject Button */
+/* Reject — red */
 .dash-icon-btn.reject:hover {
-    background: #FEF2F2;
-    color: #DC2626;
-    border-color: #FECACA;
-    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.2);
+    background: #DC2626;
+    border-color: #DC2626;
+    color: #ffffff;
 }
 
-/* Warn / Block Button */
+/* Warn / Block — amber */
 .dash-icon-btn.warn:hover {
-    background: #FFFBEB;
-    color: #D97706;
-    border-color: #FDE68A;
-    box-shadow: 0 4px 14px rgba(217, 119, 6, 0.2);
+    background: #D97706;
+    border-color: #D97706;
+    color: #ffffff;
 }
 
-/* Demote Button (treated like reject styling) */
+/* Demote — indigo lighter */
 .dash-icon-btn.demote:hover {
-    background: #EEF2FF;
-    color: #6366F1;
-    border-color: #C7D2FE;
-    box-shadow: 0 4px 14px rgba(99, 102, 241, 0.2);
+    background: #6366F1;
+    border-color: #6366F1;
+    color: #ffffff;
 }
 
-/* Dark Mode Action Buttons */
+/* ── Dark Mode ────────────────────────────────────────────────────────────── */
 body.dark-mode .dash-icon-btn {
-    background: #1E293B;
-    border-color: #334155;
-    color: #94A3B8;
+    background: transparent;
+    border-color: #94A3B8;
+    color: #CBD5E1;
 }
 body.dark-mode .dash-icon-btn:hover {
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    border-color: #ffffff;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
-body.dark-mode .dash-icon-btn.view:hover {
-    background: #1E1B4B;
-    color: #818CF8;
-    border-color: #4338CA;
-}
-body.dark-mode .dash-icon-btn.like:hover,
 body.dark-mode .dash-icon-btn.like.liked {
-    background: #4C0519;
-    color: #FB7185;
-    border-color: #9F1239;
-}
-body.dark-mode .dash-icon-btn.share:hover {
-    background: #052E16;
-    color: #4ADE80;
-    border-color: #166534;
-}
-body.dark-mode .dash-icon-btn.edit:hover {
-    background: #2E1065;
-    color: #C084FC;
-    border-color: #6B21A8;
-}
-body.dark-mode .dash-icon-btn.delete:hover {
-    background: #450A0A;
+    border-color: #F87171;
     color: #F87171;
-    border-color: #991B1B;
 }
-body.dark-mode .dash-icon-btn.approve:hover {
-    background: #064E3B;
-    color: #34D399;
-    border-color: #047857;
-}
-body.dark-mode .dash-icon-btn.reject:hover {
-    background: #450A0A;
-    color: #F87171;
-    border-color: #991B1B;
-}
+body.dark-mode .dash-icon-btn.view:hover         { background: #4F46E5; border-color: #4F46E5; }
+body.dark-mode .dash-icon-btn.like:hover         { background: #EF4444; border-color: #EF4444; }
+body.dark-mode .dash-icon-btn.share:hover        { background: #059669; border-color: #059669; }
+body.dark-mode .dash-icon-btn.edit:hover         { background: #7C3AED; border-color: #7C3AED; }
+body.dark-mode .dash-icon-btn.delete:hover       { background: #EF4444; border-color: #EF4444; }
+body.dark-mode .dash-icon-btn.approve:hover      { background: #10B981; border-color: #10B981; }
+body.dark-mode .dash-icon-btn.reject:hover       { background: #DC2626; border-color: #DC2626; }
+body.dark-mode .dash-icon-btn.warn:hover         { background: #D97706; border-color: #D97706; }
+body.dark-mode .dash-icon-btn.demote:hover       { background: #6366F1; border-color: #6366F1; }
 
 /* Empty State Box */
 .empty-state-box {
