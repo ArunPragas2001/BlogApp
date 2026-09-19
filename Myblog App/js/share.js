@@ -1,6 +1,6 @@
 /**
  * BlogSphere Share Helper Utility
- * Handles multi-channel blog sharing across WhatsApp, Facebook, Instagram, X/Twitter, Telegram, LinkedIn, Copy Link, and Web Share API.
+ * Handles multi-channel blog & author sharing across WhatsApp, Facebook, Instagram, X (Twitter), Telegram, LinkedIn, Copy Link, and Web Share API.
  */
 
 (function (window) {
@@ -11,16 +11,24 @@
         return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
     }
 
-    function getBlogShareUrl(blogId) {
-        if (!blogId) return window.location.href;
+    function getAbsoluteUrl(path) {
         var origin = window.location.origin;
         var pathname = window.location.pathname;
-
-        // Ensure path leads to index.html where article reader lives
         var basePath = pathname.substring(0, pathname.lastIndexOf('/') + 1);
         if (!basePath.endsWith('/')) basePath += '/';
+        return origin + basePath + path.replace(/^\//, '');
+    }
 
-        return origin + basePath + 'index.html?blogId=' + encodeURIComponent(String(blogId));
+    function getBlogShareUrl(blogId) {
+        if (!blogId) return window.location.href;
+        return getAbsoluteUrl('index.html?article=' + encodeURIComponent(String(blogId)));
+    }
+
+    function getAuthorShareUrl(authorId, authorName) {
+        if (!authorId) return window.location.href;
+        var url = getAbsoluteUrl('index.html?author=' + encodeURIComponent(String(authorId)));
+        if (authorName) url += '&authorName=' + encodeURIComponent(String(authorName));
+        return url;
     }
 
     function findBlogData(blogId) {
@@ -36,58 +44,6 @@
             if (foundDash) return foundDash;
         }
         return { _id: idStr, title: "Blog Post", category: "Article" };
-    }
-
-    // ─── Individual Sharing Methods ──────────────────────────────────────────
-
-    function shareToWhatsApp(blogId, title) {
-        var url = getBlogShareUrl(blogId);
-        var blogText = title ? title : "Check out this article on BlogSphere";
-        var shareText = blogText + "\n" + url;
-        var waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText);
-        window.open(waUrl, "_blank", "noopener,noreferrer");
-    }
-
-    function shareToFacebook(blogId) {
-        var url = getBlogShareUrl(blogId);
-        var fbUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url);
-        window.open(fbUrl, "fbShare", "width=600,height=500,location=no,menubar=no,status=no,toolbar=no");
-    }
-
-    function shareToInstagram(blogId, title) {
-        var url = getBlogShareUrl(blogId);
-        var textToCopy = (title ? title + " - " : "") + url;
-
-        copyTextToClipboard(url).then(function (success) {
-            if (typeof window.showToast === 'function') {
-                window.showToast("📸 Link copied! Opening Instagram...", "info", 3000);
-            }
-            setTimeout(function () {
-                window.open("https://www.instagram.com", "_blank", "noopener,noreferrer");
-            }, 800);
-        }).catch(function () {
-            promptUserCopy(url, "Instagram link");
-        });
-    }
-
-    function shareToTwitter(blogId, title) {
-        var url = getBlogShareUrl(blogId);
-        var blogText = title ? title : "Check out this article on BlogSphere";
-        var twitterUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(blogText) + "&url=" + encodeURIComponent(url);
-        window.open(twitterUrl, "twShare", "width=600,height=450,location=no,menubar=no,status=no,toolbar=no");
-    }
-
-    function shareToTelegram(blogId, title) {
-        var url = getBlogShareUrl(blogId);
-        var blogText = title ? title : "Check out this article on BlogSphere";
-        var tgUrl = "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(blogText);
-        window.open(tgUrl, "tgShare", "width=600,height=500,location=no,menubar=no,status=no,toolbar=no");
-    }
-
-    function shareToLinkedIn(blogId, title) {
-        var url = getBlogShareUrl(blogId);
-        var liUrl = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(url);
-        window.open(liUrl, "liShare", "width=600,height=550,location=no,menubar=no,status=no,toolbar=no");
     }
 
     function copyTextToClipboard(text) {
@@ -115,15 +71,11 @@
         }
     }
 
-    function promptUserCopy(text, label) {
-        window.prompt("Copy " + (label || "link") + ":", text);
-    }
-
     function copyBlogLink(blogId, btnElement) {
-        var url = getBlogShareUrl(blogId);
+        var url = (typeof blogId === "string" && blogId.startsWith("http")) ? blogId : getBlogShareUrl(blogId);
         copyTextToClipboard(url).then(function () {
             if (typeof window.showToast === 'function') {
-                window.showToast("✨ Blog link copied to clipboard!", "success", 2500);
+                window.showToast("✨ Link copied to clipboard!", "success", 2500);
             }
             if (btnElement) {
                 var originalHtml = btnElement.innerHTML;
@@ -135,46 +87,127 @@
                 }, 2000);
             }
         }).catch(function () {
-            promptUserCopy(url, "Blog Link");
+            window.prompt("Copy link:", url);
         });
     }
 
-    function triggerNativeShare(blogId, title, content) {
-        var url = getBlogShareUrl(blogId);
+    // ─── Individual Sharing Methods ──────────────────────────────────────────
+
+    function shareToWhatsApp(urlOrId, title) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        var shareText = (title ? title : "Check out this article on BlogSphere") + "\n" + url;
+        var waUrl = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText);
+        window.open(waUrl, "_blank", "noopener,noreferrer");
+    }
+
+    function shareToFacebook(urlOrId) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        var fbUrl = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url);
+        window.open(fbUrl, "fbShare", "width=600,height=500,location=no,menubar=no,status=no,toolbar=no");
+    }
+
+    function shareToInstagram(urlOrId, title) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        copyTextToClipboard(url).then(function () {
+            if (typeof window.showToast === 'function') {
+                window.showToast("📸 Link copied! Opening Instagram...", "info", 3000);
+            }
+            setTimeout(function () {
+                window.open("https://www.instagram.com", "_blank", "noopener,noreferrer");
+            }, 800);
+        }).catch(function () {
+            window.prompt("Copy Instagram link:", url);
+        });
+    }
+
+    function shareToTwitter(urlOrId, title) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        var tweetText = title ? title : "Check out this story on BlogSphere! 📖✨";
+        var twitterUrl = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(tweetText) + "&url=" + encodeURIComponent(url);
+        window.open(twitterUrl, "twShare", "width=600,height=450,location=no,menubar=no,status=no,toolbar=no");
+    }
+
+    function shareToTelegram(urlOrId, title) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        var tgText = title ? title : "Check out this article on BlogSphere";
+        var tgUrl = "https://t.me/share/url?url=" + encodeURIComponent(url) + "&text=" + encodeURIComponent(tgText);
+        window.open(tgUrl, "tgShare", "width=600,height=500,location=no,menubar=no,status=no,toolbar=no");
+    }
+
+    function shareToLinkedIn(urlOrId, title) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
+        var liUrl = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(url);
+        window.open(liUrl, "liShare", "width=600,height=550,location=no,menubar=no,status=no,toolbar=no");
+    }
+
+    function triggerNativeShare(urlOrId, title, content) {
+        var url = (typeof urlOrId === "string" && urlOrId.startsWith("http")) ? urlOrId : getBlogShareUrl(urlOrId);
         if (navigator.share) {
             navigator.share({
-                title: title || 'BlogSphere Article',
+                title: title || 'BlogSphere',
                 text: content ? content.substring(0, 120) + '…' : 'Read on BlogSphere',
                 url: url
             }).catch(function (err) {
-                if (err.name !== 'AbortError') {
-                    console.warn("Native share error:", err);
-                }
+                if (err.name !== 'AbortError') console.warn("Native share error:", err);
             });
         } else {
-            copyBlogLink(blogId);
+            copyBlogLink(url);
         }
     }
 
-    // ─── Share Modal Component ───────────────────────────────────────────────
+    // ─── Unified Rich Share Modal Component ───────────────────────────────────
 
     function closeShareModal() {
         var overlay = document.getElementById("blogShareModalOverlay");
         if (overlay) {
             overlay.classList.remove("active");
-            setTimeout(function () {
-                overlay.style.display = "none";
-            }, 300);
+            setTimeout(function () { overlay.style.display = "none"; }, 300);
         }
-        document.body.style.overflow = "";
+        var staticModal = document.getElementById("globalShareModal");
+        if (staticModal) {
+            staticModal.classList.remove("active");
+            staticModal.style.display = "none";
+        }
+        var reader = document.getElementById("articleReaderOverlay");
+        if (!reader || !reader.classList.contains("active")) {
+            document.body.style.overflow = "";
+        }
     }
 
-    function openShareModal(blogOrId) {
-        var blog = findBlogData(blogOrId);
-        var blogId = blog._id || blog.id || blogOrId;
-        var blogTitle = blog.title || "Blog Post";
-        var blogCategory = blog.category || "General";
-        var shareUrl = getBlogShareUrl(blogId);
+    function openShareModal(blogOrIdOrOptions) {
+        var isAuthorMode = false;
+        var authorId = "";
+        var authorName = "Author";
+        var authorBio = "";
+        var blog = null;
+        var blogId = "";
+        var blogTitle = "Blog Post";
+        var blogCategory = "Article";
+        var shareUrl = "";
+
+        if (typeof blogOrIdOrOptions === 'object' && blogOrIdOrOptions !== null) {
+            if (blogOrIdOrOptions.type === 'author') {
+                isAuthorMode = true;
+                authorId = blogOrIdOrOptions.authorId || blogOrIdOrOptions.id || "";
+                authorName = blogOrIdOrOptions.authorName || "Author";
+                authorBio = blogOrIdOrOptions.authorBio || "Prolific writer on BlogSphere";
+                shareUrl = blogOrIdOrOptions.url || getAuthorShareUrl(authorId, authorName);
+                blogTitle = "All Published Articles by " + authorName;
+                blogCategory = "Author Portfolio";
+            } else {
+                blog = blogOrIdOrOptions;
+                blogId = blog._id || blog.id || "";
+                blogTitle = blog.title || "Blog Post";
+                blogCategory = blog.category || "General";
+                shareUrl = getBlogShareUrl(blogId);
+            }
+        } else {
+            blogId = String(blogOrIdOrOptions);
+            blog = findBlogData(blogId);
+            blogTitle = blog.title || "Blog Post";
+            blogCategory = blog.category || "General";
+            shareUrl = getBlogShareUrl(blogId);
+        }
 
         var overlay = document.getElementById("blogShareModalOverlay");
         if (!overlay) {
@@ -185,6 +218,12 @@
         }
 
         var isNativeShareSupported = !!navigator.share;
+        var encodedTitle = esc(blogTitle).replace(/'/g, "\\'");
+        var tweetText = isAuthorMode
+            ? ("Check out all articles written by " + authorName + " on BlogSphere! ✍️✨")
+            : ("Read \"" + blogTitle + "\" on BlogSphere! 📖✨");
+        var encodedTweetText = encodeURIComponent(tweetText);
+        var encodedShareUrl = encodeURIComponent(shareUrl);
 
         overlay.innerHTML =
             '<div class="share-modal-card" id="shareModalCard">' +
@@ -192,8 +231,8 @@
             '    <div class="share-modal-title-wrap">' +
             '      <div class="share-icon-badge"><i class="fa-solid fa-share-nodes"></i></div>' +
             '      <div>' +
-            '        <h3 class="share-modal-heading">Share Article</h3>' +
-            '        <p class="share-modal-subheading">Spread the word across your favorite networks</p>' +
+            '        <h3 class="share-modal-heading">' + (isAuthorMode ? 'Share Author Portfolio' : 'Share Article') + '</h3>' +
+            '        <p class="share-modal-subheading">' + (isAuthorMode ? ('Share ' + esc(authorName) + '\'s portfolio with fans and friends') : 'Spread the word across your favorite networks') + '</p>' +
             '      </div>' +
             '    </div>' +
             '    <button class="share-modal-close" id="shareModalCloseBtn" aria-label="Close share dialog">&times;</button>' +
@@ -204,41 +243,41 @@
             '      <h4 class="share-blog-title">' + esc(blogTitle) + '</h4>' +
             '    </div>' +
             '    <div class="share-networks-grid">' +
-            '      <button class="share-net-btn wa" onclick="BlogShare.whatsapp(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
+            '      <button type="button" class="share-net-btn wa" onclick="BlogShare.whatsapp(\'' + esc(shareUrl) + '\', \'' + encodedTitle + '\')">' +
             '        <div class="net-icon"><i class="fa-brands fa-whatsapp"></i></div>' +
             '        <span>WhatsApp</span>' +
             '      </button>' +
-            '      <button class="share-net-btn fb" onclick="BlogShare.facebook(\'' + blogId + '\')">' +
-            '        <div class="net-icon"><i class="fa-brands fa-facebook-f"></i></div>' +
-            '        <span>Facebook</span>' +
-            '      </button>' +
-            '      <button class="share-net-btn insta" onclick="BlogShare.instagram(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
-            '        <div class="net-icon"><i class="fa-brands fa-instagram"></i></div>' +
-            '        <span>Instagram</span>' +
-            '      </button>' +
-            '      <button class="share-net-btn tw" onclick="BlogShare.twitter(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
+            '      <button type="button" class="share-net-btn tw" onclick="window.open(\'https://twitter.com/intent/tweet?text=' + encodedTweetText + '&url=' + encodedShareUrl + '\', \'_blank\')">' +
             '        <div class="net-icon"><i class="fa-brands fa-x-twitter"></i></div>' +
             '        <span>X (Twitter)</span>' +
             '      </button>' +
-            '      <button class="share-net-btn tg" onclick="BlogShare.telegram(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
+            '      <button type="button" class="share-net-btn fb" onclick="BlogShare.facebook(\'' + esc(shareUrl) + '\')">' +
+            '        <div class="net-icon"><i class="fa-brands fa-facebook-f"></i></div>' +
+            '        <span>Facebook</span>' +
+            '      </button>' +
+            '      <button type="button" class="share-net-btn insta" onclick="BlogShare.instagram(\'' + esc(shareUrl) + '\', \'' + encodedTitle + '\')">' +
+            '        <div class="net-icon"><i class="fa-brands fa-instagram"></i></div>' +
+            '        <span>Instagram</span>' +
+            '      </button>' +
+            '      <button type="button" class="share-net-btn tg" onclick="BlogShare.telegram(\'' + esc(shareUrl) + '\', \'' + encodedTitle + '\')">' +
             '        <div class="net-icon"><i class="fa-brands fa-telegram"></i></div>' +
             '        <span>Telegram</span>' +
             '      </button>' +
-            '      <button class="share-net-btn li" onclick="BlogShare.linkedin(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
+            '      <button type="button" class="share-net-btn li" onclick="BlogShare.linkedin(\'' + esc(shareUrl) + '\', \'' + encodedTitle + '\')">' +
             '        <div class="net-icon"><i class="fa-brands fa-linkedin-in"></i></div>' +
             '        <span>LinkedIn</span>' +
             '      </button>' +
                    (isNativeShareSupported ?
-            '      <button class="share-net-btn native" onclick="BlogShare.native(\'' + blogId + '\', \'' + esc(blogTitle).replace(/'/g, "\\'") + '\')">' +
+            '      <button type="button" class="share-net-btn native" onclick="BlogShare.native(\'' + esc(shareUrl) + '\', \'' + encodedTitle + '\')">' +
             '        <div class="net-icon"><i class="fa-solid fa-arrow-up-from-bracket"></i></div>' +
             '        <span>More...</span>' +
             '      </button>' : '') +
             '    </div>' +
             '    <div class="share-copy-box">' +
-            '      <label class="share-copy-label"><i class="fa-solid fa-link"></i> Direct Article Link</label>' +
+            '      <label class="share-copy-label"><i class="fa-solid fa-link"></i> ' + (isAuthorMode ? 'Direct Portfolio Link' : 'Direct Article Link') + '</label>' +
             '      <div class="share-copy-input-wrap">' +
             '        <input type="text" class="share-copy-input" value="' + esc(shareUrl) + '" readonly id="shareCopyUrlInput" onclick="this.select()">' +
-            '        <button class="share-copy-btn" id="shareCopyBtn" onclick="BlogShare.copy(\'' + blogId + '\', this)">' +
+            '        <button type="button" class="share-copy-btn" id="shareCopyBtn" onclick="BlogShare.copy(\'' + esc(shareUrl) + '\', this)">' +
             '          <i class="fa-regular fa-copy"></i> Copy' +
             '        </button>' +
             '      </div>' +
@@ -247,9 +286,7 @@
             '</div>';
 
         overlay.style.display = "flex";
-        setTimeout(function () {
-            overlay.classList.add("active");
-        }, 10);
+        setTimeout(function () { overlay.classList.add("active"); }, 10);
         document.body.style.overflow = "hidden";
 
         var closeBtn = document.getElementById("shareModalCloseBtn");
@@ -258,6 +295,15 @@
         overlay.onclick = function (e) {
             if (e.target === overlay) closeShareModal();
         };
+    }
+
+    function openAuthorModal(authorId, authorName, authorBio) {
+        openShareModal({
+            type: 'author',
+            authorId: authorId,
+            authorName: authorName,
+            authorBio: authorBio
+        });
     }
 
     // Close on Escape key
@@ -271,6 +317,7 @@
 
     window.BlogShare = {
         getUrl: getBlogShareUrl,
+        getAuthorUrl: getAuthorShareUrl,
         whatsapp: shareToWhatsApp,
         facebook: shareToFacebook,
         instagram: shareToInstagram,
@@ -280,9 +327,14 @@
         copy: copyBlogLink,
         native: triggerNativeShare,
         openModal: openShareModal,
+        openAuthorModal: openAuthorModal,
         closeModal: closeShareModal
     };
 
+    window.openShareModal = openShareModal;
+    window.closeShareModal = closeShareModal;
+    window.shareBlogArticle = function (id) { openShareModal(id); };
+    window.shareAuthorProfile = openAuthorModal;
     window.openShareModalById = openShareModal;
 
 })(window);

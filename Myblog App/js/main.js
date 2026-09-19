@@ -226,67 +226,40 @@ function fallbackCopy(inputEl) {
 }
 
 function shareBlogArticle(blogId) {
-    var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
-    if (!blog) return;
+    if (window.BlogShare && typeof window.BlogShare.openModal === 'function') {
+        window.BlogShare.openModal(blogId);
+    } else {
+        var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
+        if (!blog) return;
+        var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var articleUrl = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
 
-    var authorName = blog.author ? (blog.author.name || blog.author.email || "Author") : "Author";
-    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-    var articleUrl = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
-
-    openShareModal({
-        type: "article",
-        title: blog.title || "Blog Post",
-        authorName: authorName,
-        url: articleUrl
-    });
+        openShareModal({
+            type: "article",
+            title: blog.title || "Blog Post",
+            authorName: authorName,
+            url: articleUrl
+        });
+    }
 }
 
 function shareAuthorProfile(authorId, authorName, authorBio) {
-    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-    var authorUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId);
-    if (authorName) authorUrl += "&authorName=" + encodeURIComponent(authorName);
+    if (window.BlogShare && typeof window.BlogShare.openAuthorModal === 'function') {
+        window.BlogShare.openAuthorModal(authorId, authorName, authorBio);
+    } else {
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var authorUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId);
+        if (authorName) authorUrl += "&authorName=" + encodeURIComponent(authorName);
 
-    openShareModal({
-        type: "author",
-        title: "Articles by " + (authorName || "Author"),
-        authorName: authorName || "Author",
-        url: authorUrl
-    });
-}
-
-// BlogShare helper object for inline chips
-var BlogShare = {
-    openModal: function(blogId) {
-        shareBlogArticle(blogId);
-    },
-    whatsapp: function(blogId, title) {
-        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
-        var text = (title ? ("Read \"" + title + "\" on BlogSphere: ") : "Read this story on BlogSphere: ") + url;
-        window.open("https://api.whatsapp.com/send?text=" + encodeURIComponent(text), "_blank");
-    },
-    instagram: function(blogId, title) {
-        shareBlogArticle(blogId);
-    },
-    facebook: function(blogId) {
-        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
-        window.open("https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(url), "_blank");
-    },
-    copy: function(blogId, btnEl) {
-        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-        var url = baseUrl + "index.html?article=" + encodeURIComponent(blogId);
-        if (navigator.clipboard && window.isSecureContext) {
-            navigator.clipboard.writeText(url).then(function() {
-                showToast("🔗 Article link copied to clipboard!", "success");
-            }).catch(function() {
-                shareBlogArticle(blogId);
-            });
-        } else {
-            shareBlogArticle(blogId);
-        }
+        openShareModal({
+            type: "author",
+            title: "Articles by " + (authorName || "Author"),
+            authorName: authorName || "Author",
+            url: authorUrl
+        });
     }
-};
+}
 
 // ─── Likes & Comments System ─────────────────────────────────────────────────
 function checkIsBlogLiked(blog) {

@@ -434,15 +434,18 @@ function shareMyAuthorProfile() {
         return;
     }
     var authorId = user.id || user._id;
-    var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
-    var shareUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId) + "&authorName=" + encodeURIComponent(user.name);
-
-    openShareModal({
-        type: "author",
-        title: user.name + "'s Published Articles",
-        authorName: user.name,
-        url: shareUrl
-    });
+    if (window.BlogShare && window.BlogShare.openAuthorModal) {
+        window.BlogShare.openAuthorModal(authorId, user.name, user.bio);
+    } else {
+        var baseUrl = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, "/");
+        var shareUrl = baseUrl + "index.html?author=" + encodeURIComponent(authorId) + "&authorName=" + encodeURIComponent(user.name);
+        openShareModal({
+            type: "author",
+            title: user.name + "'s Published Articles",
+            authorName: user.name,
+            url: shareUrl
+        });
+    }
 }
 
 async function changeUserRoleDashboard(userId, newRole) {
@@ -729,11 +732,11 @@ function renderBlogsList() {
                     (rawBlogImage ? '<img src="' + esc(rawBlogImage) + '" alt="thumb" style="width:96px;height:72px;object-fit:cover;border-radius:10px;flex-shrink:0;margin-right:12px;" onerror="this.style.display=\'none\'">' : '') +
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
-                    '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View Blog</button>' +
-                    '<button class="edit-btn" style="background:#0EA5E9;color:#fff;border-color:#0EA5E9;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
-                    '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
-                    '<button class="edit-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
-                    '<button class="delete-btn" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
+                    '<button class="dash-action-btn view" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+                    '<button class="dash-action-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
+                    '<button class="dash-action-btn edit" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+                    '<button class="dash-action-btn" style="background:#10B981;color:#fff;border-color:#10B981;" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i> Approve</button>' +
+                    '<button class="dash-action-btn delete" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i> Reject</button>' +
                     '</div></div>';
             }).join("");
         }
@@ -770,11 +773,11 @@ function renderBlogsList() {
 
         var actionsHtml = (
             '<div class="blog-actions">' +
-            '<button class="edit-btn" style="background:#4F46E5;color:#fff;border-color:#4F46E5;" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
-            '<button class="insta-action-icon-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span></button>' +
-            '<button class="insta-action-icon-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post"><i class="fa-regular fa-paper-plane"></i></button>' +
-            (canEditDelete ? '<button class="edit-btn" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
-            (canEditDelete ? '<button class="delete-btn" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
+            '<button class="dash-action-btn view" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i> View</button>' +
+            '<button class="dash-action-btn like-btn ' + (isLiked ? 'liked' : '') + '" data-like-blog-id="' + blogId + '" onclick="handleToggleLike(\'' + blogId + '\', this, event)" title="Like Post"><i class="' + (isLiked ? 'fa-solid' : 'fa-regular') + ' fa-heart"></i> <span class="like-count">' + (likesCount > 0 ? (likesCount + ' Likes') : 'Like') + '</span></button>' +
+            '<button class="dash-action-btn share-btn" onclick="BlogShare.openModal(\'' + blogId + '\')" title="Share Post"><i class="fa-solid fa-share-nodes"></i> Share</button>' +
+            (canEditDelete ? '<button class="dash-action-btn edit" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit</button>' : '') +
+            (canEditDelete ? '<button class="dash-action-btn delete" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')"><i class="fa-solid fa-trash"></i> Delete</button>' : '') +
             '</div>'
         );
 

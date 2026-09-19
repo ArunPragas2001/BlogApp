@@ -2,7 +2,10 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 body {
@@ -11,6 +14,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
 }
 
 a {
@@ -343,51 +349,176 @@ a {
 .blog-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
-.edit-btn {
-    background: #EEF2FF;
-    color: #4F46E5;
-    border: 1px solid #C7D2FE;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
+/* Enhanced Dashboard Action Buttons */
+.dash-action-btn,
+.edit-btn,
+.delete-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    text-decoration: none;
+    line-height: 1.2;
+    -webkit-font-smoothing: antialiased;
 }
 
+.dash-action-btn.view,
+.edit-btn.view-btn {
+    background: #EEF2FF;
+    color: #4F46E5;
+    border-color: #C7D2FE;
+}
+.dash-action-btn.view:hover,
+.edit-btn.view-btn:hover {
+    background: #4F46E5;
+    color: #FFFFFF;
+    border-color: #4F46E5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+}
+
+.dash-action-btn.edit,
+.edit-btn {
+    background: #F8FAFC;
+    color: #334155;
+    border-color: #E2E8F0;
+}
+.dash-action-btn.edit:hover,
 .edit-btn:hover {
     background: #4F46E5;
     color: #FFFFFF;
     border-color: #4F46E5;
     transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
 }
 
+.dash-action-btn.delete,
 .delete-btn {
     background: #FEF2F2;
     color: #EF4444;
-    border: 1px solid #FCA5A5;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
+    border-color: #FECACA;
 }
-
+.dash-action-btn.delete:hover,
 .delete-btn:hover {
     background: #EF4444;
     color: #FFFFFF;
     border-color: #EF4444;
     transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
+}
+
+/* Enhanced Interactive Like Button in Dashboard */
+.dash-action-btn.like-btn {
+    background: #FFF1F2;
+    color: #E11D48;
+    border-color: #FECDD3;
+    padding: 8px 14px;
+}
+.dash-action-btn.like-btn i {
+    font-size: 1rem;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.dash-action-btn.like-btn:hover {
+    background: #FFE4E6;
+    border-color: #FDA4AF;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.2);
+}
+.dash-action-btn.like-btn:hover i {
+    transform: scale(1.25);
+}
+.dash-action-btn.like-btn.liked {
+    background: #E11D48;
+    color: #FFFFFF;
+    border-color: #E11D48;
+}
+.dash-action-btn.like-btn.liked i {
+    color: #FFFFFF !important;
+    animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Enhanced Interactive Share Button in Dashboard */
+.dash-action-btn.share-btn {
+    background: #F0FDF4;
+    color: #16A34A;
+    border-color: #BBF7D0;
+    padding: 8px 14px;
+}
+.dash-action-btn.share-btn i {
+    font-size: 0.95rem;
+    transition: transform 0.22s ease;
+}
+.dash-action-btn.share-btn:hover {
+    background: #16A34A;
+    color: #FFFFFF;
+    border-color: #16A34A;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+}
+.dash-action-btn.share-btn:hover i {
+    transform: rotate(-15deg) scale(1.15);
+}
+
+/* Dark Mode Dashboard Action Buttons */
+body.dark-mode .dash-action-btn.view {
+    background: #1E1B4B;
+    color: #A5B4FC;
+    border-color: #3730A3;
+}
+body.dark-mode .dash-action-btn.view:hover {
+    background: #4F46E5;
+    color: #FFF;
+}
+body.dark-mode .dash-action-btn.edit,
+body.dark-mode .edit-btn {
+    background: #1E293B;
+    color: #CBD5E1;
+    border-color: #334155;
+}
+body.dark-mode .dash-action-btn.edit:hover,
+body.dark-mode .edit-btn:hover {
+    background: #4F46E5;
+    color: #FFF;
+}
+body.dark-mode .dash-action-btn.delete,
+body.dark-mode .delete-btn {
+    background: #450A0A;
+    color: #FCA5A5;
+    border-color: #7F1D1D;
+}
+body.dark-mode .dash-action-btn.delete:hover,
+body.dark-mode .delete-btn:hover {
+    background: #EF4444;
+    color: #FFF;
+}
+body.dark-mode .dash-action-btn.like-btn {
+    background: #4C0519;
+    color: #FDA4AF;
+    border-color: #881337;
+}
+body.dark-mode .dash-action-btn.like-btn.liked {
+    background: #E11D48;
+    color: #FFF;
+}
+body.dark-mode .dash-action-btn.share-btn {
+    background: #052E16;
+    color: #86EFAC;
+    border-color: #14532D;
+}
+body.dark-mode .dash-action-btn.share-btn:hover {
+    background: #16A34A;
+    color: #FFF;
 }
 
 /* Empty State Box */

@@ -743,3 +743,31 @@ body.dark-mode .share-copy-input {
     background: #10B981 !important;
     color: #FFF !important;
 }
+
+/* ==========================================
+   Crisp High-DPI Emoji & Typography Clarity
+   ========================================== */
+.emoji-chip-btn,
+.comment-emoji-bar,
+.insta-big-heart-overlay,
+.welcome-icon,
+[data-emoji] {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI Symbol', sans-serif !important;
+    font-style: normal !important;
+    font-variant-emoji: emoji !important;
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
+    text-rendering: optimizeLegibility !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.emoji-chip-btn {
+    transition: transform 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.15s ease !important;
+    will-change: transform;
+}
+
+.emoji-chip-btn:hover {
+    transform: scale(1.35) translateZ(0) !important;
+}
