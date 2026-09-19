@@ -169,35 +169,69 @@
         body.dark-mode .share-modal-close { background: #334155; color: #94A3B8; }
         .share-social-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin: 22px 0 24px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px 6px;
+            margin: 20px 0 22px;
         }
         .share-social-btn {
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 8px;
-            background: #F8FAFC;
-            border: 1px solid #E2E8F0;
-            border-radius: 16px;
-            padding: 14px 8px;
+            background: transparent;
+            border: none;
+            padding: 6px 2px;
             text-decoration: none;
-            color: #1E293B;
+            color: #475569;
             font-size: 0.78rem;
-            font-weight: 700;
-            transition: all 0.25s;
+            font-weight: 600;
+            transition: all 0.22s ease;
             cursor: pointer;
+            outline: none;
         }
-        .share-social-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-        .share-social-btn.btn-x-social { background: #000000; color: #FFFFFF; border-color: #333333; }
-        .share-social-btn.btn-x-social:hover { background: #181818; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
-        .share-social-btn.btn-wa-social { color: #25D366; }
-        .share-social-btn.btn-wa-social:hover { background: #DCF8C6; border-color: #25D366; }
-        .share-social-btn.btn-fb-social { color: #1877F2; }
-        .share-social-btn.btn-fb-social:hover { background: #E7F3FF; border-color: #1877F2; }
-        .share-social-btn.btn-li-social { color: #0A66C2; }
-        .share-social-btn.btn-li-social:hover { background: #E8F3FF; border-color: #0A66C2; }
+        .share-social-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            border: 2.5px solid #1E293B;
+            color: #1E293B;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .share-social-btn:hover .share-social-icon {
+            transform: scale(1.14);
+        }
+        .share-social-btn:active .share-social-icon {
+            transform: scale(0.95);
+        }
+        .share-social-btn.btn-x-social .share-social-icon { border-color: #0F172A; color: #0F172A; }
+        .share-social-btn.btn-x-social:hover .share-social-icon { background: #0F172A; color: #FFFFFF; box-shadow: 0 6px 18px rgba(15,23,42,0.35); }
+        .share-social-btn.btn-x-social:hover span { color: #0F172A; font-weight: 700; }
+
+        .share-social-btn.btn-wa-social .share-social-icon { border-color: #25D366; color: #25D366; }
+        .share-social-btn.btn-wa-social:hover .share-social-icon { background: #25D366; color: #FFFFFF; box-shadow: 0 6px 18px rgba(37,211,102,0.35); }
+        .share-social-btn.btn-wa-social:hover span { color: #25D366; font-weight: 700; }
+
+        .share-social-btn.btn-tg-social .share-social-icon { border-color: #0088cc; color: #0088cc; }
+        .share-social-btn.btn-tg-social:hover .share-social-icon { background: #0088cc; color: #FFFFFF; box-shadow: 0 6px 18px rgba(0,136,204,0.35); }
+        .share-social-btn.btn-tg-social:hover span { color: #0088cc; font-weight: 700; }
+
+        .share-social-btn.btn-fb-social .share-social-icon { border-color: #1877F2; color: #1877F2; }
+        .share-social-btn.btn-fb-social:hover .share-social-icon { background: #1877F2; color: #FFFFFF; box-shadow: 0 6px 18px rgba(24,119,242,0.35); }
+        .share-social-btn.btn-fb-social:hover span { color: #1877F2; font-weight: 700; }
+
+        .share-social-btn.btn-li-social .share-social-icon { border-color: #0A66C2; color: #0A66C2; }
+        .share-social-btn.btn-li-social:hover .share-social-icon { background: #0A66C2; color: #FFFFFF; box-shadow: 0 6px 18px rgba(10,102,194,0.35); }
+        .share-social-btn.btn-li-social:hover span { color: #0A66C2; font-weight: 700; }
+
+        body.dark-mode .share-social-btn .share-social-icon { background: #0F172A; }
+        body.dark-mode .share-social-btn.btn-x-social .share-social-icon { border-color: #F8FAFC; color: #F8FAFC; }
+        body.dark-mode .share-social-btn.btn-x-social:hover .share-social-icon { background: #F8FAFC; color: #0F172A; }
+        body.dark-mode .share-social-btn span { color: #94A3B8; }
         .share-link-box {
             display: flex;
             align-items: center;
@@ -253,7 +287,7 @@
             </div>
             <div class="welcome-actions">
                 <button type="button" class="btn-share-profile" onclick="shareMyAuthorProfile()" title="Share all your published articles with fans">
-                    <i class="fa-solid fa-share-nodes"></i> Share My Public Articles
+                    <i class="fa-solid fa-paper-plane"></i> Share My Public Articles
                 </button>
                 <a href="adminSettings.html" id="adminSettingsBtn" class="create-btn" style="background:#475569;display:none;">
                     <i class="fa-solid fa-sliders"></i> Site Settings
@@ -334,7 +368,7 @@
                     <p>Manage your posts, share with fans, and check approval status.</p>
                 </div>
                 <button type="button" class="btn-share-profile" onclick="shareMyAuthorProfile()" style="padding:8px 16px; font-size:0.85rem;">
-                    <i class="fa-solid fa-share-nodes"></i> Share My Profile
+                    <i class="fa-solid fa-paper-plane"></i> Share My Profile
                 </button>
             </div>
             <div class="blogs-list" id="blogContainer"></div>
@@ -352,8 +386,8 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
             <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                <div style="width:36px; height:36px; border-radius:10px; background:#EEF2FF; color:#4F46E5; display:flex; align-items:center; justify-content:center; font-size:1.1rem;">
-                    <i class="fa-solid fa-share-nodes"></i>
+                <div style="width:38px; height:38px; border-radius:50%; background:#E0F2FE; color:#0088cc; border:2px solid #0088cc; display:flex; align-items:center; justify-content:center; font-size:1.15rem;">
+                    <i class="fa-solid fa-paper-plane"></i>
                 </div>
                 <h3 id="shareModalTitle" style="margin:0; font-size:1.25rem; font-weight:700; color:#0F172A;">Share to Fans & Followers</h3>
             </div>
@@ -362,13 +396,18 @@
             <div class="share-social-grid">
                 <!-- X (Twitter) -->
                 <a href="#" id="shareLinkX" target="_blank" class="share-social-btn btn-x-social" title="Share on X">
-                    <div class="share-social-icon"><i class="fa-brands fa-x-twitter" style="font-size:1.4rem;"></i></div>
+                    <div class="share-social-icon"><i class="fa-brands fa-x-twitter" style="font-size:1.35rem;"></i></div>
                     <span>Post on X</span>
                 </a>
                 <!-- WhatsApp -->
                 <a href="#" id="shareLinkWhatsApp" target="_blank" class="share-social-btn btn-wa-social" title="Share on WhatsApp">
                     <div class="share-social-icon"><i class="fa-brands fa-whatsapp" style="font-size:1.45rem;"></i></div>
                     <span>WhatsApp</span>
+                </a>
+                <!-- Telegram -->
+                <a href="#" id="shareLinkTelegram" target="_blank" class="share-social-btn btn-tg-social" title="Share on Telegram">
+                    <div class="share-social-icon"><i class="fa-brands fa-telegram" style="font-size:1.45rem;"></i></div>
+                    <span>Telegram</span>
                 </a>
                 <!-- Facebook -->
                 <a href="#" id="shareLinkFacebook" target="_blank" class="share-social-btn btn-fb-social" title="Share on Facebook">

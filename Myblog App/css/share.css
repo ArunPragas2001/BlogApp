@@ -664,17 +664,18 @@ body.dark-mode .share-blog-title {
     color: #F1F5F9;
 }
 
-/* Share Networks Grid */
+/* Share Networks Grid — Telegram Style Circular Icons */
 .share-networks-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    gap: 18px 12px;
     margin-bottom: 24px;
 }
 
 @media (max-width: 440px) {
     .share-networks-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px 6px;
     }
 }
 
@@ -684,74 +685,91 @@ body.dark-mode .share-blog-title {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 14px 10px;
-    border-radius: 16px;
-    border: 1px solid #E2E8F0;
-    background: #FFFFFF;
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
     cursor: pointer;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.22s ease;
+    text-decoration: none;
+    outline: none;
 }
 
 .share-net-btn span {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #334155;
+    color: #475569;
     transition: color 0.2s;
+    letter-spacing: 0.2px;
 }
 
 .net-icon {
-    width: 44px;
-    height: 44px;
+    width: 54px;
+    height: 54px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.35rem;
-    transition: all 0.25s ease;
+    font-size: 1.4rem;
+    background: #FFFFFF;
+    border: 2.5px solid #1E293B;
+    color: #1E293B;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Individual Network Brand Colors */
-.share-net-btn.wa .net-icon { background: #DCFCE7; color: #128C7E; }
-.share-net-btn.wa:hover { border-color: #25D366; background: #25D366; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3); }
-.share-net-btn.wa:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.wa:hover span { color: #FFF; }
+.share-net-btn:hover .net-icon {
+    transform: scale(1.14);
+}
 
-.share-net-btn.fb .net-icon { background: #E0F2FE; color: #1877F2; }
-.share-net-btn.fb:hover { border-color: #1877F2; background: #1877F2; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(24, 119, 242, 0.3); }
-.share-net-btn.fb:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.fb:hover span { color: #FFF; }
+.share-net-btn:active .net-icon {
+    transform: scale(0.95);
+}
 
-.share-net-btn.insta .net-icon { background: #FCE7F3; color: #E1306C; }
-.share-net-btn.insta:hover { border-color: #E1306C; background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); transform: translateY(-3px); box-shadow: 0 8px 20px rgba(225, 48, 108, 0.3); }
-.share-net-btn.insta:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.insta:hover span { color: #FFF; }
+/* Individual Network Brand Colors — Circular Ring & Fill */
+.share-net-btn.wa .net-icon { border-color: #25D366; color: #25D366; }
+.share-net-btn.wa:hover .net-icon { background: #25D366; color: #FFFFFF; box-shadow: 0 6px 20px rgba(37, 211, 102, 0.4); }
+.share-net-btn.wa:hover span { color: #25D366; font-weight: 700; }
 
-.share-net-btn.tw .net-icon { background: #F1F5F9; color: #0F172A; }
-.share-net-btn.tw:hover { border-color: #0F172A; background: #0F172A; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3); }
-.share-net-btn.tw:hover .net-icon { background: rgba(255,255,255,0.2); color: #FFF; }
-.share-net-btn.tw:hover span { color: #FFF; }
+.share-net-btn.tw .net-icon { border-color: #0F172A; color: #0F172A; }
+.share-net-btn.tw:hover .net-icon { background: #0F172A; color: #FFFFFF; box-shadow: 0 6px 20px rgba(15, 23, 42, 0.4); }
+.share-net-btn.tw:hover span { color: #0F172A; font-weight: 700; }
 
-.share-net-btn.tg .net-icon { background: #E0F2FE; color: #229ED9; }
-.share-net-btn.tg:hover { border-color: #229ED9; background: #229ED9; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(34, 158, 217, 0.3); }
-.share-net-btn.tg:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.tg:hover span { color: #FFF; }
+.share-net-btn.fb .net-icon { border-color: #1877F2; color: #1877F2; }
+.share-net-btn.fb:hover .net-icon { background: #1877F2; color: #FFFFFF; box-shadow: 0 6px 20px rgba(24, 119, 242, 0.4); }
+.share-net-btn.fb:hover span { color: #1877F2; font-weight: 700; }
 
-.share-net-btn.li .net-icon { background: #E0F2FE; color: #0A66C2; }
-.share-net-btn.li:hover { border-color: #0A66C2; background: #0A66C2; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(10, 102, 194, 0.3); }
-.share-net-btn.li:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.li:hover span { color: #FFF; }
+.share-net-btn.insta .net-icon { border-color: #E1306C; color: #E1306C; }
+.share-net-btn.insta:hover .net-icon { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); border-color: transparent; color: #FFFFFF; box-shadow: 0 6px 20px rgba(225, 48, 108, 0.4); }
+.share-net-btn.insta:hover span { color: #E1306C; font-weight: 700; }
 
-.share-net-btn.native .net-icon { background: #EEF2FF; color: #4F46E5; }
-.share-net-btn.native:hover { border-color: #4F46E5; background: #4F46E5; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(79, 70, 229, 0.3); }
-.share-net-btn.native:hover .net-icon { background: rgba(255,255,255,0.25); color: #FFF; }
-.share-net-btn.native:hover span { color: #FFF; }
+.share-net-btn.tg .net-icon { border-color: #0088cc; color: #0088cc; }
+.share-net-btn.tg:hover .net-icon { background: #0088cc; color: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4); }
+.share-net-btn.tg:hover span { color: #0088cc; font-weight: 700; }
+
+.share-net-btn.li .net-icon { border-color: #0A66C2; color: #0A66C2; }
+.share-net-btn.li:hover .net-icon { background: #0A66C2; color: #FFFFFF; box-shadow: 0 6px 20px rgba(10, 102, 194, 0.4); }
+.share-net-btn.li:hover span { color: #0A66C2; font-weight: 700; }
+
+.share-net-btn.native .net-icon { border-color: #6366F1; color: #6366F1; }
+.share-net-btn.native:hover .net-icon { background: #6366F1; color: #FFFFFF; box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4); }
+.share-net-btn.native:hover span { color: #6366F1; font-weight: 700; }
 
 body.dark-mode .share-net-btn {
+    background: transparent;
+}
+body.dark-mode .share-net-btn .net-icon {
     background: #0F172A;
-    border-color: #334155;
+}
+body.dark-mode .share-net-btn.tw .net-icon {
+    border-color: #F8FAFC;
+    color: #F8FAFC;
+}
+body.dark-mode .share-net-btn.tw:hover .net-icon {
+    background: #F8FAFC;
+    color: #0F172A;
 }
 body.dark-mode .share-net-btn span {
-    color: #CBD5E1;
+    color: #94A3B8;
 }
 
 /* Copy Link Box */

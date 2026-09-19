@@ -229,7 +229,7 @@
             '<div class="share-modal-card" id="shareModalCard">' +
             '  <div class="share-modal-header">' +
             '    <div class="share-modal-title-wrap">' +
-            '      <div class="share-icon-badge"><i class="fa-solid fa-share-nodes"></i></div>' +
+            '      <div class="share-icon-badge"><i class="fa-solid fa-paper-plane"></i></div>' +
             '      <div>' +
             '        <h3 class="share-modal-heading">' + (isAuthorMode ? 'Share Author Portfolio' : 'Share Article') + '</h3>' +
             '        <p class="share-modal-subheading">' + (isAuthorMode ? ('Share ' + esc(authorName) + '\'s portfolio with fans and friends') : 'Spread the word across your favorite networks') + '</p>' +

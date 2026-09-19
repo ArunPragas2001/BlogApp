@@ -136,6 +136,7 @@ function openShareModal(options) {
     var urlInput = document.getElementById("shareDirectUrlInput");
     var linkX = document.getElementById("shareLinkX");
     var linkWa = document.getElementById("shareLinkWhatsApp");
+    var linkTg = document.getElementById("shareLinkTelegram");
     var linkFb = document.getElementById("shareLinkFacebook");
     var linkLi = document.getElementById("shareLinkLinkedIn");
 
@@ -174,6 +175,9 @@ function openShareModal(options) {
     }
     if (linkWa) {
         linkWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText + "\n" + shareUrl);
+    }
+    if (linkTg) {
+        linkTg.href = "https://t.me/share/url?url=" + encodeURIComponent(shareUrl) + "&text=" + encodeURIComponent(shareText);
     }
     if (linkFb) {
         linkFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl);
@@ -629,7 +633,7 @@ async function openArticleReader(blogId) {
             '<span class="comment-count" data-comment-blog-id="' + blogId + '">' + (commentsCount > 0 ? commentsCount : '') + '</span>' +
             '</button>' +
             '<button class="insta-action-icon-btn share-btn" onclick="shareBlogArticle(\'' + blogId + '\')" title="Share Post">' +
-            '<i class="fa-solid fa-share-nodes"></i>' +
+            '<i class="fa-solid fa-paper-plane"></i>' +
             '</button>' +
             '</div>' +
             '<div class="article-share-chips">' +
@@ -763,7 +767,7 @@ function renderBlogCardsList(blogsList, container) {
             '<span class="like-count">' + (likesCount > 0 ? likesCount : '') + '</span>' +
             '</button>' +
             '<button class="insta-action-icon-btn share-btn" onclick="shareBlogArticle(\'' + blogId + '\'); event.stopPropagation();" title="Share Post">' +
-            '<i class="fa-solid fa-share-nodes"></i>' +
+            '<i class="fa-solid fa-paper-plane"></i>' +
             '</button>' +
             '</div>' +
             '<button class="insta-read-btn" onclick="openArticleReader(\'' + blogId + '\')">' +
@@ -916,7 +920,7 @@ function updateAuthorBannerUI(allBlogs) {
             '</div>' +
             '<div class="author-hero-actions">' +
             '<button type="button" class="btn-author-share" onclick="shareAuthorProfile(\'' + esc(activeAuthorFilter) + '\', \'' + esc(authorName) + '\', \'' + esc(authorBio) + '\')">' +
-            '<i class="fa-solid fa-share-nodes"></i> Share Author Page' +
+            '<i class="fa-solid fa-paper-plane"></i> Share Author Page' +
             '</button>' +
             '<button type="button" class="btn-author-all" onclick="clearAuthorFilter()">' +
             '<i class="fa-solid fa-arrow-left"></i> View All Stories' +

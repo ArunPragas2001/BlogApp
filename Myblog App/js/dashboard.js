@@ -372,6 +372,7 @@ function openShareModal(options) {
     var urlInput = document.getElementById("shareDirectUrlInput");
     var linkX = document.getElementById("shareLinkX");
     var linkWa = document.getElementById("shareLinkWhatsApp");
+    var linkTg = document.getElementById("shareLinkTelegram");
     var linkFb = document.getElementById("shareLinkFacebook");
     var linkLi = document.getElementById("shareLinkLinkedIn");
 
@@ -397,6 +398,7 @@ function openShareModal(options) {
 
     if (linkX) linkX.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent(shareText) + "&url=" + encodeURIComponent(shareUrl);
     if (linkWa) linkWa.href = "https://api.whatsapp.com/send?text=" + encodeURIComponent(shareText + "\n" + shareUrl);
+    if (linkTg) linkTg.href = "https://t.me/share/url?url=" + encodeURIComponent(shareUrl) + "&text=" + encodeURIComponent(shareText);
     if (linkFb) linkFb.href = "https://www.facebook.com/sharer/sharer.php?u=" + encodeURIComponent(shareUrl);
     if (linkLi) linkLi.href = "https://www.linkedin.com/sharing/share-offsite/?url=" + encodeURIComponent(shareUrl);
 
@@ -644,7 +646,7 @@ function openAdminBlogPreview(blogId) {
     var isAuthorOfBlog = isAuthorMatch(blog.author, currentUser);
     var canEditBlog = isAdminOrOwner || isAuthorOfBlog;
 
-    approveButtons += '<button type="button" style="background:#0EA5E9;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i> Share Post</button>';
+    approveButtons += '<button type="button" style="background:#0EA5E9;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-paper-plane"></i> Share Post</button>';
     if (canEditBlog) {
         approveButtons += '<button type="button" style="background:#4F46E5;color:#fff;border:none;padding:10px 22px;border-radius:10px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px;" onclick="closeAdminBlogPreview();editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i> Edit Post</button>';
     }
@@ -739,7 +741,7 @@ function renderBlogsList() {
                     '<div class="blog-info" style="flex:1;"><h3>' + esc(blog.title) + '</h3><p>' + esc((blog.content || "").substring(0, 90)) + (blog.content && blog.content.length > 90 ? "…" : "") + '</p><small>By <strong>' + esc(authorName) + '</strong> · ' + esc(blog.category) + '</small></div>' +
                     '<div class="blog-actions">' +
   '<button class="dash-icon-btn view" title="Preview Post" onclick="openAdminBlogPreview(\'' + blogId + '\')"><i class="fa-solid fa-eye"></i></button>' +
-                    '<button class="dash-icon-btn share" title="Share Post" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-share-nodes"></i></button>' +
+                    '<button class="dash-icon-btn share" title="Share Post" onclick="BlogShare.openModal(\'' + blogId + '\')"><i class="fa-solid fa-paper-plane"></i></button>' +
                     '<button class="dash-icon-btn edit" title="Edit Post" onclick="editBlog(\'' + blogId + '\')"><i class="fa-solid fa-pen"></i></button>' +
                     '<button class="dash-icon-btn approve" title="Approve Post" onclick="handleApproveBlog(\'' + blogId + '\',true)"><i class="fa-solid fa-check"></i></button>' +
                     '<button class="dash-icon-btn reject" title="Reject Post" onclick="handleApproveBlog(\'' + blogId + '\',false)"><i class="fa-solid fa-xmark"></i></button>' +
@@ -786,7 +788,7 @@ function renderBlogsList() {
             (likesCount > 0 ? '<span class="like-count">' + likesCount + '</span>' : '') +
             '</button>' +
             '<button class="dash-icon-btn share" title="Share Post" onclick="BlogShare.openModal(\'' + blogId + '\')">' +
-            '<i class="fa-solid fa-share-nodes"></i></button>' +
+            '<i class="fa-solid fa-paper-plane"></i></button>' +
             (canEditDelete ? '<button class="dash-icon-btn edit" title="Edit Post" onclick="editBlog(\'' + blogId + '\')">' +
             '<i class="fa-solid fa-pen"></i></button>' : '') +
             (canEditDelete ? '<button class="dash-icon-btn delete" title="Delete Post" onclick="deleteBlog(\'' + blogId + '\',\'' + esc(blog.title || "") + '\')">' +
