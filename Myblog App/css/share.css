@@ -146,10 +146,10 @@ body.dark-mode .insta-action-bar {
     color: #FFFFFF !important;
 }
 
-/* Telegram Paper Plane Share Button & Takeoff Effect */
+/* Paper Plane Share Button & Takeoff Effect — Emerald Green (independent from Telegram blue) */
 .insta-action-icon-btn.share-btn:hover {
-    background: #0088cc;
-    border-color: #0088cc;
+    background: #059669;
+    border-color: #059669;
     color: #FFFFFF;
 }
 
@@ -212,8 +212,8 @@ body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count-num {
 }
 
 body.dark-mode .insta-action-icon-btn.share-btn:hover {
-    background: #0088cc;
-    border-color: #0088cc;
+    background: #059669;
+    border-color: #059669;
     color: #FFFFFF !important;
 }
 
@@ -557,9 +557,9 @@ body.dark-mode .share-modal-header {
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: #E0F2FE;
-    color: #0088cc;
-    border: 2px solid #0088cc;
+    background: #EEF2FF;
+    color: #4F46E5;
+    border: 2px solid #C7D2FE;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -567,9 +567,9 @@ body.dark-mode .share-modal-header {
 }
 
 body.dark-mode .share-icon-badge {
-    background: #1E293B;
-    color: #38BDF8;
-    border-color: #38BDF8;
+    background: #312E81;
+    color: #C7D2FE;
+    border-color: #4338CA;
 }
 
 .share-modal-heading {
