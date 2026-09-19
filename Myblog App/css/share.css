@@ -56,81 +56,171 @@ body.dark-mode .insta-action-bar {
 .insta-actions-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .insta-action-icon-btn {
-    background: transparent;
-    border: none;
-    padding: 6px 8px;
-    font-size: 1.35rem;
-    color: #0F172A;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    color: #1E293B;
+    border: 2.2px solid #1E293B;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    border-radius: 50%;
-    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    justify-content: center;
+    font-size: 1.05rem;
+    position: relative;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+    outline: none;
+    flex-shrink: 0;
+}
+
+.insta-action-icon-btn i {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    line-height: 1;
+}
+
+.insta-action-icon-btn:hover {
+    transform: scale(1.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+}
+
+.insta-action-icon-btn:active {
+    transform: scale(0.95);
+}
+
+/* Like Button — Pill shape when count is visible */
+.insta-action-icon-btn.like-btn {
+    width: auto;
+    min-width: 40px;
+    padding: 0 11px;
+    border-radius: 999px;
+    gap: 5px;
+}
+
+.insta-action-icon-btn.like-btn .like-count,
+.insta-action-icon-btn.like-btn .like-count-num {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #1E293B;
 }
 
 .insta-action-icon-btn.like-btn:hover {
-    color: #FF3040;
-    transform: scale(1.2);
+    background: #EF4444;
+    border-color: #EF4444;
+    color: #FFFFFF;
+}
+
+.insta-action-icon-btn.like-btn:hover .like-count,
+.insta-action-icon-btn.like-btn:hover .like-count-num {
+    color: #FFFFFF;
 }
 
 .insta-action-icon-btn.like-btn.liked {
-    color: #FF3040 !important;
+    background: #FFF1F2;
+    border-color: #EF4444;
+    color: #EF4444 !important;
 }
 
 .insta-action-icon-btn.like-btn.liked i {
-    color: #FF3040 !important;
+    color: #EF4444 !important;
     animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.insta-action-icon-btn.like-btn .like-count {
-    font-size: 0.9rem;
-    font-weight: 700;
-    color: #0F172A;
+.insta-action-icon-btn.like-btn.liked .like-count,
+.insta-action-icon-btn.like-btn.liked .like-count-num {
+    color: #EF4444 !important;
 }
 
-.insta-action-icon-btn.like-btn.liked .like-count {
-    color: #FF3040;
+.insta-action-icon-btn.like-btn.liked:hover {
+    background: #EF4444;
+    color: #FFFFFF !important;
 }
 
-/* Paper Airplane Share Takeoff Effect */
+.insta-action-icon-btn.like-btn.liked:hover i,
+.insta-action-icon-btn.like-btn.liked:hover .like-count,
+.insta-action-icon-btn.like-btn.liked:hover .like-count-num {
+    color: #FFFFFF !important;
+}
+
+/* Telegram Paper Plane Share Button & Takeoff Effect */
 .insta-action-icon-btn.share-btn:hover {
-    color: #4F46E5;
-    transform: scale(1.15) rotate(-15deg) translateY(-2px);
+    background: #0088cc;
+    border-color: #0088cc;
+    color: #FFFFFF;
 }
 
-/* Comment Icon Hover */
+.insta-action-icon-btn.share-btn:hover i {
+    transform: rotate(-15deg) scale(1.15) translateY(-2px);
+}
+
+/* Comment Icon Button */
+.insta-action-icon-btn.comment-btn {
+    width: auto;
+    min-width: 40px;
+    padding: 0 10px;
+    border-radius: 999px;
+    gap: 5px;
+}
+
 .insta-action-icon-btn.comment-btn:hover {
-    color: #0EA5E9;
-    transform: scale(1.18);
+    background: #0EA5E9;
+    border-color: #0EA5E9;
+    color: #FFFFFF;
 }
 
 .insta-action-icon-btn .comment-count {
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    color: #0F172A;
+    color: #1E293B;
+}
+
+.insta-action-icon-btn.comment-btn:hover .comment-count {
+    color: #FFFFFF;
 }
 
 /* NIGHT MODE / DARK MODE HIGH VISIBILITY */
 body.dark-mode .insta-action-icon-btn {
+    background: #1E293B;
+    border-color: #475569;
     color: #F8FAFC !important;
 }
 
 body.dark-mode .insta-action-icon-btn.like-btn .like-count,
+body.dark-mode .insta-action-icon-btn.like-btn .like-count-num,
 body.dark-mode .insta-action-icon-btn .comment-count {
     color: #F8FAFC !important;
 }
 
-body.dark-mode .insta-action-icon-btn.like-btn.liked {
-    color: #FF3040 !important;
+body.dark-mode .insta-action-icon-btn.like-btn:hover {
+    background: #EF4444;
+    border-color: #EF4444;
 }
 
-body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count {
-    color: #FF3040 !important;
+body.dark-mode .insta-action-icon-btn.like-btn.liked {
+    background: #451A1A;
+    border-color: #EF4444;
+    color: #EF4444 !important;
+}
+
+body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count,
+body.dark-mode .insta-action-icon-btn.like-btn.liked .like-count-num {
+    color: #EF4444 !important;
+}
+
+body.dark-mode .insta-action-icon-btn.share-btn:hover {
+    background: #0088cc;
+    border-color: #0088cc;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .insta-action-icon-btn.comment-btn:hover {
+    background: #0EA5E9;
+    border-color: #0EA5E9;
+    color: #FFFFFF !important;
 }
 
 /* Comments Section Container */
@@ -464,11 +554,12 @@ body.dark-mode .share-modal-header {
 }
 
 .share-icon-badge {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-    background: #EEF2FF;
-    color: #4F46E5;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #E0F2FE;
+    color: #0088cc;
+    border: 2px solid #0088cc;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -476,8 +567,9 @@ body.dark-mode .share-modal-header {
 }
 
 body.dark-mode .share-icon-badge {
-    background: #312E81;
-    color: #C7D2FE;
+    background: #1E293B;
+    color: #38BDF8;
+    border-color: #38BDF8;
 }
 
 .share-modal-heading {

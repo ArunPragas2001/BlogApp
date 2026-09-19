@@ -430,14 +430,14 @@ a {
     animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Share — emerald */
+/* Share — Telegram blue */
 .dash-icon-btn.share:hover {
-    background: #059669;
-    border-color: #059669;
+    background: #0088cc;
+    border-color: #0088cc;
     color: #ffffff;
 }
 .dash-icon-btn.share:hover i {
-    transform: rotate(-12deg) scale(1.1);
+    transform: rotate(-15deg) scale(1.15) translateY(-2px);
 }
 
 /* Edit — violet */
@@ -499,7 +499,7 @@ body.dark-mode .dash-icon-btn.like.liked {
 }
 body.dark-mode .dash-icon-btn.view:hover         { background: #4F46E5; border-color: #4F46E5; }
 body.dark-mode .dash-icon-btn.like:hover         { background: #EF4444; border-color: #EF4444; }
-body.dark-mode .dash-icon-btn.share:hover        { background: #059669; border-color: #059669; }
+body.dark-mode .dash-icon-btn.share:hover        { background: #0088cc; border-color: #0088cc; }
 body.dark-mode .dash-icon-btn.edit:hover         { background: #7C3AED; border-color: #7C3AED; }
 body.dark-mode .dash-icon-btn.delete:hover       { background: #EF4444; border-color: #EF4444; }
 body.dark-mode .dash-icon-btn.approve:hover      { background: #10B981; border-color: #10B981; }
