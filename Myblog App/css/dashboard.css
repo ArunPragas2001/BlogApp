@@ -353,172 +353,160 @@ a {
     flex-wrap: wrap;
 }
 
-/* Enhanced Dashboard Action Buttons */
-.dash-action-btn,
-.edit-btn,
-.delete-btn {
+/* ==========================================================================
+   Modern Minimalist Icon-Only Action Buttons (Tooltips, Sleek Micro-Interactions)
+   ========================================================================== */
+.dash-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 0.86rem;
-    font-weight: 700;
+    background: #F8FAFC;
+    color: #475569;
+    border: 1px solid #E2E8F0;
     cursor: pointer;
-    border: 1px solid transparent;
-    transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    font-size: 0.95rem;
+    position: relative;
+    transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
     text-decoration: none;
-    line-height: 1.2;
+    outline: none;
     -webkit-font-smoothing: antialiased;
 }
 
-.dash-action-btn.view,
-.edit-btn.view-btn {
+.dash-icon-btn i {
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.dash-icon-btn:hover {
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+/* View Button */
+.dash-icon-btn.view:hover {
     background: #EEF2FF;
     color: #4F46E5;
     border-color: #C7D2FE;
-}
-.dash-action-btn.view:hover,
-.edit-btn.view-btn:hover {
-    background: #4F46E5;
-    color: #FFFFFF;
-    border-color: #4F46E5;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.2);
 }
 
-.dash-action-btn.edit,
-.edit-btn {
-    background: #F8FAFC;
-    color: #334155;
-    border-color: #E2E8F0;
+/* Like Button & Counter */
+.dash-icon-btn.like {
+    width: auto;
+    min-width: 38px;
+    padding: 0 10px;
+    border-radius: 20px;
+    gap: 5px;
 }
-.dash-action-btn.edit:hover,
-.edit-btn:hover {
-    background: #4F46E5;
-    color: #FFFFFF;
-    border-color: #4F46E5;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+.dash-icon-btn.like .like-count {
+    font-size: 0.82rem;
+    font-weight: 700;
 }
-
-.dash-action-btn.delete,
-.delete-btn {
-    background: #FEF2F2;
-    color: #EF4444;
-    border-color: #FECACA;
-}
-.dash-action-btn.delete:hover,
-.delete-btn:hover {
-    background: #EF4444;
-    color: #FFFFFF;
-    border-color: #EF4444;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.25);
-}
-
-/* Enhanced Interactive Like Button in Dashboard */
-.dash-action-btn.like-btn {
+.dash-icon-btn.like:hover {
     background: #FFF1F2;
-    color: #E11D48;
+    color: #EF4444;
     border-color: #FECDD3;
-    padding: 8px 14px;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
 }
-.dash-action-btn.like-btn i {
-    font-size: 1rem;
-    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.dash-action-btn.like-btn:hover {
-    background: #FFE4E6;
+.dash-icon-btn.like.liked {
+    background: #FFF1F2;
+    color: #EF4444;
     border-color: #FDA4AF;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(225, 29, 72, 0.2);
 }
-.dash-action-btn.like-btn:hover i {
-    transform: scale(1.25);
-}
-.dash-action-btn.like-btn.liked {
-    background: #E11D48;
-    color: #FFFFFF;
-    border-color: #E11D48;
-}
-.dash-action-btn.like-btn.liked i {
-    color: #FFFFFF !important;
+.dash-icon-btn.like.liked i {
+    color: #EF4444;
     animation: heartPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* Enhanced Interactive Share Button in Dashboard */
-.dash-action-btn.share-btn {
+/* Share Button */
+.dash-icon-btn.share:hover {
     background: #F0FDF4;
     color: #16A34A;
     border-color: #BBF7D0;
-    padding: 8px 14px;
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.2);
 }
-.dash-action-btn.share-btn i {
-    font-size: 0.95rem;
-    transition: transform 0.22s ease;
-}
-.dash-action-btn.share-btn:hover {
-    background: #16A34A;
-    color: #FFFFFF;
-    border-color: #16A34A;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
-}
-.dash-action-btn.share-btn:hover i {
+.dash-icon-btn.share:hover i {
     transform: rotate(-15deg) scale(1.15);
 }
 
-/* Dark Mode Dashboard Action Buttons */
-body.dark-mode .dash-action-btn.view {
-    background: #1E1B4B;
-    color: #A5B4FC;
-    border-color: #3730A3;
+/* Edit Button */
+.dash-icon-btn.edit:hover {
+    background: #F5F3FF;
+    color: #7C3AED;
+    border-color: #DDD6FE;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.2);
 }
-body.dark-mode .dash-action-btn.view:hover {
-    background: #4F46E5;
-    color: #FFF;
+
+/* Delete Button */
+.dash-icon-btn.delete:hover {
+    background: #FEF2F2;
+    color: #EF4444;
+    border-color: #FECACA;
+    box-shadow: 0 4px 14px rgba(239, 68, 68, 0.2);
 }
-body.dark-mode .dash-action-btn.edit,
-body.dark-mode .edit-btn {
+
+/* Approve Button */
+.dash-icon-btn.approve:hover {
+    background: #ECFDF5;
+    color: #059669;
+    border-color: #A7F3D0;
+    box-shadow: 0 4px 14px rgba(5, 150, 105, 0.2);
+}
+
+/* Reject Button */
+.dash-icon-btn.reject:hover {
+    background: #FEF2F2;
+    color: #DC2626;
+    border-color: #FECACA;
+    box-shadow: 0 4px 14px rgba(220, 38, 38, 0.2);
+}
+
+/* Dark Mode Action Buttons */
+body.dark-mode .dash-icon-btn {
     background: #1E293B;
-    color: #CBD5E1;
     border-color: #334155;
+    color: #94A3B8;
 }
-body.dark-mode .dash-action-btn.edit:hover,
-body.dark-mode .edit-btn:hover {
-    background: #4F46E5;
-    color: #FFF;
+body.dark-mode .dash-icon-btn:hover {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }
-body.dark-mode .dash-action-btn.delete,
-body.dark-mode .delete-btn {
-    background: #450A0A;
-    color: #FCA5A5;
-    border-color: #7F1D1D;
+body.dark-mode .dash-icon-btn.view:hover {
+    background: #1E1B4B;
+    color: #818CF8;
+    border-color: #4338CA;
 }
-body.dark-mode .dash-action-btn.delete:hover,
-body.dark-mode .delete-btn:hover {
-    background: #EF4444;
-    color: #FFF;
-}
-body.dark-mode .dash-action-btn.like-btn {
+body.dark-mode .dash-icon-btn.like:hover,
+body.dark-mode .dash-icon-btn.like.liked {
     background: #4C0519;
-    color: #FDA4AF;
-    border-color: #881337;
+    color: #FB7185;
+    border-color: #9F1239;
 }
-body.dark-mode .dash-action-btn.like-btn.liked {
-    background: #E11D48;
-    color: #FFF;
-}
-body.dark-mode .dash-action-btn.share-btn {
+body.dark-mode .dash-icon-btn.share:hover {
     background: #052E16;
-    color: #86EFAC;
-    border-color: #14532D;
+    color: #4ADE80;
+    border-color: #166534;
 }
-body.dark-mode .dash-action-btn.share-btn:hover {
-    background: #16A34A;
-    color: #FFF;
+body.dark-mode .dash-icon-btn.edit:hover {
+    background: #2E1065;
+    color: #C084FC;
+    border-color: #6B21A8;
+}
+body.dark-mode .dash-icon-btn.delete:hover {
+    background: #450A0A;
+    color: #F87171;
+    border-color: #991B1B;
+}
+body.dark-mode .dash-icon-btn.approve:hover {
+    background: #064E3B;
+    color: #34D399;
+    border-color: #047857;
+}
+body.dark-mode .dash-icon-btn.reject:hover {
+    background: #450A0A;
+    color: #F87171;
+    border-color: #991B1B;
 }
 
 /* Empty State Box */
