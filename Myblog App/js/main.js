@@ -45,6 +45,12 @@ function esc(str) {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
+function getReadingTime(content) {
+    if (!content) return 1;
+    var words = String(content).trim().split(/\s+/).length;
+    return Math.max(1, Math.ceil(words / 200));
+}
+
 function resolveImageUrl(url) {
     if (!url || typeof url !== "string") return "";
     var trimmed = url.trim();
@@ -620,7 +626,24 @@ function populateArticleReaderUI(blog) {
     }
 
     if (titleEl) titleEl.textContent = blog.title || "";
-    if (contentEl) contentEl.textContent = blog.content || "";
+    if (contentEl) {
+        // Render line breaks correctly for story/novel long-form content
+        var safeContent = esc(blog.content || "");
+        contentEl.innerHTML = safeContent.replace(/\n/g, "<br>");
+    }
+
+    // Add estimated reading time badge to meta
+    var readTime = getReadingTime(blog.content);
+    if (meta) {
+        var readTimeBadge = meta.querySelector('.read-time-badge');
+        if (!readTimeBadge) {
+            readTimeBadge = document.createElement('span');
+            readTimeBadge.className = 'read-time-badge';
+            readTimeBadge.style.cssText = 'font-size:0.82rem;color:#64748B;font-weight:500;display:inline-flex;align-items:center;gap:5px;';
+            meta.appendChild(readTimeBadge);
+        }
+        readTimeBadge.innerHTML = '<i class="fa-regular fa-clock" style="color:#4F46E5;"></i> ' + readTime + ' min read';
+    }
 
     // Render Share & Like & Comment Toolbar inside Article Reader
     var shareBar = document.getElementById("articleReaderShareBar");
@@ -851,9 +874,12 @@ function renderBlogCardsList(blogsList, container) {
             '</div>' +
             '<h3 style="font-size:1.15rem;font-weight:700;color:#0F172A;margin-bottom:8px;line-height:1.3;cursor:pointer;" onclick="openArticleReader(\'' + blogId + '\')">' + esc(blog.title) + '</h3>' +
             '<p class="blog-card-preview">' + esc(preview) + '</p>' +
-            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;cursor:pointer;" onclick="viewAuthorArticles(\'' + esc(authorId) + '\', \'' + esc(authorName) + '\')" title="Click to view all stories by ' + esc(authorName) + '">' +
+            '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px;">' +
+            '<div style="display:flex;align-items:center;gap:8px;cursor:pointer;" onclick="viewAuthorArticles(\'' + esc(authorId) + '\', \'' + esc(authorName) + '\')" title="Click to view all stories by ' + esc(authorName) + '">' +
             '<img src="' + esc(authorAvatar) + '" alt="avatar" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1.5px solid #6366F1;" onerror="this.src=\'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80\'">' +
             '<small style="color:#4F46E5;font-weight:600;">By ' + esc(authorName) + ' <i class="fa-solid fa-arrow-right" style="font-size:0.7rem;margin-left:3px;opacity:0.7;"></i></small>' +
+            '</div>' +
+            '<span style="font-size:0.75rem;color:#94A3B8;font-weight:500;display:inline-flex;align-items:center;gap:4px;"><i class="fa-regular fa-clock"></i> ' + getReadingTime(blog.content) + ' min</span>' +
             '</div>' +
             '<div class="insta-action-bar">' +
             '<div class="insta-actions-left">' +

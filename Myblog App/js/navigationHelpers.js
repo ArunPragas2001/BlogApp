@@ -282,13 +282,12 @@
 
     // Auto-dismiss loader when all window assets & data finish loading
     window.addEventListener("load", function () {
-        setTimeout(function () {
-            hidePageLoader();
-        }, 300);
+        hidePageLoader();
     });
 
-    // Safety fallback: ensure loader never blocks user for more than 4 seconds
+    // Safety fallback: ensure loader NEVER blocks user for more than 800ms
+    // (cached pages render in 0ms, so the loader should be almost invisible)
     setTimeout(function () {
         hidePageLoader();
-    }, 4000);
+    }, 800);
 })();
