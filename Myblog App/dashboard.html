@@ -7,6 +7,9 @@
     <title>Dashboard | BlogSphere</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://blogsphere-wtrv.onrender.com" crossorigin>
+    <link rel="dns-prefetch" href="https://blogsphere-wtrv.onrender.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <link rel="stylesheet" href="css/toast.css">
@@ -240,14 +243,75 @@
             border-radius: 12px;
             padding: 4px 6px 4px 14px;
             margin-top: 14px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         body.dark-mode .share-link-box { background: #0F172A; border-color: #334155; }
-        .share-link-input { flex: 1; background: transparent; border: none; font-size: 0.88rem; color: #334155; outline: none; }
+        .share-link-input {
+            flex: 1 1 auto;
+            min-width: 0 !important;
+            width: 100% !important;
+            background: transparent;
+            border: none;
+            font-size: 0.88rem;
+            color: #334155;
+            outline: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
         body.dark-mode .share-link-input { color: #E2E8F0; }
         .btn-copy-share {
-            background: #4F46E5; color: #FFF; border: none; padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            flex-shrink: 0 !important;
+            background: #4F46E5;
+            color: #FFF;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            white-space: nowrap !important;
+            box-sizing: border-box;
         }
         .btn-copy-share:hover { background: #4338CA; }
+
+        @media (max-width: 480px) {
+            .share-modal-overlay {
+                padding: 10px !important;
+                align-items: flex-end !important;
+            }
+            .share-modal-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                border-radius: 20px 20px 16px 16px !important;
+                box-sizing: border-box !important;
+                padding: 18px 14px !important;
+            }
+            .share-social-grid {
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 8px !important;
+            }
+            .share-link-box {
+                padding: 4px 6px 4px 10px !important;
+            }
+            .share-link-input {
+                font-size: 0.8rem !important;
+                max-width: calc(100% - 75px) !important;
+            }
+            .btn-copy-share {
+                padding: 7px 12px !important;
+                font-size: 0.78rem !important;
+                min-width: 64px !important;
+            }
+        }
     </style>
 </head>
 
@@ -422,9 +486,9 @@
             </div>
 
             <label style="font-size:0.82rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Direct Shareable Link</label>
-            <div class="share-link-box">
-                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly>
-                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()">
+            <div class="share-link-box" style="overflow:hidden; max-width:100%; box-sizing:border-box;">
+                <input type="text" id="shareDirectUrlInput" class="share-link-input" style="min-width:0; flex:1 1 auto;" readonly>
+                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()" style="flex-shrink:0; white-space:nowrap;">
                     <i class="fa-regular fa-copy"></i> Copy
                 </button>
             </div>

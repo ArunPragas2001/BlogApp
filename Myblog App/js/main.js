@@ -25,7 +25,14 @@ var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
 var API_SETTINGS_URL = API_BASE_URL + "/api/settings";
 
 var cachedTerms = "Welcome to BlogSphere. By using our platform you agree to post respectful, original content and abide by our community guidelines.";
-var cachedBlogs = [];
+var cachedBlogs = (function () {
+    try {
+        var d = localStorage.getItem("cached_home_blogs");
+        return d ? JSON.parse(d) : [];
+    } catch (e) {
+        return [];
+    }
+})();
 var activeAuthorFilter = null;
 var activeCategoryFilter = "all";
 
@@ -97,34 +104,44 @@ function updateNav() {
     }
 }
 
+function applySiteConfig(config) {
+    if (!config) return;
+    cachedTerms = config.termsOfService || cachedTerms;
+
+    var xLink = document.getElementById("footerX");
+    var insta = document.getElementById("footerInsta");
+    var fb = document.getElementById("footerFb");
+    var wa = document.getElementById("footerWa");
+    var email = document.getElementById("footerEmail");
+    var phone = document.getElementById("footerPhone");
+    var address = document.getElementById("footerAddress");
+
+    if (xLink && (config.twitterUrl || config.xUrl)) {
+        xLink.href = config.twitterUrl || config.xUrl;
+    } else if (xLink) {
+        xLink.href = "https://x.com";
+    }
+    if (insta && config.instagramUrl) insta.href = config.instagramUrl;
+    if (fb && config.facebookUrl) fb.href = config.facebookUrl;
+    if (wa && config.whatsappNumber) wa.href = "https://wa.me/" + config.whatsappNumber.replace(/[^0-9]/g, "");
+    if (email && config.companyEmail) email.textContent = config.companyEmail;
+    if (phone && config.companyPhone) phone.textContent = config.companyPhone;
+    if (address && config.companyAddress) address.textContent = config.companyAddress;
+}
+
 async function loadSiteSettings() {
     try {
+        var cached = localStorage.getItem("cached_site_settings");
+        if (cached) {
+            applySiteConfig(JSON.parse(cached));
+        }
         var res = await fetch(API_SETTINGS_URL);
         if (!res.ok) return;
         var config = await res.json();
-        cachedTerms = config.termsOfService || cachedTerms;
-
-        var xLink = document.getElementById("footerX");
-        var insta = document.getElementById("footerInsta");
-        var fb = document.getElementById("footerFb");
-        var wa = document.getElementById("footerWa");
-        var email = document.getElementById("footerEmail");
-        var phone = document.getElementById("footerPhone");
-        var address = document.getElementById("footerAddress");
-
-        if (xLink && (config.twitterUrl || config.xUrl)) {
-            xLink.href = config.twitterUrl || config.xUrl;
-        } else if (xLink) {
-            xLink.href = "https://x.com";
-        }
-        if (insta && config.instagramUrl) insta.href = config.instagramUrl;
-        if (fb && config.facebookUrl) fb.href = config.facebookUrl;
-        if (wa && config.whatsappNumber) wa.href = "https://wa.me/" + config.whatsappNumber.replace(/[^0-9]/g, "");
-        if (email && config.companyEmail) email.textContent = config.companyEmail;
-        if (phone && config.companyPhone) phone.textContent = config.companyPhone;
-        if (address && config.companyAddress) address.textContent = config.companyAddress;
+        localStorage.setItem("cached_site_settings", JSON.stringify(config));
+        applySiteConfig(config);
     } catch (err) {
-        console.error("Site settings error:", err);
+        console.warn("Site settings fetch note:", err);
     }
 }
 
@@ -662,8 +679,17 @@ async function openArticleReader(blogId) {
     if (!overlay) return;
 
     var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
+    if (!blog) {
+        try {
+            var localItem = localStorage.getItem("cached_article_" + blogId);
+            if (localItem) {
+                blog = JSON.parse(localItem);
+                if (blog) cachedBlogs.push(blog);
+            }
+        } catch (e) {}
+    }
 
-    // 1. If in cache, show reader instantly in 0ms!
+    // 1. If in memory or localStorage cache, show reader instantly in 0ms!
     if (blog) {
         populateArticleReaderUI(blog);
         overlay.classList.add("active");
@@ -677,6 +703,7 @@ async function openArticleReader(blogId) {
                     var idx = cachedBlogs.findIndex(function (b) { return String(b._id || b.id) === String(blogId); });
                     if (idx > -1) cachedBlogs[idx] = freshBlog;
                     else cachedBlogs.push(freshBlog);
+                    try { localStorage.setItem("cached_article_" + blogId, JSON.stringify(freshBlog)); } catch (e) {}
                     populateArticleReaderUI(freshBlog);
                 }
             })
@@ -697,6 +724,7 @@ async function openArticleReader(blogId) {
         if (freshRes.ok) {
             var freshBlog = await freshRes.json();
             cachedBlogs.push(freshBlog);
+            try { localStorage.setItem("cached_article_" + blogId, JSON.stringify(freshBlog)); } catch (e) {}
             populateArticleReaderUI(freshBlog);
         } else {
             if (titleEl) titleEl.textContent = "Article not found";
@@ -883,8 +911,7 @@ async function renderHomeBlogs(categoryFilter, authorFilter) {
         var blogs = [];
         try {
             var response = await fetch(API_BLOGS_URL, {
-                signal: controller.signal,
-                headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+                signal: controller.signal
             });
             clearTimeout(timeoutId);
             if (response.ok) blogs = await response.json();
@@ -1014,15 +1041,40 @@ function updateAuthorBannerUI(allBlogs) {
     }
 }
 
+function updateCategoryHeaderUI(cat, filteredCount) {
+    var sectionTitle = document.getElementById("featuredSectionTitle");
+    var sectionSub = document.getElementById("featuredSectionSubtitle");
+    if (!sectionTitle || activeAuthorFilter) return;
+
+    if (cat && cat.toLowerCase() !== "all") {
+        sectionTitle.innerHTML = 'Stories in ' + esc(cat) + ' <span class="active-filter-badge"><i class="fa-solid fa-tag"></i> ' + esc(cat) + ' <button type="button" class="btn-clear-cat-filter" onclick="filterBlogs(\'all\')" title="Show All Blogs">&times;</button></span>';
+        sectionSub.innerHTML = 'Showing ' + (filteredCount || 0) + ' ' + (filteredCount === 1 ? 'story' : 'stories') + ' in this topic • <a href="#" onclick="filterBlogs(\'all\'); return false;" style="color:#4F46E5;font-weight:600;text-decoration:underline;">View All Blogs</a>';
+    } else {
+        sectionTitle.textContent = "Latest Articles";
+        sectionSub.textContent = "Fresh stories published by our vibrant community";
+    }
+}
+
 function filterBlogs(cat) {
     activeCategoryFilter = cat || "all";
+
+    // Update browser URL query parameter without reloading
+    try {
+        var newUrl = new URL(window.location);
+        if (activeCategoryFilter && activeCategoryFilter.toLowerCase() !== "all") {
+            newUrl.searchParams.set("category", activeCategoryFilter);
+        } else {
+            newUrl.searchParams.delete("category");
+        }
+        window.history.pushState({}, "", newUrl);
+    } catch (e) {}
 
     // Update active visual indicator on category cards
     var cards = document.querySelectorAll(".category-card");
     cards.forEach(function (el) {
         var elCat = el.getAttribute("data-category") || (el.querySelector("h3") ? el.querySelector("h3").textContent.trim() : "");
-        if ((cat === "all" && (elCat === "all" || elCat === "All Blogs")) || 
-            (elCat && elCat.toLowerCase() === cat.toLowerCase())) {
+        if ((activeCategoryFilter === "all" && (elCat === "all" || elCat === "All Blogs")) || 
+            (elCat && elCat.toLowerCase() === activeCategoryFilter.toLowerCase())) {
             el.classList.add("active");
         } else {
             el.classList.remove("active");
@@ -1031,9 +1083,23 @@ function filterBlogs(cat) {
 
     var container = document.getElementById("featuredBlogsContainer");
     if (container && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
-        // INSTANT 0ms filter from existing cached blogs!
         var filtered = filterBlogsList(cachedBlogs);
-        renderBlogCardsList(filtered, container);
+        updateCategoryHeaderUI(activeCategoryFilter, filtered.length);
+
+        if (filtered.length === 0) {
+            container.innerHTML =
+                '<div style="grid-column:1/-1;text-align:center;padding:48px 20px;background:#F8FAFC;border-radius:16px;border:1.5px dashed #CBD5E1;margin:12px 0;">' +
+                '<div style="font-size:2.5rem;margin-bottom:12px;">📖</div>' +
+                '<h3 style="font-size:1.25rem;color:#0F172A;margin-bottom:8px;font-weight:700;">No stories found in "' + esc(activeCategoryFilter) + '"</h3>' +
+                '<p style="color:#64748B;font-size:0.95rem;margin-bottom:20px;">Be the first author to publish an engaging article in this category!</p>' +
+                '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+                '<button type="button" onclick="filterBlogs(\'all\')" class="btn-primary" style="padding:10px 24px;font-size:0.9rem;border-radius:50px;background:#4F46E5;color:#fff;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-layer-group"></i> View All Stories</button>' +
+                '<a href="createBlog.html" class="btn-secondary" style="padding:10px 24px;font-size:0.9rem;border-radius:50px;background:#0F172A;color:#fff;text-decoration:none;display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-pen-nib"></i> Write a Story</a>' +
+                '</div>' +
+                '</div>';
+        } else {
+            renderBlogCardsList(filtered, container);
+        }
     } else {
         renderHomeBlogs(cat, activeAuthorFilter);
     }

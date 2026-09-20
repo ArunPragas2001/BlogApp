@@ -7,6 +7,8 @@
     <title>BlogSphere | Share Your Voice</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://blogsphere-wtrv.onrender.com" crossorigin>
+    <link rel="dns-prefetch" href="https://blogsphere-wtrv.onrender.com">
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -557,37 +559,86 @@
         /* Compact, mobile-shaped category cards */
         @media (max-width: 768px) {
             .categories-grid {
-                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-                gap: 10px;
+                grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+                gap: 8px;
                 padding: 0 4px;
             }
             .category-card {
                 padding: 12px 6px;
                 border-radius: 12px;
                 gap: 6px;
+                min-height: 70px;
             }
             .category-card i { font-size: 1.25rem; }
             .category-card h3 { font-size: 0.8rem; }
         }
         @media (max-width: 480px) {
             .categories-section {
-                padding: 32px 10px;
+                padding: 24px 8px;
             }
             .categories-grid {
                 grid-template-columns: repeat(3, 1fr);
-                gap: 7px;
+                gap: 6px;
+                padding: 0 2px;
             }
             .category-card {
-                padding: 9px 5px;
+                padding: 8px 4px;
                 border-radius: 10px;
-                gap: 5px;
+                gap: 4px;
+                min-height: 62px;
             }
-            .category-card i { font-size: 1.12rem; }
+            .category-card i { font-size: 1.05rem; }
             .category-card h3 {
-                font-size: 0.74rem;
+                font-size: 0.72rem;
                 letter-spacing: -0.2px;
                 line-height: 1.15;
             }
+            .category-card.active::after {
+                top: 3px;
+                right: 4px;
+                width: 14px;
+                height: 14px;
+                font-size: 0.55rem;
+            }
+        }
+
+        .active-filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border: 1px solid #C7D2FE;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        body.dark-mode .active-filter-badge {
+            background: #1E293B;
+            color: #A5B4FC;
+            border-color: #4338CA;
+        }
+        .btn-clear-cat-filter {
+            background: rgba(79, 70, 229, 0.15);
+            color: #4F46E5;
+            border: none;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 2px;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+        .btn-clear-cat-filter:hover {
+            background: #EF4444;
+            color: #FFFFFF;
         }
 
         .hero { min-height: 88vh; display: flex; justify-content: center; align-items: center; text-align: center; padding: 80px 20px; background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%); }
@@ -657,11 +708,13 @@
             <div class="categories-grid" id="categoriesGrid">
                 <a href="#" class="category-card active" data-category="all" onclick="filterBlogs('all'); return false;"><i class="fa-solid fa-layer-group"></i><h3>All Blogs</h3></a>
                 <a href="#" class="category-card" data-category="Story/Novel" onclick="filterBlogs('Story/Novel'); return false;"><i class="fa-solid fa-book-open"></i><h3>Story / Novel</h3></a>
-                <a href="#" class="category-card" data-category="Politics" onclick="filterBlogs('Politics'); return false;"><i class="fa-solid fa-landmark"></i><h3>Politics</h3></a>
-                <a href="#" class="category-card" data-category="Programming" onclick="filterBlogs('Programming'); return false;"><i class="fa-solid fa-laptop-code"></i><h3>Programming</h3></a>
                 <a href="#" class="category-card" data-category="Technology" onclick="filterBlogs('Technology'); return false;"><i class="fa-solid fa-microchip"></i><h3>Technology</h3></a>
-                <a href="#" class="category-card" data-category="Web Design" onclick="filterBlogs('Web Design'); return false;"><i class="fa-solid fa-palette"></i><h3>Web Design</h3></a>
+                <a href="#" class="category-card" data-category="Programming" onclick="filterBlogs('Programming'); return false;"><i class="fa-solid fa-laptop-code"></i><h3>Programming</h3></a>
+                <a href="#" class="category-card" data-category="Politics" onclick="filterBlogs('Politics'); return false;"><i class="fa-solid fa-landmark"></i><h3>Politics</h3></a>
                 <a href="#" class="category-card" data-category="Education" onclick="filterBlogs('Education'); return false;"><i class="fa-solid fa-graduation-cap"></i><h3>Education</h3></a>
+                <a href="#" class="category-card" data-category="Travel" onclick="filterBlogs('Travel'); return false;"><i class="fa-solid fa-plane-departure"></i><h3>Travel</h3></a>
+                <a href="#" class="category-card" data-category="Business" onclick="filterBlogs('Business'); return false;"><i class="fa-solid fa-briefcase"></i><h3>Business</h3></a>
+                <a href="#" class="category-card" data-category="Lifestyle" onclick="filterBlogs('Lifestyle'); return false;"><i class="fa-solid fa-heart-pulse"></i><h3>Lifestyle</h3></a>
             </div>
         </div>
     </section>

@@ -2,10 +2,11 @@ import SiteConfig from "../models/siteConfig.js";
 
 export const getSiteConfig = async (req, res) => {
   try {
-    let config = await SiteConfig.findOne();
+    let config = await SiteConfig.findOne().lean();
     if (!config) {
       config = await SiteConfig.create({});
     }
+    res.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
     res.json(config);
   } catch (error) {
     res.status(500).json({ message: "Error fetching site settings", error: error.message });

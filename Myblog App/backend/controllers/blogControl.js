@@ -1,4 +1,5 @@
 import Blog from "../models/blog.js";
+import User from "../models/user.js";
 import SiteConfig from "../models/siteConfig.js";
 import { sendNewBlogNotification } from "../config/emailService.js";
 
@@ -51,7 +52,22 @@ export const getAllBlogs = async (req, res) => {
     }
 
     if (req.query.author) {
-      query.author = req.query.author;
+      const authorParam = String(req.query.author).trim();
+      if (authorParam.match(/^[0-9a-fA-F]{24}$/)) {
+        query.author = authorParam;
+      } else {
+        const foundUser = await User.findOne({
+          $or: [
+            { name: new RegExp(authorParam, "i") },
+            { email: new RegExp(authorParam, "i") }
+          ]
+        }).select("_id").lean();
+        if (foundUser) {
+          query.author = foundUser._id;
+        } else {
+          query.author = null; // Return empty set safely without CastError
+        }
+      }
     }
 
     if (req.query.userOnly === "true" && req.user) {
