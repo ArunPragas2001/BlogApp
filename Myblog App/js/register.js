@@ -1,11 +1,24 @@
-const API_BASE_URL = (typeof window !== "undefined" && (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1" ||
-    window.location.protocol === "file:" ||
-    window.location.hostname === ""
-))
-    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
-    : "https://blogsphere-wtrv.onrender.com";
+function getApiBaseUrl() {
+    if (typeof window === "undefined") return "http://localhost:5000";
+    var loc = window.location;
+    if (loc.protocol.startsWith("http") && loc.port === "5000") return loc.origin;
+    if (
+        loc.hostname === "localhost" ||
+        loc.hostname === "127.0.0.1" ||
+        loc.hostname === "" ||
+        loc.protocol === "file:" ||
+        /^192\.168\./.test(loc.hostname) ||
+        /^10\./.test(loc.hostname) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(loc.hostname)
+    ) {
+        return (loc.protocol.startsWith("http") && loc.hostname)
+            ? (loc.protocol + "//" + loc.hostname + ":5000")
+            : "http://localhost:5000";
+    }
+    return loc.origin.includes("blogsphere") ? loc.origin : "https://blogsphere-wtrv.onrender.com";
+}
+
+const API_BASE_URL = getApiBaseUrl();
 const API_URL = `${API_BASE_URL}/api/auth/register`;
 
 document.addEventListener("DOMContentLoaded", function () {

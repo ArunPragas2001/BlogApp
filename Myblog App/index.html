@@ -434,27 +434,38 @@
         .share-link-box {
             display: flex;
             align-items: center;
+            gap: 8px;
             background: #F1F5F9;
             border: 1.5px solid #E2E8F0;
             border-radius: 12px;
-            padding: 4px 6px 4px 14px;
+            padding: 6px 8px 6px 14px;
             margin-top: 14px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         body.dark-mode .share-link-box {
             background: #0F172A;
             border-color: #334155;
         }
         .share-link-input {
-            flex: 1;
+            flex: 1 1 auto;
+            min-width: 0 !important;
+            width: 100% !important;
             background: transparent;
             border: none;
             font-size: 0.88rem;
             color: #334155;
             outline: none;
             text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            box-sizing: border-box;
         }
         body.dark-mode .share-link-input { color: #E2E8F0; }
         .btn-copy-share {
+            flex-shrink: 0 !important;
             background: #4F46E5;
             color: #FFF;
             border: none;
@@ -466,30 +477,118 @@
             transition: all 0.2s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
+            white-space: nowrap !important;
+            box-sizing: border-box;
         }
         .btn-copy-share:hover { background: #4338CA; }
 
+        /* Mobile: keep share modal fully inside screen, copy button inline */
+        @media (max-width: 480px) {
+            .share-modal-card { padding: 14px 12px !important; box-sizing: border-box !important; }
+            .share-social-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 8px 4px !important; margin: 12px 0 16px !important; }
+            .share-social-icon { width: 40px !important; height: 40px !important; font-size: 1.1rem !important; }
+            .share-social-btn { font-size: 0.68rem !important; gap: 5px !important; }
+            .share-link-box { padding: 5px 7px 5px 10px !important; gap: 6px !important; }
+            .share-link-input { font-size: 0.78rem !important; }
+            .btn-copy-share { padding: 7px 10px !important; font-size: 0.76rem !important; }
+        }
+
+        /* Modern Responsive Categories Grid */
         .categories-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 20px;
-            max-width: 900px;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 16px;
+            max-width: 1100px;
             margin: 0 auto;
         }
         .category-card {
-            background: #F8FAFC; border: 1.5px solid #E2E8F0;
-            border-radius: 16px; padding: 28px 16px;
-            text-align: center; text-decoration: none;
-            transition: all 0.3s; display: flex;
-            flex-direction: column; align-items: center; gap: 12px;
+            background: #F8FAFC;
+            border: 1.5px solid #E2E8F0;
+            border-radius: 14px;
+            padding: 20px 12px;
+            text-align: center;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            cursor: pointer;
         }
-        .category-card i { font-size: 1.8rem; color: #4F46E5; transition: all 0.3s; }
-        .category-card h3 { font-size: 1rem; font-weight: 600; color: #0F172A; }
+        .category-card i { font-size: 1.5rem; color: #4F46E5; transition: all 0.25s ease; }
+        .category-card h3 { font-size: 0.92rem; font-weight: 600; color: #0F172A; margin: 0; line-height: 1.2; }
         body.dark-mode .category-card { background: #1A2540; border-color: #334155; }
         body.dark-mode .category-card h3 { color: #F1F5F9; }
-        .category-card:hover { background: #4F46E5; border-color: #4F46E5; transform: translateY(-5px); box-shadow: 0 12px 28px rgba(79,70,229,0.3); }
+        .category-card:hover { background: #4F46E5; border-color: #4F46E5; transform: translateY(-3px); box-shadow: 0 10px 24px rgba(79,70,229,0.25); }
         .category-card:hover i, .category-card:hover h3 { color: #fff !important; }
+
+        /* Active Selected Category Highlight */
+        .category-card.active {
+            background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%) !important;
+            border-color: #4F46E5 !important;
+            box-shadow: 0 8px 22px rgba(79, 70, 229, 0.35) !important;
+            transform: translateY(-2px);
+        }
+        .category-card.active i,
+        .category-card.active h3 {
+            color: #FFFFFF !important;
+        }
+        .category-card.active::after {
+            content: '✓';
+            position: absolute;
+            top: 5px;
+            right: 7px;
+            font-size: 0.68rem;
+            background: rgba(255, 255, 255, 0.25);
+            color: #fff;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* Compact, mobile-shaped category cards */
+        @media (max-width: 768px) {
+            .categories-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+                padding: 0 4px;
+            }
+            .category-card {
+                padding: 12px 6px;
+                border-radius: 12px;
+                gap: 6px;
+            }
+            .category-card i { font-size: 1.25rem; }
+            .category-card h3 { font-size: 0.8rem; }
+        }
+        @media (max-width: 480px) {
+            .categories-section {
+                padding: 32px 10px;
+            }
+            .categories-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 7px;
+            }
+            .category-card {
+                padding: 9px 5px;
+                border-radius: 10px;
+                gap: 5px;
+            }
+            .category-card i { font-size: 1.12rem; }
+            .category-card h3 {
+                font-size: 0.74rem;
+                letter-spacing: -0.2px;
+                line-height: 1.15;
+            }
+        }
 
         .hero { min-height: 88vh; display: flex; justify-content: center; align-items: center; text-align: center; padding: 80px 20px; background: linear-gradient(135deg, #4F46E5 0%, #06B6D4 100%); }
         .hero-content { max-width: 800px; }
@@ -555,12 +654,14 @@
                 <h2>Explore Popular Topics</h2>
                 <p>Find articles across your favourite interests</p>
             </div>
-            <div class="categories-grid">
-                <a href="#" class="category-card" onclick="filterBlogs('Politics'); return false;"><i class="fa-solid fa-landmark"></i><h3>Politics</h3></a>
-                <a href="#" class="category-card" onclick="filterBlogs('Programming'); return false;"><i class="fa-solid fa-laptop-code"></i><h3>Programming</h3></a>
-                <a href="#" class="category-card" onclick="filterBlogs('Technology'); return false;"><i class="fa-solid fa-microchip"></i><h3>Technology</h3></a>
-                <a href="#" class="category-card" onclick="filterBlogs('Web Design'); return false;"><i class="fa-solid fa-palette"></i><h3>Web Design</h3></a>
-                <a href="#" class="category-card" onclick="filterBlogs('Education'); return false;"><i class="fa-solid fa-graduation-cap"></i><h3>Education</h3></a>
+            <div class="categories-grid" id="categoriesGrid">
+                <a href="#" class="category-card active" data-category="all" onclick="filterBlogs('all'); return false;"><i class="fa-solid fa-layer-group"></i><h3>All Blogs</h3></a>
+                <a href="#" class="category-card" data-category="Story/Novel" onclick="filterBlogs('Story/Novel'); return false;"><i class="fa-solid fa-book-open"></i><h3>Story / Novel</h3></a>
+                <a href="#" class="category-card" data-category="Politics" onclick="filterBlogs('Politics'); return false;"><i class="fa-solid fa-landmark"></i><h3>Politics</h3></a>
+                <a href="#" class="category-card" data-category="Programming" onclick="filterBlogs('Programming'); return false;"><i class="fa-solid fa-laptop-code"></i><h3>Programming</h3></a>
+                <a href="#" class="category-card" data-category="Technology" onclick="filterBlogs('Technology'); return false;"><i class="fa-solid fa-microchip"></i><h3>Technology</h3></a>
+                <a href="#" class="category-card" data-category="Web Design" onclick="filterBlogs('Web Design'); return false;"><i class="fa-solid fa-palette"></i><h3>Web Design</h3></a>
+                <a href="#" class="category-card" data-category="Education" onclick="filterBlogs('Education'); return false;"><i class="fa-solid fa-graduation-cap"></i><h3>Education</h3></a>
             </div>
         </div>
     </section>
@@ -664,7 +765,7 @@
 
     <!-- Global Share Dialog Modal with Modern X Logo & Fallbacks -->
     <div class="share-modal-overlay" id="globalShareModal">
-        <div class="share-modal-card">
+        <div class="share-modal-card" style="padding:20px 22px; box-sizing:border-box;">
             <button type="button" class="share-modal-close" onclick="closeShareModal()" aria-label="Close share dialog">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -705,9 +806,9 @@
             </div>
 
             <label style="font-size:0.82rem; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Direct Shareable Link</label>
-            <div class="share-link-box">
-                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly>
-                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()">
+            <div class="share-link-box" style="overflow:hidden; max-width:100%; box-sizing:border-box;">
+                <input type="text" id="shareDirectUrlInput" class="share-link-input" readonly style="min-width:0; flex:1 1 auto;">
+                <button type="button" class="btn-copy-share" onclick="copyShareModalLink()" style="flex-shrink:0; white-space:nowrap;">
                     <i class="fa-regular fa-copy"></i> Copy
                 </button>
             </div>

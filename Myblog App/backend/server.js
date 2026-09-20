@@ -74,13 +74,22 @@ app.use("/api/subscribers", subscriberRoutes);
 // Serve frontend static files with intelligent caching
 const frontendDir = path.join(__dirname, "..");
 app.use(express.static(frontendDir, {
-  maxAge: "1d",
+  maxAge: "7d",
   etag: true,
+  lastModified: true,
   setHeaders: (res, filePath) => {
     if (filePath.endsWith(".html")) {
-      res.setHeader("Cache-Control", "no-cache");
-    } else if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/)) {
-      res.setHeader("Cache-Control", "public, max-age=86400");
+      // HTML: always revalidate so users get new content immediately
+      res.setHeader("Cache-Control", "no-cache, must-revalidate");
+    } else if (filePath.match(/\.(js|css)$/)) {
+      // JS/CSS: 7 days + stale-while-revalidate for instant repeat loads
+      res.setHeader("Cache-Control", "public, max-age=604800, stale-while-revalidate=86400");
+    } else if (filePath.match(/\.(png|jpg|jpeg|gif|svg|webp|ico)$/)) {
+      // Images: 30 days (rarely change)
+      res.setHeader("Cache-Control", "public, max-age=2592000, stale-while-revalidate=86400");
+    } else if (filePath.match(/\.(woff|woff2|ttf|eot)$/)) {
+      // Fonts: 1 year (never change)
+      res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     }
   }
 }));

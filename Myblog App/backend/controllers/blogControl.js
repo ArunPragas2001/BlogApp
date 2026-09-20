@@ -42,7 +42,12 @@ export const getAllBlogs = async (req, res) => {
     const query = {};
 
     if (req.query.category && req.query.category.toLowerCase() !== "all") {
-      query.category = new RegExp(`^${req.query.category}$`, "i");
+      const cat = req.query.category.trim();
+      if (/^(story|novel|story\/novel|story \/ novel)$/i.test(cat)) {
+        query.category = { $regex: /story|novel/i };
+      } else {
+        query.category = new RegExp(`^${cat}$`, "i");
+      }
     }
 
     if (req.query.author) {
@@ -63,9 +68,13 @@ export const getAllBlogs = async (req, res) => {
     }
 
     const blogs = await Blog.find(query)
+      .select("-comments")
       .populate("author", "name email profilePic")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
+    // Cache blog list: 30s fresh, 60s stale-while-revalidate for speed
+    res.set("Cache-Control", "public, max-age=30, stale-while-revalidate=60");
     res.json(blogs);
   } catch (error) {
     res.status(500).json({ message: "Error fetching blogs", error: error.message });
@@ -80,12 +89,16 @@ export const getBlogById = async (req, res) => {
       return res.status(400).json({ message: "Invalid blog id" });
     }
 
-    const blog = await Blog.findById(id).populate("author", "name email profilePic");
+    const blog = await Blog.findById(id)
+      .populate("author", "name email profilePic bio")
+      .lean();
 
     if (!blog) {
       return res.status(404).json({ message: "Blog post not found" });
     }
 
+    // Cache individual blog: 60s fresh (article content rarely changes)
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=120");
     res.json(blog);
   } catch (error) {
     res.status(500).json({ message: "Error fetching blog post", error: error.message });

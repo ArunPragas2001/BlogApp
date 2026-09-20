@@ -78,6 +78,8 @@ const blogSchema = new mongoose.Schema(
 
 blogSchema.index({ isApproved: 1, createdAt: -1 });
 blogSchema.index({ category: 1 });
+blogSchema.index({ isApproved: 1, author: 1, createdAt: -1 });
+blogSchema.index({ isApproved: 1, category: 1, createdAt: -1 });
 
 const Blog = mongoose.model("Blog", blogSchema);
 

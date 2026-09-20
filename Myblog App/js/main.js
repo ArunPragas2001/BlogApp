@@ -1,11 +1,26 @@
-var API_BASE_URL = (typeof window !== "undefined" && (
-    window.location.hostname === "localhost" ||
-    window.location.hostname === "127.0.0.1" ||
-    window.location.protocol === "file:" ||
-    window.location.hostname === ""
-))
-    ? (window.location.port === "5000" ? window.location.origin : "http://localhost:5000")
-    : "https://blogsphere-wtrv.onrender.com";
+function getApiBaseUrl() {
+    if (typeof window === "undefined") return "http://localhost:5000";
+    var loc = window.location;
+    if (loc.protocol.startsWith("http") && loc.port === "5000") {
+        return loc.origin;
+    }
+    if (
+        loc.hostname === "localhost" ||
+        loc.hostname === "127.0.0.1" ||
+        loc.hostname === "" ||
+        loc.protocol === "file:" ||
+        /^192\.168\./.test(loc.hostname) ||
+        /^10\./.test(loc.hostname) ||
+        /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(loc.hostname)
+    ) {
+        return (loc.protocol.startsWith("http") && loc.hostname)
+            ? (loc.protocol + "//" + loc.hostname + ":5000")
+            : "http://localhost:5000";
+    }
+    return loc.origin.includes("blogsphere") ? loc.origin : "https://blogsphere-wtrv.onrender.com";
+}
+
+var API_BASE_URL = getApiBaseUrl();
 var API_BLOGS_URL = API_BASE_URL + "/api/blogs";
 var API_SETTINGS_URL = API_BASE_URL + "/api/settings";
 
@@ -531,33 +546,16 @@ function updateCommentCountUI(blogId, count) {
 }
 
 // ─── Article Reader ──────────────────────────────────────────────────────────
-async function openArticleReader(blogId) {
-    // Fetch fresh blog details if possible
-    try {
-        var freshRes = await fetch(API_BASE_URL + "/api/blogs/" + blogId);
-        if (freshRes.ok) {
-            var freshBlog = await freshRes.json();
-            var idx = cachedBlogs.findIndex(function(b) { return String(b._id || b.id) === String(blogId); });
-            if (idx > -1) cachedBlogs[idx] = freshBlog;
-            else cachedBlogs.push(freshBlog);
-        }
-    } catch (e) { /* use cached */ }
-
-    var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
+function populateArticleReaderUI(blog) {
     if (!blog) return;
-
-    var overlay = document.getElementById("articleReaderOverlay");
+    var blogId = blog._id || blog.id;
     var img = document.getElementById("articleReaderImg");
     var meta = document.getElementById("articleReaderMeta");
     var titleEl = document.getElementById("articleReaderTitle");
     var contentEl = document.getElementById("articleReaderContent");
 
-    if (!overlay) return;
-
-    // Check if blog has video
     var hasVideo = blog.video && blog.video.trim() !== "";
     var videoSrc = hasVideo ? resolveImageUrl(blog.video) : "";
-
     var cardBody = document.querySelector(".article-reader-body");
     var videoContainer = document.getElementById("articleReaderVideoContainer");
 
@@ -657,9 +655,57 @@ async function openArticleReader(blogId) {
     if (commentsSection) {
         renderArticleComments(blog, commentsSection);
     }
+}
 
+async function openArticleReader(blogId) {
+    var overlay = document.getElementById("articleReaderOverlay");
+    if (!overlay) return;
+
+    var blog = cachedBlogs.find(function (b) { return String(b._id || b.id) === String(blogId); });
+
+    // 1. If in cache, show reader instantly in 0ms!
+    if (blog) {
+        populateArticleReaderUI(blog);
+        overlay.classList.add("active");
+        document.body.style.overflow = "hidden";
+
+        // Silent background sync for fresh comments & like count
+        fetch(API_BASE_URL + "/api/blogs/" + blogId)
+            .then(function (res) { return res.ok ? res.json() : null; })
+            .then(function (freshBlog) {
+                if (freshBlog) {
+                    var idx = cachedBlogs.findIndex(function (b) { return String(b._id || b.id) === String(blogId); });
+                    if (idx > -1) cachedBlogs[idx] = freshBlog;
+                    else cachedBlogs.push(freshBlog);
+                    populateArticleReaderUI(freshBlog);
+                }
+            })
+            .catch(function () {});
+        return;
+    }
+
+    // 2. Direct external link - open reader with immediate loading state
     overlay.classList.add("active");
     document.body.style.overflow = "hidden";
+    var titleEl = document.getElementById("articleReaderTitle");
+    var contentEl = document.getElementById("articleReaderContent");
+    if (titleEl) titleEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="color:#4F46E5;"></i> Loading article...';
+    if (contentEl) contentEl.textContent = "Please wait while we retrieve the latest story...";
+
+    try {
+        var freshRes = await fetch(API_BASE_URL + "/api/blogs/" + blogId);
+        if (freshRes.ok) {
+            var freshBlog = await freshRes.json();
+            cachedBlogs.push(freshBlog);
+            populateArticleReaderUI(freshBlog);
+        } else {
+            if (titleEl) titleEl.textContent = "Article not found";
+            if (contentEl) contentEl.textContent = "The requested story may have been removed or is unavailable.";
+        }
+    } catch (e) {
+        if (titleEl) titleEl.textContent = "Unable to load article";
+        if (contentEl) contentEl.textContent = "Please check your network connection and try again.";
+    }
 }
 
 function closeArticleReader() {
@@ -678,25 +724,45 @@ function viewAuthorArticles(authorId, authorName) {
     activeAuthorFilter = authorId;
     
     // Update browser URL query without full reload
-    var newUrl = new URL(window.location);
-    newUrl.searchParams.set("author", authorId);
-    if (authorName) newUrl.searchParams.set("authorName", authorName);
-    window.history.pushState({}, "", newUrl);
+    try {
+        var newUrl = new URL(window.location);
+        newUrl.searchParams.set("author", authorId);
+        if (authorName) newUrl.searchParams.set("authorName", authorName);
+        window.history.pushState({}, "", newUrl);
+    } catch (e) {}
+
+    var container = document.getElementById("featuredBlogsContainer");
+    if (container && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
+        // INSTANT 0ms filter from memory!
+        var filtered = filterBlogsList(cachedBlogs);
+        updateAuthorBannerUI(cachedBlogs);
+        renderBlogCardsList(filtered, container);
+    } else {
+        renderHomeBlogs(activeCategoryFilter, activeAuthorFilter);
+    }
 
     var featured = document.getElementById("featured");
     if (featured) featured.scrollIntoView({ behavior: "smooth" });
-
-    renderHomeBlogs(activeCategoryFilter, activeAuthorFilter);
 }
 
 function clearAuthorFilter() {
     activeAuthorFilter = null;
-    var newUrl = new URL(window.location);
-    newUrl.searchParams.delete("author");
-    newUrl.searchParams.delete("authorName");
-    window.history.pushState({}, "", newUrl);
+    try {
+        var newUrl = new URL(window.location);
+        newUrl.searchParams.delete("author");
+        newUrl.searchParams.delete("authorName");
+        window.history.pushState({}, "", newUrl);
+    } catch (e) {}
 
-    renderHomeBlogs(activeCategoryFilter, null);
+    var container = document.getElementById("featuredBlogsContainer");
+    if (container && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
+        // INSTANT 0ms filter from memory!
+        var filtered = filterBlogsList(cachedBlogs);
+        updateAuthorBannerUI(cachedBlogs);
+        renderBlogCardsList(filtered, container);
+    } else {
+        renderHomeBlogs(activeCategoryFilter, null);
+    }
 }
 
 function renderBlogCardsList(blogsList, container) {
@@ -812,15 +878,19 @@ async function renderHomeBlogs(categoryFilter, authorFilter) {
     // 2. Fresh fetch from server
     try {
         var controller = new AbortController();
-        var timeoutId = setTimeout(function () { controller.abort(); }, 4000);
+        var timeoutId = setTimeout(function () { controller.abort(); }, 6000);
 
         var blogs = [];
         try {
-            var response = await fetch(API_BLOGS_URL, { signal: controller.signal });
+            var response = await fetch(API_BLOGS_URL, {
+                signal: controller.signal,
+                headers: { "Cache-Control": "no-cache", "Pragma": "no-cache" }
+            });
             clearTimeout(timeoutId);
             if (response.ok) blogs = await response.json();
         } catch (fetchErr) {
             clearTimeout(timeoutId);
+            // Fallback: try opposite URL (local<->remote)
             var fallbackUrl = API_BASE_URL.includes("localhost")
                 ? "https://blogsphere-wtrv.onrender.com/api/blogs"
                 : "http://localhost:5000/api/blogs";
@@ -836,6 +906,7 @@ async function renderHomeBlogs(categoryFilter, authorFilter) {
             cachedBlogs = blogs;
             try {
                 localStorage.setItem("cached_home_blogs", JSON.stringify(blogs));
+                localStorage.setItem("cached_home_blogs_ts", String(Date.now()));
             } catch (e) {}
 
             var displayList = filterBlogsList(blogs);
@@ -864,8 +935,14 @@ function filterBlogsList(blogs) {
         });
     }
     if (activeCategoryFilter && activeCategoryFilter.toLowerCase() !== "all") {
+        var targetCat = activeCategoryFilter.toLowerCase().trim();
         list = list.filter(function (b) {
-            return b.category && b.category.toLowerCase() === activeCategoryFilter.toLowerCase();
+            if (!b.category) return false;
+            var bCat = b.category.toLowerCase().trim();
+            if (targetCat === "story/novel" || targetCat === "story / novel" || targetCat === "story" || targetCat === "novel") {
+                return bCat.includes("story") || bCat.includes("novel");
+            }
+            return bCat === targetCat;
         });
     }
     return list;
@@ -938,32 +1015,58 @@ function updateAuthorBannerUI(allBlogs) {
 }
 
 function filterBlogs(cat) {
+    activeCategoryFilter = cat || "all";
+
+    // Update active visual indicator on category cards
+    var cards = document.querySelectorAll(".category-card");
+    cards.forEach(function (el) {
+        var elCat = el.getAttribute("data-category") || (el.querySelector("h3") ? el.querySelector("h3").textContent.trim() : "");
+        if ((cat === "all" && (elCat === "all" || elCat === "All Blogs")) || 
+            (elCat && elCat.toLowerCase() === cat.toLowerCase())) {
+            el.classList.add("active");
+        } else {
+            el.classList.remove("active");
+        }
+    });
+
+    var container = document.getElementById("featuredBlogsContainer");
+    if (container && Array.isArray(cachedBlogs) && cachedBlogs.length > 0) {
+        // INSTANT 0ms filter from existing cached blogs!
+        var filtered = filterBlogsList(cachedBlogs);
+        renderBlogCardsList(filtered, container);
+    } else {
+        renderHomeBlogs(cat, activeAuthorFilter);
+    }
+
     var featured = document.getElementById("featured");
     if (featured) featured.scrollIntoView({ behavior: "smooth" });
-    setTimeout(function () { renderHomeBlogs(cat, activeAuthorFilter); }, 300);
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    try { localStorage.removeItem("cached_home_blogs"); } catch(e) {}
+    // Preserve cache across sessions for instant 0ms load
     updateNav();
     loadSiteSettings();
 
-    // Check URL parameters on load for ?author= or ?article=
+    // Check URL parameters on load for ?author= or ?article= or ?category=
     var urlParams = new URLSearchParams(window.location.search);
     var authorParam = urlParams.get("author") || urlParams.get("authorId");
     var articleParam = urlParams.get("article") || urlParams.get("id") || urlParams.get("blogId");
+    var categoryParam = urlParams.get("category");
 
     if (authorParam) {
         activeAuthorFilter = authorParam;
     }
+    if (categoryParam) {
+        activeCategoryFilter = categoryParam;
+    }
 
-    renderHomeBlogs("all", activeAuthorFilter).then(function() {
-        if (articleParam) {
-            setTimeout(function() {
-                openArticleReader(articleParam);
-            }, 400);
-        }
-    });
+    // Direct article link: Open article reader IMMEDIATELY without waiting for whole feed
+    if (articleParam) {
+        openArticleReader(articleParam);
+    }
+
+    // Render home blogs (hydrates immediately from cache in 0ms, then revalidates in background)
+    renderHomeBlogs(activeCategoryFilter, activeAuthorFilter);
 
     var closeBtn = document.getElementById("articleReaderClose");
     if (closeBtn) closeBtn.addEventListener("click", closeArticleReader);
