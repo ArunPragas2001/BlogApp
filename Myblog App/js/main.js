@@ -787,6 +787,7 @@ function clearAuthorFilter() {
         // INSTANT 0ms filter from memory!
         var filtered = filterBlogsList(cachedBlogs);
         updateAuthorBannerUI(cachedBlogs);
+        updateCategoryHeaderUI(activeCategoryFilter, filtered.length);
         renderBlogCardsList(filtered, container);
     } else {
         renderHomeBlogs(activeCategoryFilter, null);
@@ -893,6 +894,7 @@ async function renderHomeBlogs(categoryFilter, authorFilter) {
                 cachedBlogs = parsed;
                 var filtered = filterBlogsList(cachedBlogs);
                 updateAuthorBannerUI(cachedBlogs);
+                updateCategoryHeaderUI(activeCategoryFilter, filtered.length);
                 renderBlogCardsList(filtered, container);
                 if (window.hidePageLoader) window.hidePageLoader();
             }
@@ -1112,6 +1114,11 @@ document.addEventListener("DOMContentLoaded", function () {
     // Preserve cache across sessions for instant 0ms load
     updateNav();
     loadSiteSettings();
+
+    // Background server warm-up (prevents Render cold starts for subsequent actions)
+    try {
+        fetch(API_BASE_URL + "/api/health", { mode: "cors" }).catch(function () {});
+    } catch (e) {}
 
     // Check URL parameters on load for ?author= or ?article= or ?category=
     var urlParams = new URLSearchParams(window.location.search);
