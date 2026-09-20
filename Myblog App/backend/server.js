@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import path from "path";
@@ -42,13 +43,22 @@ const app = express();
 
 app.set("trust proxy", 1);
 
+// Gzip/Deflate compression for fast responses
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers["x-no-compression"]) return false;
+    return compression.filter(req, res);
+  },
+  threshold: 512
+}));
+
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "15mb" }));
 // Skip urlencoded parsing for multipart/form-data so multer can read the raw stream
 app.use((req, res, next) => {
   const ct = req.headers["content-type"] || "";
   if (ct.startsWith("multipart/form-data")) return next();
-  express.urlencoded({ extended: true })(req, res, next);
+  express.urlencoded({ extended: true, limit: "15mb" })(req, res, next);
 });
 
 app.use(checkMaintenanceMode);
@@ -61,9 +71,19 @@ app.use("/api/images", imageRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/subscribers", subscriberRoutes);
 
-// Serve frontend static files with caching
+// Serve frontend static files with intelligent caching
 const frontendDir = path.join(__dirname, "..");
-app.use(express.static(frontendDir, { maxAge: "1h" }));
+app.use(express.static(frontendDir, {
+  maxAge: "1d",
+  etag: true,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".html")) {
+      res.setHeader("Cache-Control", "no-cache");
+    } else if (filePath.match(/\.(js|css|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/)) {
+      res.setHeader("Cache-Control", "public, max-age=86400");
+    }
+  }
+}));
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "BlogSphere API is running" });
